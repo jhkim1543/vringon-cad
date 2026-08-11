@@ -11,7 +11,7 @@
    so instead of inventing it.
    ========================================================================== */
 import * as THREE from "three";
-import { createFlightModel } from "./drone-6dof.js";
+import { createFlightModel } from "./drone-6dof.js?v=7ed3c1b6";
 
 /* "로터 암", "모터 마운트", "프로펠러 가드" all contain rotor words and none of
    them should spin. Membership means: named like a rotor AND not named like the
@@ -437,6 +437,42 @@ export function createDroneSim({ root, spec }) {
         out.push({
           id: "cg_support", label: "무게중심 · 지지면", value: "판정 불가", ok: null,
           note: "랜딩기어로 인식된 파트가 부족합니다. 파트 이름에 랜딩/스키드가 들어가야 합니다.",
+        });
+      }
+    }
+
+    /* Is this one machine or a pile of islands? Measured on the built meshes,
+       so it sees the real rotated geometry rather than the specification's
+       axis-aligned estimate. A detached group is what makes a render read as
+       an assembly kit instead of an aircraft. */
+    {
+      const boxes = [];
+      root.traverse((o) => { if (o.isMesh) boxes.push(new THREE.Box3().setFromObject(o)); });
+      if (boxes.length >= 3) {
+        const TOL = 10;
+        const grown = boxes.map((b) => b.clone().expandByScalar(TOL / 2));
+        const comp = new Array(boxes.length).fill(-1);
+        let groups = 0, mainSize = 0;
+        for (let i = 0; i < grown.length; i++) {
+          if (comp[i] !== -1) continue;
+          const id = groups++; comp[i] = id;
+          const stack = [i]; let size = 0;
+          while (stack.length) {
+            const k = stack.pop(); size++;
+            for (let j = 0; j < grown.length; j++) {
+              if (comp[j] === -1 && grown[k].intersectsBox(grown[j])) { comp[j] = id; stack.push(j); }
+            }
+          }
+          mainSize = Math.max(mainSize, size);
+        }
+        out.push({
+          id: "assembly_contact", label: "조립 연결성",
+          value: groups === 1 ? "한 덩어리" : `${groups}덩어리로 분리`,
+          ok: groups === 1,
+          note: groups === 1
+            ? `메시 ${boxes.length}개가 ${TOL}mm 이내로 서로 이어져 있습니다.`
+            : `가장 큰 덩어리에 메시 ${mainSize}/${boxes.length}개만 속합니다. 떨어진 파트는 `
+              + `center_mm을 옮겨 인접 파트와 맞닿게 해야 합니다 — 실물은 한 덩어리입니다.`,
         });
       }
     }

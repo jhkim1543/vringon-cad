@@ -239,11 +239,15 @@ import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
-import { buildFromSpec } from "./js/spec-cad.js";
-import { createDroneSim } from "./js/drone-sim.js";
-import { applyParameter } from "./js/drone-params.js";
-import { COMPONENT_CATALOG, CATALOG_GROUPS, fitTargets, applyComponent, addComponentAsPart } from "./js/drone-catalog.js";
-import { PRINTERS, MATERIALS as PRINT_MATERIALS, estimatePrint } from "./js/print-estimate.js";
+import { buildFromSpec } from "./js/spec-cad.js?v=7ed3c1b6";
+import { createDroneSim } from "./js/drone-sim.js?v=7ed3c1b6";
+import { applyParameter } from "./js/drone-params.js?v=7ed3c1b6";
+import { COMPONENT_CATALOG, CATALOG_GROUPS, fitTargets, applyComponent, addComponentAsPart } from "./js/drone-catalog.js?v=7ed3c1b6";
+import { PRINTERS, MATERIALS as PRINT_MATERIALS, estimatePrint } from "./js/print-estimate.js?v=7ed3c1b6";
+
+/* 배포 버전 — tools/stamp-version.mjs가 다시 씁니다. 사양서·메시 URL에 붙어
+   CDN 캐시가 옛 데이터를 주는 것을 막습니다. */
+const BUILD = "7ed3c1b6";
 
 /* Each sample carries the prompt it was actually generated from, so what the
    composer shows is the real input and not a caption written afterwards.
@@ -416,7 +420,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const specCache = new Map();
 async function loadSpec(id) {
   if (!specCache.has(id)) {
-    specCache.set(id, fetch(`./specs/${id}.json`).then((r) => {
+    specCache.set(id, fetch(`./specs/${id}.json?v=${BUILD}`).then((r) => {
       if (!r.ok) throw new Error(`사양서를 찾을 수 없습니다 (${id})`);
       return r.json();
     }));
@@ -988,11 +992,11 @@ $("btnNew").onclick = () => {
 /* ------------------------------------------------------------------ boot */
 (async () => {
   try {
-    SAMPLES = await fetch("./specs/index.json").then((r) => r.json());
+    SAMPLES = await fetch(`./specs/index.json?v=${BUILD}`).then((r) => r.json());
     if (!SAMPLES.length) throw new Error("샘플이 비어 있습니다");
     /* Missing meshes are not an error: stage 1 falls back to the compiled
        specification and labels itself accordingly. */
-    MESHES = await fetch("./assets/meshes/index.json").then((r) => r.json()).catch(() => ({}));
+    MESHES = await fetch(`./assets/meshes/index.json?v=${BUILD}`).then((r) => r.json()).catch(() => ({}));
   } catch (e) {
     $("chips").innerHTML = `<span class="hint">샘플 목록을 불러오지 못했습니다: ${e.message}</span>`;
     $("btnLib").disabled = true;

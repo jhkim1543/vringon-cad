@@ -813,7 +813,7 @@
         "repeat": {
           "pattern": "CIRCULAR",
           "count": 4,
-          "radius_mm": 0,
+          "radius_mm": 150,
           "spacing_mm": null,
           "start_angle_deg": 45
         }

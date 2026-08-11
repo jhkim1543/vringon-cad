@@ -8,7 +8,7 @@
    surface with a primitive.
    ========================================================================== */
 import * as THREE from "three";
-import { tessellate, revolveVolume, buildFromAnalysis, generateThreeCode } from "./spec-to-code.js";
+import { tessellate, revolveVolume, buildFromAnalysis, generateThreeCode } from "./spec-to-code.js?v=7ed3c1b6";
 
 const num = (v, d = 0) => (Number.isFinite(v) ? v : d);
 const dist = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1]);

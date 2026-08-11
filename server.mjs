@@ -2208,6 +2208,143 @@ const DRONE_INVENTORY_SCHEMA = {
   },
 };
 
+/* A rod repeated around a ring — an arm, a boom — has to reach from the hub
+   out to the motor, so the ring radius names where its OUTER TIP goes, not
+   its middle. The compiler already places it that way; writing the same
+   correction into the specification keeps the JSON the user reads, the
+   validator and the viewer telling one story. Idempotent: running it twice
+   lands on the same radius. */
+const isRodPart = (p) => {
+  const s = p.geometry?.size_mm || {};
+  const w = Number(s.w) || 0, d = Number(s.d) || 0;
+  return w > 0 && d > 0 && Math.max(w, d) / Math.min(w, d) >= 3;
+};
+function normalizeStrutRadius(spec) {
+  const ring = (spec.parts || []).filter((p) => p.geometry?.repeat?.pattern === "CIRCULAR"
+    && p.geometry.repeat.count > 1);
+  if (!ring.length) return spec;
+  const ringR = Math.max(0, ...ring.filter((p) => !isRodPart(p))
+    .map((p) => Number(p.geometry.repeat.radius_mm) || 0));
+  if (!(ringR > 0)) return spec;
+  for (const p of ring) {
+    if (!isRodPart(p)) continue;
+    const s = p.geometry.size_mm;
+    const len = Math.max(s.w, s.d);
+    p.geometry.repeat.radius_mm = Math.round(Math.max(len * 0.2, ringR - len / 2));
+  }
+  return spec;
+}
+
+/* Where every instance of a part actually sits, from center_mm, size_mm and
+   the repeat pattern. Mirrors the compiler's placement rules so a validator
+   error means the same thing the viewer will show. */
+function partBoxes(p) {
+  const g = p.geometry || {};
+  const s = g.size_mm || {}, c = g.center_mm || {};
+  const w = Number(s.w) || 0, h = Number(s.h) || 0, d = Number(s.d) || 0;
+  const cx = Number(c.x) || 0, cy = Number(c.y) || 0, cz = Number(c.z) || 0;
+  const rep = g.repeat;
+  const at = [];
+  if (rep && rep.count > 1) {
+    const n = Math.min(rep.count, 32);
+    if (rep.pattern === "CIRCULAR") {
+      const rad = Number(rep.radius_mm) || Math.hypot(cx, cz) || 10;
+      const a0 = ((Number(rep.start_angle_deg) || 0) * Math.PI) / 180;
+      for (let i = 0; i < n; i++) {
+        const phi = Math.PI / 2 - (a0 + (i / n) * Math.PI * 2);
+        at.push([Math.cos(phi) * rad, cy, Math.sin(phi) * rad]);
+      }
+    } else if (rep.pattern === "MIRROR_PAIR") {
+      const off = rep.spacing_mm ? rep.spacing_mm / 2 : Math.abs(cx);
+      at.push([off, cy, cz], [-off, cy, cz]);
+    } else {
+      const sp = Number(rep.spacing_mm) || 20;
+      for (let i = 0; i < n; i++) at.push([cx + (i - (n - 1) / 2) * sp, cy, cz]);
+    }
+  } else at.push([cx, cy, cz]);
+  /* A radial rod is sampled as a chain of segments along its own length.
+     Wrapping it in one axis-aligned box centred on the ring would put its
+     whole bulk out at the rim and read as a gap at the hub that is not there. */
+  const thin = Math.min(w, d), long = Math.max(w, d);
+  if (rep?.pattern === "CIRCULAR" && rep.count > 1 && thin > 0 && long / thin >= 3) {
+    const out = [];
+    for (const [x, , z] of at) {
+      const R = Math.hypot(x, z) || 1;
+      const ux = x / R, uz = z / R;
+      for (let k = 0; k <= 4; k++) {
+        const r2 = R - long / 2 + (long * k) / 4;
+        const px = ux * r2, pz = uz * r2, hh = thin / 2;
+        out.push({ x0: px - hh, x1: px + hh, y0: cy - h / 2, y1: cy + h / 2, z0: pz - hh, z1: pz + hh });
+      }
+    }
+    return out;
+  }
+  /* Everything else is approximated by the largest horizontal half-extent,
+     which can only over-estimate the box and so never invents a gap. */
+  const hx = long / 2;
+  return at.map(([x, y, z]) => ({ x0: x - hx, x1: x + hx, y0: y - h / 2, y1: y + h / 2, z0: z - hx, z1: z + hx }));
+}
+
+/* An assembly is one machine, not a pile of islands. A part floating clear of
+   everything else is the single most damaging error visually — it is what made
+   a spray tank hang below the airframe with daylight between them — and no
+   other validator looks for it. */
+function contactGaps(spec) {
+  const parts = (spec.parts || []).filter((p) => p.geometry?.size_mm);
+  if (parts.length < 3) return [];
+  const boxes = parts.map(partBoxes);
+  const gapOf = (a, b) => Math.max(
+    Math.max(a.x0 - b.x1, b.x0 - a.x1),
+    Math.max(a.y0 - b.y1, b.y0 - a.y1),
+    Math.max(a.z0 - b.z1, b.z0 - a.z1),
+  );
+  const TOL = 10;   // mm — below this the parts are touching for our purposes
+
+  /* Asking only "does each part touch something" passes a spray tank that
+     hangs below the airframe, because the tank still touches its own filler
+     cap and hoses. What matters is whether the whole assembly is ONE
+     connected body, so this walks the touch graph and reports every group
+     that is not attached to the main one. */
+  const near = (i, j) => {
+    for (const A of boxes[i]) for (const B of boxes[j]) if (gapOf(A, B) <= TOL) return true;
+    return false;
+  };
+  const comp = new Array(parts.length).fill(-1);
+  const groups = [];
+  for (let i = 0; i < parts.length; i++) {
+    if (comp[i] !== -1) continue;
+    const id = groups.length, stack = [i], members = [];
+    comp[i] = id;
+    while (stack.length) {
+      const k = stack.pop();
+      members.push(k);
+      for (let j = 0; j < parts.length; j++) {
+        if (comp[j] === -1 && near(k, j)) { comp[j] = id; stack.push(j); }
+      }
+    }
+    groups.push(members);
+  }
+  if (groups.length < 2) return [];
+
+  groups.sort((a, b) => b.length - a.length);
+  const label = (k) => parts[k].display_name_ko || parts[k].part_id;
+  const strays = groups.slice(1).map((gp) => {
+    /* the closest approach between this group and the main body tells the
+       model how far to move it, which is more useful than "it is detached" */
+    let best = Infinity;
+    for (const k of gp) for (const m of groups[0]) {
+      for (const A of boxes[k]) for (const B of boxes[m]) best = Math.min(best, gapOf(A, B));
+    }
+    return `${gp.map(label).join("+")} (본체와 ${best.toFixed(0)}mm 떨어짐)`;
+  });
+  return [{
+    field_path: "parts", error_code: "ASSEMBLY_DISCONNECTED",
+    required_fix: `조립체가 ${groups.length}덩어리로 끊어져 있습니다. 본체(${groups[0].map(label).slice(0, 3).join(", ")}…)와 `
+      + `분리된 것: ${strays.join(" / ")}. center_mm을 옮겨 본체나 그 사이를 잇는 파트와 맞닿게 하십시오. `
+      + `실물은 한 덩어리이고, 떠 있는 부품은 조립 부품 나열처럼 보입니다.`,
+  }];
+}
+
 /* Inventory items the spec failed to realise. Matching is loose on purpose —
    "살포 노즐"과 "노즐 4구"는 같은 물건이다 — so only genuinely absent hardware
    comes back as an error for the repair rounds. */
@@ -2923,7 +3060,8 @@ async function handleSpecJson(body) {
       derivation: "COMPUTED_FROM_MTOW",
     }];
 
-    let errors = [...validateSpec(spec, { hasMesh: !!meshInfo }), ...inventoryGaps(spec, inventory)];
+    normalizeStrutRadius(spec);
+    let errors = [...validateSpec(spec, { hasMesh: !!meshInfo }), ...inventoryGaps(spec, inventory), ...contactGaps(spec)];
     for (let round = 0; round < 2 && errors.length; round++) {
       try {
         const fixed = await callLLM([
@@ -2933,7 +3071,8 @@ async function handleSpecJson(body) {
             + `<task>위 오류를 수정해 전체 JSON을 다시 출력한다. 오류와 무관한 부분은 그대로 둔다.</task>` },
         ], "drone_spec", DRONE_SPEC_SCHEMA, 32000, "spec");
         groundProvenance(fixed, !!image);
-        const after = [...validateSpec(fixed, { hasMesh: !!meshInfo }), ...inventoryGaps(fixed, inventory)];
+        normalizeStrutRadius(fixed);
+        const after = [...validateSpec(fixed, { hasMesh: !!meshInfo }), ...inventoryGaps(fixed, inventory), ...contactGaps(fixed)];
         if (after.length >= errors.length) break;
         const ext = spec.external_classifications;
         spec = fixed; spec.external_classifications = ext; errors = after;
