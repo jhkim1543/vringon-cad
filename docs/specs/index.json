@@ -11,9 +11,9 @@
     "id": "agri-hexa",
     "prompt": "농업 살포 헥사콥터, 휠베이스 1400mm, 하부 10L 탱크와 노즐 붐",
     "group": "농업",
-    "name": "중앙 바디 셸",
+    "name": "중앙 바디 프레임",
     "recipe": "HEXA",
-    "parts": 13
+    "parts": 28
   },
   {
     "id": "map-wing",

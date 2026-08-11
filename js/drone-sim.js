@@ -17,7 +17,7 @@ import { createFlightModel } from "./drone-6dof.js";
    them should spin. Membership means: named like a rotor AND not named like the
    structure that carries one. */
 const ROTOR_RX = /로터|프로펠러|rotor|propeller|prop\b/i;
-const NOT_ROTOR_RX = /암|arm|마운트|mount|가드|guard|붐|boom|모터|motor/i;
+const NOT_ROTOR_RX = /암|arm|마운트|mount|가드|guard|붐|boom|모터|motor|허브|캡|hub|cap|스피너|spinner/i;
 const GEAR_RX = /랜딩|스키드|landing|skid|gear/i;
 const isRotor = (name) => ROTOR_RX.test(name) && !NOT_ROTOR_RX.test(name);
 

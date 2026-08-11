@@ -194,15 +194,24 @@ function buildGeometry(r) {
     else if (r.plane === "SIDE") g2.rotateZ(Math.PI / 2);
     return g2;
   };
-  if (b === "CYLINDER") {
+  if (b === "CYLINDER" || b === "CONE") {
     /* A rotor's diameter is real data — disk loading, clearance and hover
        power all come from it — but a plain disc is a stand-in for how the
        thing looks. The same numbers describe an actual propeller: hub plus
        N tapered blades, N read from the part's name (…2엽/3-blade…). */
-    if (isProp(r)) return axis(propellerGeometry(Math.max(w, d), Math.max(h, 3), bladeCount(r)));
-    return axis(new THREE.CylinderGeometry(Math.max(w, d) / 2, Math.max(w, d) / 2, h, 48));
+    if (b === "CYLINDER" && isProp(r)) {
+      const dia = Math.max(w, h, d), thin = Math.max(3, Math.min(w, h, d));
+      return axis(propellerGeometry(dia, thin, bladeCount(r)));
+    }
+    /* size_mm is the world bounding box, so the axis dimension is the length
+       and the other two are the diameter. Reading h as the length regardless
+       of plane turned a carbon-tube arm declared w40·h40·d650 (a 650mm rod
+       running forward) into a standing disc 650 across. */
+    const dia2 = r.plane === "FRONT" ? Math.max(w, h) : r.plane === "SIDE" ? Math.max(h, d) : Math.max(w, d);
+    const len = r.plane === "FRONT" ? d : r.plane === "SIDE" ? w : h;
+    if (b === "CONE") return axis(new THREE.ConeGeometry(dia2 / 2, len, 44));
+    return axis(new THREE.CylinderGeometry(dia2 / 2, dia2 / 2, len, 48));
   }
-  if (b === "CONE") return axis(new THREE.ConeGeometry(Math.max(w, d) / 2, h, 44));
   if (b === "SPHERE") return new THREE.SphereGeometry(Math.max(w, h, d) / 2, 40, 26);
   if (b === "TORUS") return new THREE.TorusGeometry(Math.max(w, d) / 2, Math.max(0.2, h / 2), 20, 48);
   if (b === "TUBE") {
@@ -238,11 +247,14 @@ function buildGeometry(r) {
    like a rotor, not named like the structure that carries it, and drawn as a
    thin cylinder. */
 const PROP_RX = /로터|프로펠러|rotor|propeller|prop\b/i;
-const PROP_NOT_RX = /암|arm|마운트|mount|가드|guard|붐|boom|모터|motor|덕트|duct/i;
+const PROP_NOT_RX = /암|arm|마운트|mount|가드|guard|붐|boom|모터|motor|덕트|duct|허브|캡|hub|cap|스피너|spinner/i;
 export function isProp(r) {
   if (!PROP_RX.test(r.name || "") || PROP_NOT_RX.test(r.name || "")) return false;
-  const dia = Math.max(r.size?.w || 0, r.size?.d || 0);
-  return dia > 0 && (r.size?.h || 0) <= dia * 0.15;
+  /* thin in one axis, wide in the others — works whether the spec put the
+     thickness in h (TOP convention) or along the plane normal (bbox style) */
+  const dims = [r.size?.w || 0, r.size?.h || 0, r.size?.d || 0];
+  const dia = Math.max(...dims), thin = Math.min(...dims.filter((v) => v > 0));
+  return dia > 0 && thin <= dia * 0.15;
 }
 
 /** blade count from the part name — "2엽", "3-blade" — defaulting to 2 */
@@ -533,8 +545,10 @@ export function generateThreeCode(analysis) {
       L.push(`  const ${v}Geo = new THREE.ExtrudeGeometry(${v}Shape, { depth: ${n(s.h)}, bevelEnabled: false, curveSegments: 24 });`);
       L.push(`  ${v}Geo.rotateX(-Math.PI / 2);`);
     } else if (r.builder === "CYLINDER") {
-      if (isProp(r)) L.push(`  const ${v}Geo = propellerGeometry(${n(Math.max(s.w, s.d))}, ${n(Math.max(s.h, 3))}, ${bladeCount(r)});`);
-      else L.push(`  const ${v}Geo = new THREE.CylinderGeometry(${n(Math.max(s.w, s.d) / 2)}, ${n(Math.max(s.w, s.d) / 2)}, ${n(s.h)}, 48);`);
+      const cDia = r.plane === "FRONT" ? Math.max(s.w, s.h) : r.plane === "SIDE" ? Math.max(s.h, s.d) : Math.max(s.w, s.d);
+      const cLen = r.plane === "FRONT" ? s.d : r.plane === "SIDE" ? s.w : s.h;
+      if (isProp(r)) L.push(`  const ${v}Geo = propellerGeometry(${n(Math.max(s.w, s.h, s.d))}, ${n(Math.max(3, Math.min(s.w, s.h, s.d)))}, ${bladeCount(r)});`);
+      else L.push(`  const ${v}Geo = new THREE.CylinderGeometry(${n(cDia / 2)}, ${n(cDia / 2)}, ${n(cLen)}, 48);   // size_mm 박스의 축 방향이 길이`);
       if (r.plane === "FRONT") L.push(`  ${v}Geo.rotateX(Math.PI / 2);   // 축이 전방(+z)을 향한다`);
       else if (r.plane === "SIDE") L.push(`  ${v}Geo.rotateZ(Math.PI / 2);   // 축이 좌우(x)를 향한다`);
     } else if (r.builder === "TUBE") {
@@ -544,7 +558,9 @@ export function generateThreeCode(analysis) {
     } else if (r.builder === "TORUS") {
       L.push(`  const ${v}Geo = new THREE.TorusGeometry(${n(Math.max(s.w, s.d) / 2)}, ${n(s.h / 2)}, 20, 48);`);
     } else if (r.builder === "CONE") {
-      L.push(`  const ${v}Geo = new THREE.ConeGeometry(${n(Math.max(s.w, s.d) / 2)}, ${n(s.h)}, 44);`);
+      const kDia = r.plane === "FRONT" ? Math.max(s.w, s.h) : r.plane === "SIDE" ? Math.max(s.h, s.d) : Math.max(s.w, s.d);
+      const kLen = r.plane === "FRONT" ? s.d : r.plane === "SIDE" ? s.w : s.h;
+      L.push(`  const ${v}Geo = new THREE.ConeGeometry(${n(kDia / 2)}, ${n(kLen)}, 44);`);
       if (r.plane === "FRONT") L.push(`  ${v}Geo.rotateX(Math.PI / 2);   // 축이 전방(+z)을 향한다`);
       else if (r.plane === "SIDE") L.push(`  ${v}Geo.rotateZ(Math.PI / 2);   // 축이 좌우(x)를 향한다`);
     } else {

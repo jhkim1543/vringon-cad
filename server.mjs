@@ -873,7 +873,7 @@ async function callLLM(messages, schemaName, schema, maxTokens = 800, tier = "te
          back cut mid-object and failed to parse, which surfaced downstream as a
          bare "fetch failed". Thinking tokens come out of this budget too. */
       return await callPrimary(messages, schema,
-        spec ? Math.max(maxTokens, 56000) : patch ? Math.max(maxTokens, 32000) : maxTokens,
+        spec ? Math.max(maxTokens, 60000) : patch ? Math.max(maxTokens, 32000) : maxTokens,
         (spec || patch || tier === "plan") ? PRIMARY_PLAN_MODEL : PRIMARY_TEXT_MODEL,
         spec ? { thinkingLevel: "high", defaultTemperature: true, timeoutMs: 240000 }
           : patch ? { thinkingLevel: "low", defaultTemperature: true, timeoutMs: 90000 } : {});
@@ -1875,7 +1875,7 @@ const SPEC_CORE_SCHEMA = {
       },
     },
     parts: {
-      type: "array", minItems: 1, maxItems: 26,
+      type: "array", minItems: 1, maxItems: 30,
       items: {
         type: "object", additionalProperties: false,
         required: ["part_id", "parent_part_id", "name", "display_name_ko", "semantic_role",
@@ -2174,6 +2174,61 @@ parts[].geometry는 다음 단계가 그대로 실행하는 빌드 지시다. �
    무장 관련 축은 분류만 존재한다. KINETIC 계열은 라우팅에서 받지 않고,
    사양서에도 무장 파트를 쓰지 않는다.
    ============================================================ */
+/* What each mission class visibly carries, compiled from component surveys of
+   real aircraft (agricultural sprayer anatomy, inspection quad payloads,
+   survey wing fit-outs). This seeds the detail inventory so completeness does
+   not depend on what the model happens to notice in the photograph. */
+const DRONE_DETAIL_SEED = {
+  AGRICULTURE_APPLICATION: ["살포 탱크(+주입구 캡)", "펌프", "호스 라인", "노즐 붐", "살포 노즐", "유량계", "지형추종 레이더"],
+  INFRASTRUCTURE_INSPECTION: ["짐벌(2~3축)", "줌 카메라", "상방 카메라", "스포트라이트", "프로펠러 가드"],
+  DELIVERY: ["카고 베이", "윈치·릴리즈", "카고 도어", "낙하산 모듈"],
+  MAPPING_SURVEY: ["측량 카메라", "카메라 창(하방)", "핸드런치 그립"],
+  SEARCH_AND_RESCUE: ["EO/IR 짐벌", "탐조등", "스피커", "리프트 붐", "리프트 로터"],
+  DEFENSE_ISR: ["센서 터렛", "데이터링크 안테나", "카타펄트 후크"],
+  COMMUNICATION_RELAY: ["중계 안테나 레이돔", "지향성 안테나"],
+};
+
+const DRONE_INVENTORY_SCHEMA = {
+  type: "object", additionalProperties: false, required: ["items"],
+  properties: {
+    items: {
+      type: "array", maxItems: 26,
+      items: {
+        type: "object", additionalProperties: false,
+        required: ["name_ko", "present", "count"],
+        properties: {
+          name_ko: { type: "string" },
+          present: { type: "boolean" },
+          count: { type: "integer" },
+          where_ko: { type: ["string", "null"] },
+          size_hint_mm: { type: ["number", "null"] },
+        },
+      },
+    },
+  },
+};
+
+/* Inventory items the spec failed to realise. Matching is loose on purpose —
+   "살포 노즐"과 "노즐 4구"는 같은 물건이다 — so only genuinely absent hardware
+   comes back as an error for the repair rounds. */
+function inventoryGaps(spec, inventory) {
+  if (!inventory?.length) return [];
+  const norm = (s) => String(s || "").toLowerCase().replace(/[\s()·,+~\-–—]/g, "");
+  const partText = norm((spec.parts || []).map((p) => `${p.name || ""} ${p.display_name_ko || ""}`).join(" "));
+  const missing = inventory.filter((x) => {
+    const keys = norm(x.name_ko).split(/[·/]/).filter((k) => k.length >= 2);
+    const key = keys[0] || norm(x.name_ko);
+    // 앞 4글자 매칭이면 같은 부품으로 본다 ("살포탱크주입구캡" vs "살포탱크")
+    return key && !partText.includes(key.slice(0, Math.min(4, key.length)));
+  });
+  if (!missing.length) return [];
+  return [{
+    field_path: "parts", error_code: "DETAIL_ITEM_MISSING",
+    required_fix: `이미지 인벤토리에 있는 부품이 사양서에 없습니다: ${missing.map((m) => m.name_ko).join(", ")}. `
+      + `각각을 파트로 추가하십시오. 극세 요소만 인접 파트 통합이 허용됩니다.`,
+  }];
+}
+
 const DRONE_TAXONOMY = {
   domains: [
     { id: "RECREATIONAL", ko: "취미·레저" },
@@ -2373,8 +2428,12 @@ ${SPEC_SYSTEM.split("<geometry_authoring>")[1] ? "<geometry_authoring>" + SPEC_S
    - MIRROR_PAIR는 x축 대칭 한 쌍이고 spacing_mm이 두 사본의 중심 간 거리다.
      center_mm.x는 0으로 두고 간격은 spacing_mm에만 적어라.
    - CYLINDER·CONE의 축은 plane의 법선이다: TOP=수직축(리프트 로터·모터·마스트·다리),
-     FRONT=전방축(순항·기수 프로펠러, 탐조등), SIDE=좌우축. 리프트 로터를 FRONT로
-     적으면 옆으로 눕는다.
+     FRONT=전방축(순항·기수 프로펠러, 탐조등, 앞뒤로 뻗는 튜브), SIDE=좌우축.
+     size_mm은 월드 바운딩박스다 — 축 방향 치수가 길이, 나머지 둘이 지름이다.
+     예: 앞뒤로 뻗는 카본 튜브 암은 plane FRONT, w40 h40 d650. 리프트 로터를
+     FRONT로 적으면 옆으로 눕는다.
+   - 허브 캡·스피너는 로터가 아니다 — 이름에 "로터/프로펠러"만 단독으로 쓰지 말고
+     "프로펠러 허브 캡"처럼 캡·허브를 명시해야 회전체로 오인되지 않는다.
 3. 고정익: 동체는 REVOLVE 유선형(축이 Y로 서므로 길이 방향 주의 — 동체는
    REVOLVE 대신 plane FRONT의 EXTRUDE_2D 유선형 측면 단면도 좋다).
    주익·수평미익은 반드시 plane TOP의 EXTRUDE_2D: outer_profile이 위에서 본
@@ -2756,6 +2815,44 @@ async function handleSpecJson(body) {
     const ms = DRONE_TAXONOMY.missions.find((m) => m.id === body.drone.mission) || DRONE_TAXONOMY.missions[0];
     const pf = DRONE_TAXONOMY.platforms.find((p) => p.id === body.drone.platform) || DRONE_TAXONOMY.platforms[0];
 
+    /* ---- detail inventory ----------------------------------------------
+       The freeform path proved this: a spec written straight from an image
+       satisfies the required roster and stops, at 13 parts, while the photo
+       shows ~25 distinct components. So when there is an image, a cheap
+       inventory pass first lists everything visible — seeded with a
+       per-mission checklist of what this class of aircraft carries, compiled
+       from component surveys — and the spec is then required to realise the
+       inventory, not just the roster. */
+    let inventory = null;
+    if (image) {
+      const seed = [
+        ...(pf.family === "MULTIROTOR" || pf.family === "FIXED_WING_VTOL"
+          ? ["암(+접이 힌지)", "모터 포드(방열 핀)", "프로펠러 허브 캡", "프로펠러 가드"] : []),
+        ...(pf.family !== "MULTIROTOR"
+          ? ["주익 윙릿", "피토관", "모터 카울", "카메라 창(하방)", "벨리 랜딩 패드"] : []),
+        ...(DRONE_DETAIL_SEED[ms.id] || []),
+        "기체 상판/하판 분리선", "캐노피·셸", "배터리 슬레드", "GNSS/RTK 안테나 마스트(1~2본)",
+        "통신 안테나", "FPV·전방 카메라", "장애물 센서(레이더·비전)", "LED 표시등",
+        "케이블 커버", "랜딩기어 다리(+브레이스)", "퀵릴리즈·파스너",
+      ];
+      try {
+        const inv = await callLLM([
+          { role: "system", content:
+            "드론 사진에서 보이는 부품을 전수 조사하는 검사관이다. 추정하지 않는다 — 이미지에서 실제로 식별되는 것만 present로 표기한다." },
+          { role: "user", content: [
+            { type: "text", text:
+              `<task>\n이미지의 드론(${pf.ko}, ${ms.ko})에서 보이는 부품을 전수 나열한다.\n`
+              + `아래 후보를 하나씩 이미지와 대조해 present를 판정하고, 후보에 없어도 보이는 요소는 추가한다.\n`
+              + `개수(count)와 위치(where_ko), 대략 크기(size_hint_mm)도 이미지에서 읽어라.\n`
+              + `후보: ${seed.join(", ")}\n최대 22항목. 형상의 정체성을 결정하는 순서로.\n</task>` },
+            { type: "image_url", image_url: { url: image, detail: "high" } },
+          ] },
+        ], "drone_inventory", DRONE_INVENTORY_SCHEMA, 12000, "text");
+        inventory = (inv.items || []).filter((x) => x.present).slice(0, 22);
+        console.log(`[drone-inventory] ${inventory.length}개 항목 식별`);
+      } catch (e) { console.error("[drone-inventory] 실패, 인벤토리 없이 진행:", e.message); }
+    }
+
     const dcontent = [{ type: "text", text:
       `<context>\n사용자 요청: ${prompt || "(이미지 기반)"}\n`
       + `사용자가 고른 분류 (변경 금지):\n`
@@ -2772,6 +2869,15 @@ async function handleSpecJson(body) {
       + `<task>\n이 드론의 설계 사양서를 스키마에 맞춰 작성한다.\n`
       + `${pf.ko} 구조의 필수 파트를 모두 만들고, ${ms.ko} 임무 탑재체를 반드시 포함한다.\n`
       + `로터 디스크 겹침 금지 규칙을 지킨다.\n</task>` }];
+    if (inventory?.length) {
+      dcontent.push({ type: "text", text:
+        `<detail_inventory>\n이미지에서 식별된 부품 전수 목록이다. 필수 로스터를 채우고 멈추지 말 것 — `
+        + `아래 각 항목이 사양서의 파트로 존재해야 한다. LED·파스너처럼 전체 대비 1% 미만의 극세 요소만 `
+        + `인접 파트에 통합할 수 있고, 나머지 누락은 오류다.\n`
+        + inventory.map((x, i) => `${i + 1}. ${x.name_ko} ×${x.count || 1}`
+          + (x.where_ko ? ` · ${x.where_ko}` : "") + (x.size_hint_mm ? ` · 약 ${x.size_hint_mm}mm` : "")).join("\n")
+        + `\n</detail_inventory>` });
+    }
     if (image) dcontent.push({ type: "image_url", image_url: { url: image, detail: "high" } });
 
     /* Four renders of the stage-1 mesh, front/left/back/right. This is what
@@ -2817,7 +2923,7 @@ async function handleSpecJson(body) {
       derivation: "COMPUTED_FROM_MTOW",
     }];
 
-    let errors = validateSpec(spec, { hasMesh: !!meshInfo });
+    let errors = [...validateSpec(spec, { hasMesh: !!meshInfo }), ...inventoryGaps(spec, inventory)];
     for (let round = 0; round < 2 && errors.length; round++) {
       try {
         const fixed = await callLLM([
@@ -2827,7 +2933,7 @@ async function handleSpecJson(body) {
             + `<task>위 오류를 수정해 전체 JSON을 다시 출력한다. 오류와 무관한 부분은 그대로 둔다.</task>` },
         ], "drone_spec", DRONE_SPEC_SCHEMA, 32000, "spec");
         groundProvenance(fixed, !!image);
-        const after = validateSpec(fixed, { hasMesh: !!meshInfo });
+        const after = [...validateSpec(fixed, { hasMesh: !!meshInfo }), ...inventoryGaps(fixed, inventory)];
         if (after.length >= errors.length) break;
         const ext = spec.external_classifications;
         spec = fixed; spec.external_classifications = ext; errors = after;
