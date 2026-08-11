@@ -48,13 +48,17 @@ export function applyParameter(spec, paramId, value) {
     || (pm.affects || []).some((a) => a.startsWith("geometry:") || a.startsWith("metric:"));
 
   if (id.includes("wheelbase")) {
-    /* one number, three rings: arms, motors, rotors share the radius or the
-       assembly falls apart */
+    /* One number, every ring: arms, motors, rotors, guards, hub caps share
+       the radius or the assembly falls apart. This coupling is physics, not
+       preference, so the parameter's affects list does not gate it — the
+       model routinely lists only motors/props there and the guards stayed
+       behind at the old radius. */
     for (const p of parts) {
       const rep = p.geometry?.repeat;
       if (rep && rep.pattern === "CIRCULAR"
-        && (isArm(p) || isMotor(p) || isRotorDisk(p) || isRotorRing(p)) && inScope(p)) {
-        rep.radius_mm = value / 2;
+        && (isArm(p) || isMotor(p) || isRotorDisk(p) || isRotorRing(p))) {
+        // radius 0 means "drawn from the centre outward" (a rod), not a ring
+        if (rep.radius_mm) rep.radius_mm = value / 2;
         touched.push(p.part_id);
         if (isArm(p)) {
           // arm length follows the ring: tip at the motor, root at the body
