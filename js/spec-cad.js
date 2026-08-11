@@ -90,6 +90,43 @@ function materialOf(spec, id) {
    The JSON spec is translated into the analysis shape the existing builder and
    code writer already understand, so step 4 shares one geometry path with the
    rest of the workspace instead of growing a second one that drifts. */
+/* A rotor arm is a rod that has to run from the body out to the motor. The
+   specification only ever states the ring radius, and the prompt asks for the
+   arm's END to sit there, so the compiler is what makes that true: without
+   this an arm's MIDDLE lands on the ring, leaving a gap at the hub and
+   overshooting past the motors by half its length.
+
+   The same pass fixes orientation. placements() aligns a part's local +x with
+   the radius, so a rod whose length runs along z (a plane-FRONT cylinder)
+   comes out tangential — pointing sideways instead of outward. Marking it
+   here adds the quarter turn at placement time.
+
+   Discs are excluded by comparing the two horizontal extents: a rod is long
+   in one and thin in the other, while a rotor disc is wide in both. */
+function normalizeRadialStruts(regions) {
+  const ring = regions.filter((r) => r.repeat?.pattern === "CIRCULAR" && r.repeat.count > 1);
+  if (!ring.length) return regions;
+
+  const isRod = (r) => {
+    const w = r.size?.w || 0, d = r.size?.d || 0;
+    return w > 0 && d > 0 && Math.max(w, d) / Math.min(w, d) >= 3;
+  };
+  /* The ring the arms have to reach is the one the compact parts sit on —
+     motors and rotor discs — not another rod's own bad radius. */
+  const ringR = Math.max(0, ...ring.filter((r) => !isRod(r)).map((r) => r.repeat.radius || 0));
+  if (!(ringR > 0)) return regions;
+
+  for (const r of ring) {
+    if (!isRod(r)) continue;
+    const w = r.size.w, d = r.size.d;
+    const len = Math.max(w, d);
+    // outer tip on the ring, root pulled into the hub
+    r.repeat.radius = Math.max(len * 0.2, ringR - len / 2);
+    if (d > w) r.quarterTurn = true;   // long axis is z, so turn it outward
+  }
+  return regions;
+}
+
 export function specToAnalysis(spec) {
   const notes = [];
   const regions = [];
@@ -150,6 +187,7 @@ export function specToAnalysis(spec) {
       __partId: p.part_id,
     };
     if (g.repeat && g.repeat.count > 1) {
+      r.__planeForRepeat = g.plane;
       r.repeat = {
         pattern: g.repeat.pattern || "LINEAR",
         count: Math.min(32, Math.round(g.repeat.count)),
@@ -189,7 +227,7 @@ export function specToAnalysis(spec) {
     targetDimensions: (bbox.x && bbox.y && bbox.z)
       ? { width: bbox.x, height: bbox.y, depth: bbox.z, basis: spec.scale?.reference_description || "사양서 스케일" }
       : null,
-    regions, features,
+    regions: normalizeRadialStruts(regions), features,
     __notes: notes,
   };
 }

@@ -371,10 +371,12 @@ export function buildFromAnalysis(analysis) {
       opacity: m.transparent ? (m.opacity ?? 0.45) : 1,
       side: m.transparent ? THREE.DoubleSide : THREE.FrontSide,
     });
+    const quarter = r.quarterTurn ? Math.PI / 2 : 0;
     for (const [x, y, z, rot] of placements(r)) {
-      const mesh = new THREE.Mesh(rot ? geo.clone() : geo, mat);
+      const ry = rot + quarter;
+      const mesh = new THREE.Mesh(ry ? geo.clone() : geo, mat);
       mesh.position.set(x, y, z);
-      if (rot) mesh.rotation.y = rot;
+      if (ry) mesh.rotation.y = ry;
       mesh.name = r.name || r.regionId;
       mesh.castShadow = mesh.receiveShadow = true;
       mesh.userData = {
@@ -572,8 +574,10 @@ export function generateThreeCode(analysis) {
       + (m.transparent ? `, transparent: true, opacity: ${m.opacity ?? 0.45}, side: THREE.DoubleSide` : "") + ` });`);
     const reps = placements(r);
     if (reps.length > 1) {
-      L.push(`  // ${r.repeat.count}개 ${r.repeat.pattern} 배치`);
-      L.push(`  for (const [x, y, z, ry] of ${JSON.stringify(reps.map((p) => p.map((q) => n(q, 3))))}) {`);
+      const q = r.quarterTurn ? Math.PI / 2 : 0;
+      L.push(`  // ${r.repeat.count}개 ${r.repeat.pattern} 배치`
+        + (q ? " — 장축이 z라 바깥을 향하도록 90° 더 돌린다" : ""));
+      L.push(`  for (const [x, y, z, ry] of ${JSON.stringify(reps.map((p) => [...p.slice(0, 3).map((v2) => n(v2, 3)), n(p[3] + q, 4)]))}) {`);
       L.push(`    const mesh = new THREE.Mesh(${v}Geo, ${v}Mat);`);
       L.push(`    mesh.position.set(x, y, z); mesh.rotation.y = ry;`);
       L.push(`    mesh.name = ${JSON.stringify(r.name)};`);
