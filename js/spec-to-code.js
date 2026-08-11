@@ -215,14 +215,20 @@ function buildGeometry(r) {
   if (b === "SPHERE") return new THREE.SphereGeometry(Math.max(w, h, d) / 2, 40, 26);
   if (b === "TORUS") return new THREE.TorusGeometry(Math.max(w, d) / 2, Math.max(0.2, h / 2), 20, 48);
   if (b === "TUBE") {
-    const ro = Math.max(w, d) / 2, ri = ro * 0.72;
+    /* Same box convention as CYLINDER: the plane's normal is the tube's axis,
+       so that dimension is the length and the other two give the bore. Reading
+       max(w, d) as the diameter turned a 35mm carbon arm into a 700mm disc —
+       38 litres of filament across six arms. */
+    const dia3 = r.plane === "FRONT" ? Math.max(w, h) : r.plane === "SIDE" ? Math.max(h, d) : Math.max(w, d);
+    const len3 = r.plane === "FRONT" ? d : r.plane === "SIDE" ? w : h;
+    const ro = dia3 / 2, ri = ro * 0.72;
     const pts = [
       new THREE.Vector2(ri, 0), new THREE.Vector2(ro, 0),
-      new THREE.Vector2(ro, h), new THREE.Vector2(ri, h), new THREE.Vector2(ri, 0),
+      new THREE.Vector2(ro, len3), new THREE.Vector2(ri, len3), new THREE.Vector2(ri, 0),
     ];
     const g = new THREE.LatheGeometry(pts, 48);
-    g.translate(0, -h / 2, 0);
-    return g;
+    g.translate(0, -len3 / 2, 0);
+    return axis(g);
   }
   if (b === "BOX") return new THREE.BoxGeometry(w, h, d, 2, 2, 2);
 
@@ -554,7 +560,11 @@ export function generateThreeCode(analysis) {
       if (r.plane === "FRONT") L.push(`  ${v}Geo.rotateX(Math.PI / 2);   // 축이 전방(+z)을 향한다`);
       else if (r.plane === "SIDE") L.push(`  ${v}Geo.rotateZ(Math.PI / 2);   // 축이 좌우(x)를 향한다`);
     } else if (r.builder === "TUBE") {
-      L.push(`  const ${v}Geo = new THREE.CylinderGeometry(${n(Math.max(s.w, s.d) / 2)}, ${n(Math.max(s.w, s.d) / 2)}, ${n(s.h)}, 48, 1, true);`);
+      const tDia = r.plane === "FRONT" ? Math.max(s.w, s.h) : r.plane === "SIDE" ? Math.max(s.h, s.d) : Math.max(s.w, s.d);
+      const tLen = r.plane === "FRONT" ? s.d : r.plane === "SIDE" ? s.w : s.h;
+      L.push(`  const ${v}Geo = new THREE.CylinderGeometry(${n(tDia / 2)}, ${n(tDia / 2)}, ${n(tLen)}, 48, 1, true);   // size_mm 박스의 축 방향이 길이`);
+      if (r.plane === "FRONT") L.push(`  ${v}Geo.rotateX(Math.PI / 2);`);
+      else if (r.plane === "SIDE") L.push(`  ${v}Geo.rotateZ(Math.PI / 2);`);
     } else if (r.builder === "SPHERE") {
       L.push(`  const ${v}Geo = new THREE.SphereGeometry(${n(Math.max(s.w, s.h, s.d) / 2)}, 40, 26);`);
     } else if (r.builder === "TORUS") {

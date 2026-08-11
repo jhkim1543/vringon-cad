@@ -2987,6 +2987,34 @@ async function handleSpecJson(body) {
         ], "drone_inventory", DRONE_INVENTORY_SCHEMA, 12000, "text");
         inventory = (inv.items || []).filter((x) => x.present).slice(0, 22);
         console.log(`[drone-inventory] ${inventory.length}개 항목 식별`);
+        /* This pass is the single biggest source of run-to-run variation: the
+           same photograph came back with 13 items once and 9 the next time,
+           and the spec that followed had 28 parts versus 16. A sparse reading
+           is a miss, not a simple aircraft, so ask once more and keep the
+           fuller list — the union, since each pass notices different things. */
+        if (inventory.length < 12) {
+          try {
+            const inv2 = await callLLM([
+              { role: "system", content:
+                "드론 사진의 부품 검사관이다. 앞선 검사가 놓친 것이 있는지 다시 본다. 이미지에서 실제로 식별되는 것만 present로 표기한다." },
+              { role: "user", content: [
+                { type: "text", text:
+                  `<task>\n이미지의 드론(${pf.ko}, ${ms.ko})에서 보이는 부품을 다시 전수 조사한다.\n`
+                  + `앞선 검사는 ${inventory.length}개만 찾았다. 놓치기 쉬운 것을 특히 살펴라: `
+                  + `체결류, 케이블·호스 경로, 상·하판 분리선, 힌지, 캡·커버, 안테나, 센서.\n`
+                  + `후보: ${seed.join(", ")}\n최대 22항목.\n</task>` },
+                { type: "image_url", image_url: { url: image, detail: "high" } },
+              ] },
+            ], "drone_inventory", DRONE_INVENTORY_SCHEMA, 12000, "text");
+            const merged = new Map();
+            for (const x of [...inventory, ...(inv2.items || []).filter((x2) => x2.present)]) {
+              const k = String(x.name_ko || "").replace(/\s/g, "").slice(0, 4);
+              if (k && !merged.has(k)) merged.set(k, x);
+            }
+            if (merged.size > inventory.length) inventory = [...merged.values()].slice(0, 22);
+            console.log(`[drone-inventory] 재조사 후 ${inventory.length}개`);
+          } catch (e) { console.error("[drone-inventory] 재조사 실패:", e.message); }
+        }
       } catch (e) { console.error("[drone-inventory] 실패, 인벤토리 없이 진행:", e.message); }
     }
 

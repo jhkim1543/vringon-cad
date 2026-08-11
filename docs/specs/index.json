@@ -11,9 +11,9 @@
     "id": "agri-hexa",
     "prompt": "농업 살포 헥사콥터, 휠베이스 1400mm, 하부 10L 탱크와 노즐 붐",
     "group": "농업",
-    "name": "중앙 바디 프레임",
+    "name": "중앙 기체 셸",
     "recipe": "HEXA",
-    "parts": 28
+    "parts": 19
   },
   {
     "id": "map-wing",
@@ -27,17 +27,17 @@
     "id": "sar-vtol",
     "prompt": "수색구조 하이브리드 VTOL, 리프트 붐 2개와 리프트 로터 4개, 전방 짐벌과 탐조등",
     "group": "공공안전",
-    "name": "동체",
+    "name": "유선형 동체",
     "recipe": "LIFT_AND_CRUISE",
-    "parts": 12
+    "parts": 18
   },
   {
     "id": "delivery-octo",
     "prompt": "배송용 X8 동축 옥토콥터, 하부 카고 베이, 넓은 랜딩기어",
     "group": "물류",
-    "name": "중앙 바디",
+    "name": "중앙 동체 셸",
     "recipe": "OCTO_X8",
-    "parts": 14
+    "parts": 15
   },
   {
     "id": "isr-wing",
