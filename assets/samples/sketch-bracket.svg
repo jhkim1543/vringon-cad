@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 400" width="480" height="400">
+  <rect width="480" height="400" fill="#f4f2ec"/>
+  <g fill="none" stroke="#23262c" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+    <!-- vertical wall (iso) -->
+    <path d="M108 68 L108 250 L188 292 L188 110 Z"/>
+    <path d="M108 68 L214 40 L294 82 L188 110"/>
+    <path d="M294 82 L294 152"/>
+    <!-- base plate -->
+    <path d="M108 250 L214 222 L392 314 L188 292 Z" stroke-width="2.4"/>
+    <path d="M214 222 L214 40" stroke-width="1.4" opacity=".45" stroke-dasharray="7 5"/>
+    <!-- gusset rib -->
+    <path d="M150 262 L150 128 L300 300" stroke-width="2"/>
+    <path d="M150 128 L188 110" stroke-width="1.6" opacity=".7"/>
+  </g>
+  <!-- bolt holes -->
+  <g fill="none" stroke="#23262c" stroke-width="1.9">
+    <ellipse cx="238" cy="256" rx="13" ry="6.5"/>
+    <ellipse cx="316" cy="292" rx="13" ry="6.5"/>
+    <ellipse cx="140" cy="112" rx="11" ry="5.5"/>
+    <ellipse cx="140" cy="196" rx="11" ry="5.5"/>
+  </g>
+  <g stroke="#c2452f" stroke-width="1.4" fill="none" opacity=".85">
+    <path d="M108 340 v20 M392 340 v20 M108 352 H392"/>
+    <path d="M116 348 l-8 4 l8 4 M384 348 l8 4 l-8 4" fill="#c2452f"/>
+    <path d="M76 68 h-20 M76 250 h-20 M64 68 V250"/>
+    <path d="M60 76 l4 -8 l4 8 M60 242 l4 8 l4 -8" fill="#c2452f"/>
+    <path d="M330 100 h30" stroke-dasharray="5 4"/>
+  </g>
+  <g font-family="'Courier New',monospace" font-size="13" fill="#c2452f">
+    <text x="212" y="378">L 180</text>
+    <text x="14" y="164">H 120</text>
+    <text x="364" y="96">t 6</text>
+  </g>
+  <g font-family="'Courier New',monospace" font-size="12.5" fill="#5a606b">
+    <text x="326" y="238">Ø9 볼트 ×4</text>
+    <text x="60" y="300">보강 리브</text>
+  </g>
+  <g stroke="#5a606b" stroke-width="1" opacity=".55" fill="none">
+    <path d="M322 234 L252 252"/><path d="M108 296 L150 268"/>
+  </g>
+</svg>

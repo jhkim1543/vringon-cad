@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>로그인 — VRINGON CAD</title>
+<link rel="icon" href="assets/favicon.svg" />
+<link rel="stylesheet" href="css/vringon.css" />
+</head>
+<body>
+
+<div class="auth">
+  <form class="auth-card" id="loginForm" autocomplete="off">
+    <a class="brand" href="index.html">
+      <svg width="26" height="17" viewBox="0 0 46 30" fill="none"><path d="M2 3 12 27 21 3" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="33" cy="15" r="11.5" stroke="#5B6BF0" stroke-width="5"/></svg>
+      VRINGON CAD
+    </a>
+    <h1>데모 콘솔 로그인</h1>
+    <p class="sub">발급받은 데모 계정으로 로그인하세요.</p>
+
+    <div class="err" id="err"></div>
+
+    <div class="field">
+      <label for="uid">Demo ID</label>
+      <input class="input" id="uid" placeholder="Test1" required />
+    </div>
+    <div class="field">
+      <label for="upw">Password</label>
+      <input class="input" id="upw" type="password" placeholder="••••••••" required />
+    </div>
+
+    <button class="btn btn-primary btn-lg btn-block" id="btnLogin" type="submit" style="margin-top:6px">로그인</button>
+
+    <p class="hint" style="margin-top:18px;text-align:center">
+      데모 사용을 희망하시면 <a href="contact.html" style="color:var(--text);text-decoration:underline;text-underline-offset:3px">Contact us</a>로 연락 주세요
+    </p>
+  </form>
+</div>
+
+<script type="module">
+  import { login, currentUser } from "./js/auth.js";
+  if (currentUser()) location.replace("app.html");
+  const form = document.getElementById("loginForm");
+  const err = document.getElementById("err");
+  const btn = document.getElementById("btnLogin");
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    err.classList.remove("on");
+    btn.disabled = true; btn.textContent = "확인 중…";
+    let res;
+    try {
+      res = await login(document.getElementById("uid").value, document.getElementById("upw").value);
+    } catch (e) {
+      res = { ok: false, reason: "로그인 처리 중 오류가 발생했습니다: " + (e.message || e) };
+    }
+    if (res.ok) location.href = "app.html";
+    else {
+      err.textContent = res.reason;
+      err.classList.add("on");
+      btn.disabled = false; btn.textContent = "로그인";
+    }
+  });
+</script>
+
+</body>
+</html>

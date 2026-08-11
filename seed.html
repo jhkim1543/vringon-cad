@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>레퍼런스 자산 등록 — VRINGON CAD</title>
+<link rel="icon" href="assets/favicon.svg" />
+<link rel="stylesheet" href="css/vringon.css" />
+<script type="importmap">
+{ "imports": { "three": "./vendor/three/three.module.js", "three/addons/": "./vendor/three/addons/" } }
+</script>
+<style>
+  .sd { max-width: 900px; margin: 30px auto; padding: 0 24px 80px; }
+  .sd h1 { font-size: 20px; margin-bottom: 6px; }
+  .sd p.lead2 { font-size: 13.5px; color: var(--text-2); margin-bottom: 20px; line-height: 1.7; }
+  .row3 { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border: 1px solid var(--line);
+    border-radius: 9px; margin-bottom: 7px; font-size: 12.5px; background: var(--panel); }
+  .row3 .nm { flex: 1; font-weight: 600; }
+  .row3 .st2 { font-size: 11px; color: var(--text-3); }
+  .row3.ok2 { border-color: rgba(61,214,160,.35); }
+  .row3.ok2 .st2 { color: var(--ok); }
+  .row3.err2 { border-color: rgba(240,113,107,.4); }
+  .row3.err2 .st2 { color: var(--danger); }
+  .row3.run2 .st2 { color: var(--accent-hi); }
+  #view { width: 260px; height: 190px; border-radius: 10px; overflow: hidden; border: 1px solid var(--line-2);
+    position: fixed; right: 24px; bottom: 24px; background: #0c0c10; }
+</style>
+</head>
+<body>
+
+<div class="ws-top">
+  <a class="brand" href="index.html">
+    <svg width="24" height="16" viewBox="0 0 46 30" fill="none"><path d="M2 3 12 27 21 3" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="33" cy="15" r="11.5" stroke="currentColor" stroke-width="5"/></svg>
+    VRINGON CAD
+  </a>
+  <a class="btn btn-ghost btn-sm" href="library.html?tab=asset">자산 카탈로그</a>
+  <span class="sp" style="flex:1"></span>
+  <span class="tag" id="userTag">—</span>
+</div>
+
+<div class="sd">
+  <h1>레퍼런스 자산 등록</h1>
+  <p class="lead2">산업별 대표 데이터셋 20종을 실제 치수의 3D 형상으로 만들고, 구조 컴파일러로 링크·조인트·충돌체·질량을
+  실측한 뒤 BOM·공급사·정비 절차·고장 이력과 함께 자산 카탈로그에 등록합니다. 이미 등록된 자산은 건너뜁니다.</p>
+  <div style="display:flex;gap:8px;margin-bottom:18px">
+    <button class="btn btn-primary btn-sm" id="go">전체 등록 시작</button>
+    <button class="btn btn-ghost btn-sm" id="reGo">덮어쓰기 등록</button>
+    <span class="sp" style="flex:1"></span>
+    <span class="tag" id="prog">대기</span>
+  </div>
+  <div id="rows"></div>
+</div>
+<div id="view"></div>
+
+<script type="module" src="./js/seed-run.js"></script>
+</body>
+</html>

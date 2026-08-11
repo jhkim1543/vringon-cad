@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 520" width="400" height="520">
+  <rect width="400" height="520" fill="#f4f2ec"/>
+  <g stroke="#9aa0aa" stroke-width="1" opacity=".45" stroke-dasharray="4 5">
+    <path d="M200 40 V490"/>
+  </g>
+  <g fill="none" stroke="#23262c" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+    <!-- cap -->
+    <path d="M163 74 h74 a7 7 0 0 1 7 7 v34 a7 7 0 0 1 -7 7 h-74 a7 7 0 0 1 -7 -7 v-34 a7 7 0 0 1 7 -7 z"/>
+    <path d="M165 92 h70 M165 104 h70" stroke-width="1.5" opacity=".55"/>
+    <!-- neck -->
+    <path d="M168 122 v22 M232 122 v22"/>
+    <!-- shoulder into body -->
+    <path d="M168 144 C 150 158 132 176 128 208"/>
+    <path d="M232 144 C 250 158 268 176 272 208"/>
+    <!-- body -->
+    <path d="M128 208 V440 a16 16 0 0 0 16 16 h112 a16 16 0 0 0 16 -16 V208"/>
+    <!-- grip band -->
+    <path d="M128 300 h144 M128 336 h144" stroke-width="1.6" opacity=".6"/>
+    <path d="M150 300 v36 M172 300 v36 M194 300 v36 M216 300 v36 M238 300 v36" stroke-width="1.2" opacity=".4"/>
+  </g>
+  <!-- construction / dimension lines -->
+  <g stroke="#c2452f" stroke-width="1.4" fill="none" opacity=".85">
+    <path d="M108 208 h-24 M108 456 h-24"/>
+    <path d="M96 208 V456"/>
+    <path d="M92 216 l4 -8 l4 8 M92 448 l4 8 l4 -8" fill="#c2452f"/>
+    <path d="M128 480 v14 M272 480 v14 M128 487 h144"/>
+    <path d="M136 483 l-8 4 l8 4 M264 483 l8 4 l-8 4" fill="#c2452f"/>
+  </g>
+  <g font-family="'Courier New',monospace" font-size="13" fill="#c2452f">
+    <text x="52" y="336" transform="rotate(-90 52 336)">H 200</text>
+    <text x="176" y="508">Ø 70</text>
+  </g>
+  <g font-family="'Courier New',monospace" font-size="12.5" fill="#5a606b">
+    <text x="252" y="98">cap · 나사</text>
+    <text x="286" y="214">shoulder R</text>
+    <text x="286" y="322">grip</text>
+  </g>
+  <g stroke="#5a606b" stroke-width="1" opacity=".55" fill="none">
+    <path d="M248 94 h-14"/><path d="M282 210 h-12"/><path d="M282 318 h-12"/>
+  </g>
+</svg>

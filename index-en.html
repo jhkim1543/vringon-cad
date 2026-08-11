@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>VRINGON CAD | From simple text and images to precise 3D CAD files</title>
+<meta name="description" content="Generate part-separated 3D models from a prompt, an image, or a sketch. Edit with prompts and parameters, convert to STEP and DXF, and optimize polygons. On-premise AI product design software." />
+<link rel="icon" href="assets/favicon.svg" />
+<link rel="stylesheet" href="css/vringon.css" />
+</head>
+<body>
+
+<nav class="nav">
+  <a class="brand" href="index-en.html">
+    <svg width="24" height="16" viewBox="0 0 46 30" fill="none"><path d="M2 3 12 27 21 3" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="33" cy="15" r="11.5" stroke="#5B6BF0" stroke-width="5"/></svg>
+    VRINGON CAD
+  </a>
+  <div class="nav-links">
+    <a href="solutions-en.html">Solutions</a>
+    <a href="#flow">Product</a>
+    <a href="#security">Security</a>
+    <a href="#faq">FAQ</a>
+    <a href="contact.html">Contact us</a>
+  </div>
+  <span class="sp"></span>
+  <a class="btn btn-ghost btn-sm" href="index.html" title="한국어">KO</a>
+  <a class="btn btn-primary btn-sm" href="login.html">Try the demo</a>
+</nav>
+
+<header class="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <h1>From simple text and images<br/>to precise <em>3D&nbsp;CAD</em> files</h1>
+      <p class="lead">One line of description or a single image becomes a part-separated 3D model.
+      Keep editing with prompts and millimeter parameters, convert to STEP and DXF,
+      and drop the result straight into the CAD tools you already use. Polygon optimization included.</p>
+      <div class="cta">
+        <a class="btn btn-primary btn-lg" href="login.html">Try the demo</a>
+        <a class="btn btn-ghost btn-lg" href="contact.html">Contact us</a>
+      </div>
+    </div>
+    <figure class="hero-visual">
+      <img src="assets/hero_explode.jpg" alt="Exploded view of a part-separated gearbox assembly" />
+    </figure>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="logos">
+    <div class="cap">Partners we have worked with</div>
+    <div class="marquee">
+      <div class="marquee-track">
+        <div class="marquee-group" id="logoGroup">
+          <img src="assets/logos/nvidia-inception.png" alt="NVIDIA Inception" style="height:36px" />
+          <span class="wordmark">Samsung C-Lab</span>
+          <img src="assets/logos/lotte-ventures.png" alt="Lotte Ventures" style="height:24px" />
+          <img src="assets/logos/mcm.png" alt="MCM" style="height:34px" />
+          <img src="assets/logos/asics.svg" alt="ASICS" style="height:22px" />
+          <img src="assets/logos/spyder.png" alt="SPYDER" style="height:32px" />
+          <img src="assets/logos/dream-international.png" alt="Dream International" style="height:32px" />
+          <span class="wordmark">DREAM PLASTIC</span>
+          <img src="assets/logos/innox.png" alt="INNOX" style="height:25px" />
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    (function () {
+      var g = document.getElementById("logoGroup");
+      if (g) g.parentNode.appendChild(g.cloneNode(true));
+    })();
+  </script>
+</div>
+
+<section class="section">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="eyebrow">Why</div>
+      <h2>Where your design hours<br/>are actually going</h2>
+      <p>Repetitive modeling for concept mockups, prep work for design reviews,
+      manual reverse-engineering of scans and images. That is preparation, not judgment.
+      VRINGON CAD reduces this stage to minutes.</p>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="flow" style="padding-top:0">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="eyebrow">Product</div>
+      <h2>One flow, four steps</h2>
+    </div>
+    <div class="steps">
+      <div class="step"><div class="n">01</div><h4>Generate</h4><p>A one-line prompt or a single image or sketch. The AI writes a millimeter-level spec and builds the 3D model from it.</p></div>
+      <div class="step"><div class="n">02</div><h4>Part separation</h4><p>Housings, covers, and fasteners come out as an assembly structure from the start. Verify instantly with the explode and assemble motion.</p></div>
+      <div class="step"><div class="n">03</div><h4>Edit</h4><p>Follow-up prompts like "lower the height to 160 mm", millimeter parameters, and per-part materials.</p></div>
+      <div class="step"><div class="n">04</div><h4>Convert and optimize</h4><p>Convert to STEP (AP214) and DXF, and auto-reduce polygons to fit the use case before export.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="section" style="padding-top:24px">
+  <div class="wrap">
+    <div class="showcase">
+      <figure class="shot">
+        <img src="assets/sec_parts.jpg" alt="A device separated into parts" />
+        <figcaption class="cap"><b>Parts, not a single blob</b>
+        <p>The output is a part tree, not one merged mesh. Select, move, and re-material parts individually, with explode and assemble animation built into the viewer.</p></figcaption>
+      </figure>
+      <figure class="shot">
+        <img src="assets/sec_cad.jpg" alt="CAD geometry transitioning from wireframe to solid" />
+        <figcaption class="cap"><b>Hand over CAD, not meshes</b>
+        <p>Convert to STEP (AP214) with per-part solids and layer-separated DXF. Opens directly in SolidWorks, CATIA, NX, and Creo.</p></figcaption>
+      </figure>
+    </div>
+    <div class="cards">
+      <div class="card">
+        <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h11M4 12h16M4 17h13"/></svg>
+        <h3>Follow-up prompt editing</h3><p>"Three ribs, 3 mm walls" translates into parameter changes and applies instantly. Select a part first and the edit scopes to that part.</p>
+      </div>
+      <div class="card">
+        <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9 17 7M7 17l-2.1 2.1"/></svg>
+        <h3>Parametric editing</h3><p>Every dimension is a millimeter parameter. Move a slider and fillets and bolt patterns recompute together.</p>
+      </div>
+      <div class="card">
+        <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 3 8l9 5 9-5-9-5zM3 16l9 5 9-5"/></svg>
+        <h3>Automatic polygon optimization</h3><p>Three tessellation presets plus a reduction slider produce anything from lightweight viewer meshes to full-resolution data from one model.</p>
+      </div>
+      <div class="card">
+        <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16v16H4z"/><path d="M4 9h16M9 9v11"/></svg>
+        <h3>Drawing and sketch input</h3><p>Upload a dimensioned 2D drawing and the callouts — Ø, R, t and each projected view — are transcribed into the 3D model. Hand sketches follow the silhouette and proportions.</p>
+      </div>
+      <div class="card">
+        <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="18" r="2.5"/><circle cx="18" cy="6" r="2.5"/><path d="M8 16.2 16 7.8M4 14V6h6"/></svg>
+        <h3>Links and joints, inferred</h3><p>Parts are separated, mating faces measured, and each connection resolved to a revolute, prismatic or fixed joint. Travel limits come from actually sweeping the joint until it interferes with its parent.</p>
+      </div>
+      <div class="card">
+        <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9"/><path d="M3 19h18M8 12l3-3 3 3 2-2"/></svg>
+        <h3>USD, URDF and MJCF export</h3><p>Collision shapes and mass properties are generated separately from the visual mesh, and only assets that pass the simulation sweep and format round-trip ship — with a readiness score attached.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="security">
+  <div class="wrap">
+    <div class="hero-grid" style="gap:64px">
+      <div>
+        <div class="eyebrow">Security</div>
+        <h2 style="font-size:34px">Your data never leaves<br/>your own servers</h2>
+        <p style="color:var(--text-2);margin-top:16px">VRINGON CAD is on-premise software installed on your infrastructure.
+        Generation, editing, and conversion all run inside your network, including fully air-gapped configurations.
+        Your infrastructure, your rules.</p>
+        <ul class="checks">
+          <li>Operated on ISO/IEC 27001 and ISO/IEC 42001 processes</li>
+          <li>Customer data is never used for training, stated in the contract</li>
+          <li>SSO/LDAP integration and full audit logging</li>
+        </ul>
+      </div>
+      <figure class="hero-visual"><img src="assets/sec_onprem.jpg" alt="An on-premise GPU server" /></figure>
+    </div>
+  </div>
+</section>
+
+<section class="section" style="padding-top:0">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="eyebrow">Integration</div>
+      <h2>It sits on top of your CAD stack</h2>
+      <p>VRINGON CAD does not replace your tools. It is the front end that creates initial geometry and hands it over
+      in standard formats that open in SolidWorks, CATIA, NX, Creo, and Fusion.</p>
+    </div>
+    <div class="cards" style="margin-top:32px">
+      <div class="card"><h3>STEP AP214</h3><p>Standard exchange format with per-part solids preserved, for CAD, CAM, and CAE.</p></div>
+      <div class="card"><h3>DXF</h3><p>Layer-separated format for drawing systems.</p></div>
+      <div class="card"><h3>GLB · OBJ · STL</h3><p>Mesh formats for visualization, collaboration, and 3D printing, with the part hierarchy intact.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="section" style="padding-top:0">
+  <div class="wrap">
+    <div class="hero-grid" style="gap:64px">
+      <figure class="hero-visual"><img src="assets/sec_mfg.jpg" alt="An injection mold" /></figure>
+      <div>
+        <div class="eyebrow">Beyond software</div>
+        <h2 style="font-size:30px">If design is not the end of the road</h2>
+        <p style="color:var(--text-2);margin-top:14px">For customers who need it, we also support mold design review,
+        injection process optimization, and connections to verified manufacturing partners,
+        so the data you create in software carries through to production. This is an optional service.</p>
+        <a class="btn btn-ghost" style="margin-top:22px" href="contact.html">Contact us</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="faq" style="padding-top:24px">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="eyebrow">FAQ</div>
+      <h2>Frequently asked questions</h2>
+    </div>
+    <div class="faq">
+      <details><summary>Can it be installed on our own servers?</summary>
+        <p>Yes. On-premise installation on your servers is the default. After installation, all generation and conversion runs inside your infrastructure. A private cloud (VPC) setup is also available on request.</p></details>
+      <details><summary>Is any of our design data sent outside?</summary>
+        <p>In an on-premise installation, design data never leaves your network. We do not access customer data and never use it for model training. This is stated in the contract.</p></details>
+      <details><summary>Do you hold ISO certifications?</summary>
+        <p>We develop and operate on processes based on ISO/IEC 27001 for information security and ISO/IEC 42001 for AI management. Scope details and security controls are available as a security review package.</p></details>
+      <details><summary>Does it work in an air-gapped network?</summary>
+        <p>Yes. It is designed to run without external connectivity, and models and updates are delivered as offline packages following your security procedures.</p></details>
+      <details><summary>How does it integrate with our existing CAD tools?</summary>
+        <p>Exports use standard formats such as STEP and DXF that open directly in SolidWorks, CATIA, NX, and Creo. It is a front-end tool that creates initial geometry, not a replacement for your CAD.</p></details>
+      <details><summary>Who owns the generated data?</summary>
+        <p>All rights to geometry generated with VRINGON CAD belong to the customer. We claim no rights and place no restrictions on commercial use, provided your inputs do not infringe third-party rights.</p></details>
+      <details><summary>What server capacity do we need?</summary>
+        <p>You can start with a single GPU server (for example an RTX 4090 class or A100/H100). Tell us your usage scenario and we will size a recommended configuration; existing in-house GPU servers can be used.</p></details>
+      <details><summary>How does a pilot work?</summary>
+        <p>We run a pilot on your actual design tasks: requirements review, installation, task execution, and a results review. The pilot report includes time spent and output quality; duration and terms depend on scope.</p></details>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="contact" style="padding-top:0">
+  <div class="wrap">
+    <div class="cta-band">
+      <h2>See it for yourself</h2>
+      <p>Try the full flow with a demo account, or ask for a pilot scoped to your own design tasks.</p>
+      <div style="display:flex;gap:10px;justify-content:center">
+        <a class="btn btn-primary btn-lg" href="login.html">Try the demo</a>
+        <a class="btn btn-ghost btn-lg" href="contact.html">Contact us</a>
+      </div>
+    </div>
+    <footer class="footer">
+      <span><b style="color:var(--text-2)">VRINGON CAD</b>, cad.rebuilder.ai</span>
+      <span>© 2026 REBUILDERAI Inc.</span>
+      <span class="sp" style="flex:1"></span>
+      <span>On-premise · ISO/IEC 27001 · ISO/IEC 42001</span>
+    </footer>
+  </div>
+</section>
+
+</body>
+</html>

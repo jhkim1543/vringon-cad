@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>VRINGON CAD</title>
+<link rel="icon" href="assets/favicon.svg" />
+<link rel="stylesheet" href="css/vringon.css" />
+<script type="importmap">
+{ "imports": { "three": "./vendor/three/three.module.js", "three/addons/": "./vendor/three/addons/" } }
+</script>
+</head>
+<body>
+
+<svg style="display:none">
+  <symbol id="i-image" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9.5" r="1.5"/><path d="m3 16 4.5-4.5 4 4L15 12l6 5"/></symbol>
+  <symbol id="i-upload" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></symbol>
+  <symbol id="i-cursor" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="m5 3 13 9-5.5 1.2L10 20z"/></symbol>
+  <symbol id="i-move" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M3 12h18M12 3 9.5 5.5M12 3l2.5 2.5M12 21l-2.5-2.5M12 21l2.5-2.5M3 12l2.5-2.5M3 12l2.5 2.5M21 12l-2.5-2.5M21 12l-2.5 2.5"/></symbol>
+  <symbol id="i-rotate" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12a8 8 0 1 1-2.6-5.9"/><path d="M20 4v4h-4"/></symbol>
+  <symbol id="i-scale" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14v6h6M20 10V4h-6M20 4l-7 7M4 20l7-7"/></symbol>
+  <symbol id="i-fit" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V5a1 1 0 0 1 1-1h4M20 9V5a1 1 0 0 0-1-1h-4M4 15v4a1 1 0 0 0 1 1h4M20 15v4a1 1 0 0 1-1 1h-4"/></symbol>
+  <symbol id="i-explode" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4M12 18v4M2 12h4M18 12h4M5 5l2.5 2.5M16.5 16.5 19 19M19 5l-2.5 2.5M7.5 16.5 5 19"/><circle cx="12" cy="12" r="3"/></symbol>
+  <symbol id="i-grid" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/></symbol>
+  <symbol id="i-camera" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8a2 2 0 0 1 2-2h2l1.2-1.8A1 1 0 0 1 9 4h6a1 1 0 0 1 .8.4L17 6h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><circle cx="12" cy="12.5" r="3.2"/></symbol>
+  <symbol id="i-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="12" rx="9" ry="4"/><path d="M3 12a9 4 0 0 0 18 0"/><path d="M12 8v8"/></symbol>
+  <symbol id="i-eye" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6z"/><circle cx="12" cy="12" r="2.6"/></symbol>
+  <symbol id="i-eye-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4l16 16M9.9 5.3A9.6 9.6 0 0 1 12 5c6.5 0 10 6 10 6a17 17 0 0 1-3.3 3.9M6.3 7.5A16.6 16.6 0 0 0 2 11s3.5 6 10 6a9.7 9.7 0 0 0 4-.8"/></symbol>
+  <symbol id="i-download" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v12m0 0 4.5-4.5M12 16l-4.5-4.5M4 18v1a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-1"/></symbol>
+  <symbol id="i-send" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h13M12 5.5 18.5 12 12 18.5"/></symbol>
+  <symbol id="i-new" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-sketch" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15.5 4.5 19 8l-9.5 9.5L5 19l1.5-4.5z"/><path d="M13.5 6.5 17 10"/><path d="M4 21h16"/></symbol>
+</svg>
+
+<div class="modal-back" id="modalBack">
+  <div class="modal" id="modal">
+    <div class="modal-head">
+      <div style="flex:1">
+        <h2 id="modalTitle"></h2>
+        <p id="modalDesc"></p>
+      </div>
+      <button class="x" id="modalClose">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M5 5l14 14M19 5 5 19"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="drop" id="modalDrop">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+        <b id="modalDropTitle"></b>
+        <span id="modalDropHint"></span>
+      </div>
+      <h4 id="modalSampleLabel"></h4>
+      <div class="samples" id="modalSamples"></div>
+    </div>
+  </div>
+</div>
+
+<!-- asset registration: the catalogue identity a compiled asset needs -->
+<div class="modal-back" id="keepBack">
+  <div class="modal" style="max-width:520px">
+    <div class="modal-head">
+      <div style="flex:1">
+        <h2>자산으로 보관</h2>
+        <p>기업 카탈로그에 등록할 기본 정보입니다. 3D 파일·제품 구조·관계·BOM·정비 절차는 자동으로 함께 저장됩니다.</p>
+      </div>
+      <button class="x" id="keepClose">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M5 5l14 14M19 5 5 19"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="kf"><label>제품명</label><input class="input" id="kName" placeholder="Pump Model PX-300" /></div>
+      <div class="kf2">
+        <div class="kf"><label>모델명</label><input class="input" id="kModel" placeholder="PX-300" /></div>
+        <div class="kf"><label>제조사</label><input class="input" id="kMaker" placeholder="VRINGON" /></div>
+      </div>
+      <div class="kf2">
+        <div class="kf"><label>카테고리</label><select class="input" id="kCat"></select></div>
+        <div class="kf"><label>제품군</label><select class="input" id="kFamily"></select></div>
+      </div>
+      <div class="kf2">
+        <div class="kf"><label>상태</label><select class="input" id="kStatus">
+          <option value="draft">draft, 작성 중</option>
+          <option value="review">review, 검수 중</option>
+          <option value="released">released, 배포</option>
+          <option value="deprecated">deprecated, 단종</option>
+        </select></div>
+        <div class="kf"><label>버전</label><input class="input" id="kVer" value="1.0" /></div>
+      </div>
+      <div class="kf2">
+        <div class="kf"><label>담당 조직</label><input class="input" id="kOwner" placeholder="설계 1팀" /></div>
+        <div class="kf"><label>접근 권한</label><select class="input" id="kAccess">
+          <option value="org">조직 공개</option>
+          <option value="team">팀 한정</option>
+          <option value="private">비공개</option>
+        </select></div>
+      </div>
+      <div class="hint" id="keepNote" style="margin-top:10px"></div>
+      <button class="btn btn-primary btn-block" id="keepGo" style="margin-top:12px">등록하기</button>
+    </div>
+  </div>
+</div>
+
+<div class="ws">
+  <div class="ws-top">
+    <a class="brand" href="index.html">
+      <svg width="24" height="16" viewBox="0 0 46 30" fill="none"><path d="M2 3 12 27 21 3" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="33" cy="15" r="11.5" stroke="currentColor" stroke-width="5"/></svg>
+      VRINGON CAD
+    </a>
+    <span style="color:var(--line-2)">/</span>
+    <span style="font-size:13.5px;color:var(--text-2)" id="projName">새 프로젝트</span>
+    <span class="sp"></span>
+    <a class="btn btn-ghost btn-sm" href="library.html">라이브러리</a>
+    <span class="tag" id="userTag">—</span>
+    <button class="btn btn-ghost btn-sm" id="btnLogout">로그아웃</button>
+  </div>
+
+  <div class="ws-body">
+    <!-- ================= left ================= -->
+    <aside class="side left">
+      <div class="side-head">
+        생성
+        <span class="sp"></span>
+        <button class="icon-btn" id="btnNew" title="새로 시작"><svg><use href="#i-new"/></svg></button>
+      </div>
+      <div class="side-scroll">
+        <!-- drone classification, chosen BEFORE any input: the platform decides
+             the part structure and the mission decides the payload, so the spec
+             writer receives them as settled facts rather than guesses -->
+        <div class="block" style="margin-bottom:12px">
+          <h3>드론 분류</h3>
+          <div class="kf" style="margin-bottom:7px"><label style="font-size:11.5px;color:var(--text-3)">용도 영역</label>
+            <select class="input" id="selDomain"></select></div>
+          <div class="kf" style="margin-bottom:7px"><label style="font-size:11.5px;color:var(--text-3)">임무</label>
+            <select class="input" id="selMission"></select></div>
+          <div class="kf"><label style="font-size:11.5px;color:var(--text-3)">기체 형상</label>
+            <select class="input" id="selPlatform"></select></div>
+        </div>
+
+        <div class="composer">
+          <textarea id="prompt" placeholder="드론을 설명하세요.&#10;예: 휠베이스 450mm 점검용 쿼드콥터, 상부 짐벌"></textarea>
+          <div class="row">
+            <div class="src-btns">
+              <button class="src-btn" id="btnModeImage" title="이미지로 그대로 만들기, 사진 속 제품을 그대로 재현합니다">
+                <svg><use href="#i-image"/></svg>
+              </button>
+              <button class="src-btn" id="btnModeRef" title="스케치·레퍼런스로 설계하기, 스케치 선과 치수를 따라 설계합니다">
+                <svg><use href="#i-sketch"/></svg>
+              </button>
+              <button class="src-btn" id="btnMode3d" title="3D · CAD 파일 업로드, GLB · FBX · OBJ · STL · STEP · IGES">
+                <svg><use href="#i-upload"/></svg>
+              </button>
+            </div>
+            <span class="sp"></span>
+            <button class="btn btn-primary btn-sm" id="btnGenerate">생성<svg><use href="#i-send"/></svg></button>
+          </div>
+        </div>
+
+        <div class="attach" id="attach">
+          <img id="attachThumb" alt="" />
+          <div class="meta">
+            <div class="mode" id="attachMode"></div>
+            <div class="nm" id="attachName"></div>
+          </div>
+          <button class="x" id="attachClear" title="제거">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 5l14 14M19 5 5 19"/></svg>
+          </button>
+        </div>
+
+        <input type="file" id="fileImage" accept="image/*" hidden />
+        <input type="file" id="import3d" accept=".glb,.gltf,.fbx,.obj,.stl,.step,.stp,.iges,.igs,.brep" hidden />
+
+        <!-- the engineering spec the AI writes BEFORE geometry: shown here so the
+             user can judge how well the product was dismantled on paper -->
+        <div class="block" id="bpBlock" style="display:none">
+          <h3>설계 사양서 <span class="tag tag-accent" id="bpMeta" style="margin-left:6px"></span></h3>
+          <pre id="bpText" style="white-space:pre-wrap;font-size:11.5px;line-height:1.65;color:var(--text-2);
+            max-height:340px;overflow-y:auto;font-family:inherit;background:#0E0E12;border:1px solid var(--line-2);
+            border-radius:8px;padding:10px 12px;margin:0"></pre>
+        </div>
+
+        <!-- drone reference images, not prompt strings: this service reads a
+             picture first, so the examples should be pictures -->
+        <div class="block">
+          <h3>드론 이미지 예시</h3>
+          <div class="samples" id="droneSamples" style="grid-template-columns:repeat(2,1fr)"></div>
+          <div class="hint" style="margin-top:7px">누르면 이미지가 첨부되고 분류가 함께 설정됩니다.</div>
+        </div>
+
+        <div class="block">
+          <h3>작업 기록</h3>
+          <div id="history"></div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ================= stage ================= -->
+    <div class="stage" id="stage">
+      <div class="stage-empty" id="stageEmpty">
+        <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.1" opacity=".5"><path d="M12 2 3 7v10l9 5 9-5V7z"/><path d="m3 7 9 5 9-5M12 12v10"/></svg>
+        <div id="stageHint">드론 분류를 고르고 설명·이미지·3D 파일을 넣으면<br/>3D 생성 → 설계 사양서 → Three.js CAD 순서로 진행됩니다</div>
+        <div style="font-size:12px;color:var(--text-3);margin-top:10px">점검 · 측량 · 농업 · 배송 · 수색구조 · 통신 중계 · 방산 정찰까지, 휠베이스 같은 치수와 함께 써 보세요</div>
+      </div>
+
+      <div class="gen" id="gen">
+        <div class="gen-box">
+          <div class="gen-title" id="genTitle">생성 중</div>
+          <div class="gen-sub" id="genSub">설계 사양을 작성하고 있습니다</div>
+          <div class="gen-bar"><i id="genBar"></i></div>
+          <img id="genPreview" alt="" style="display:none;width:190px;height:190px;border-radius:11px;object-fit:cover;margin:12px auto 2px;border:1px solid var(--line-2)" />
+          <div id="genSteps"></div>
+        </div>
+      </div>
+
+      <!-- three-step pipeline: 3D 생성 → JSON 사양서 → Three.js CAD -->
+      <div class="stepper" id="stepper">
+        <button class="st" data-step="1" disabled><span class="n">1</span><span class="lb">3D 생성</span></button>
+        <span class="arw">›</span>
+        <button class="st" data-step="2" disabled><span class="n">2</span><span class="lb">JSON 사양서</span></button>
+        <span class="arw">›</span>
+        <button class="st" data-step="3" disabled><span class="n">3</span><span class="lb">Three.js CAD</span></button>
+        <span class="arw">›</span>
+        <button class="st" data-step="4" disabled><span class="n">4</span><span class="lb">시뮬레이션</span></button>
+        <span class="arw">›</span>
+        <button class="st" data-step="5" disabled><span class="n">5</span><span class="lb">3D 프린팅</span></button>
+      </div>
+      <div class="stepper-note" id="stepNote"></div>
+
+      <!-- model actions sit under the stepper: the top row belongs to the pipeline -->
+      <div class="stage-actions">
+        <button class="stage-btn" id="btnOrig">원본 메시</button>
+        <button class="stage-btn" id="btnHiFi">고품질 메시</button>
+        <button class="stage-btn" id="btnReverse">구조 컴파일</button>
+        <button class="stage-btn" id="btnSim">조인트 스윕</button>
+        <button class="stage-btn" id="btnExplodeTop">분해하기</button>
+      </div>
+
+      <!-- the pipeline advances from here: one primary button, bottom-right,
+           whose label IS the next stage. the stepper above only shows where
+           you are and lets you jump back. -->
+      <button class="btn btn-primary" id="stageNext"
+        style="position:absolute;right:18px;bottom:84px;z-index:12;display:none;padding:11px 20px;font-size:14px;border-radius:10px"></button>
+
+      <!-- step 4: flight preview controls. what each button does is honest —
+           the mission is scripted, the drop is one rigid body under gravity -->
+      <div class="simdock" id="simDock">
+        <button class="btn btn-primary btn-sm" id="btnFly">이륙 · 호버</button>
+        <button class="btn btn-ghost btn-sm" id="btnFly6" title="추력·관성·제어기를 적분하는 6자유도 비행">6-DoF 비행</button>
+        <button class="btn btn-ghost btn-sm" id="btnRotorOut">로터 고장</button>
+        <button class="btn btn-ghost btn-sm" id="btnDrop">낙하</button>
+        <button class="btn btn-ghost btn-sm" id="btnSimStop">정지</button>
+        <span style="display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--text-3);padding:0 4px">
+          바람 <input type="range" id="simWind" min="0" max="12" value="0" step="1" style="width:60px" />
+          <b id="simWindV" style="color:var(--text-2);font-variant-numeric:tabular-nums">0</b>
+        </span>
+        <span style="display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--text-3);padding:0 4px">
+          탑재 <input type="range" id="simPayload" min="0" max="10" value="0" step="0.5" style="width:60px" />
+          <b id="simPayloadV" style="color:var(--text-2);font-variant-numeric:tabular-nums">0kg</b>
+        </span>
+      </div>
+
+      <!-- step 2: the specification, centre stage. 일반 is a deterministic
+           rendering of the same JSON — one document, two views, no second
+           source of truth to drift. -->
+      <div class="specsheet" id="specSheet">
+        <div class="ss-head">
+          <div class="seg" id="specTabs">
+            <button data-tab="plain" class="on">일반 사양서</button>
+            <button data-tab="json">JSON</button>
+          </div>
+          <span class="tag tag-accent" id="jsonMeta"></span>
+          <span class="sp"></span>
+          <button class="icon-btn" id="btnSpecHelp" title="Three.js 사양서 작성 안내">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9.2"/><path d="M9.6 9.3a2.5 2.5 0 1 1 3.4 2.3c-.8.35-1 .9-1 1.7"/><circle cx="12" cy="16.6" r=".4" fill="currentColor"/></svg>
+          </button>
+          <button class="icon-btn" id="btnSpecClose" title="접기">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 5l14 14M19 5 5 19"/></svg>
+          </button>
+        </div>
+        <div class="ss-body">
+          <pre id="specPlain" class="ss-plain"></pre>
+          <textarea id="jsonText" spellcheck="false" style="display:none"></textarea>
+          <div class="ss-help" id="specHelp" style="display:none"></div>
+        </div>
+        <div class="ss-foot">
+          <button class="btn btn-ghost btn-sm" id="btnJsonRevert">되돌리기</button>
+          <button class="btn btn-primary btn-sm" id="btnJsonApply">사양 반영</button>
+          <div class="jsonmsg" id="jsonMsg" style="flex:1;padding:0 4px"></div>
+        </div>
+      </div>
+      <button class="stage-btn" id="btnSpecOpen" style="right:auto;left:14px;display:none">사양서 보기</button>
+
+      <!-- step 3 onward: the prompt here edits the JSON, and the CAD is rebuilt from it -->
+      <div class="editbar" id="specBar">
+        <input id="specPrompt" placeholder="사양서를 고쳐서 다시 만듭니다: 예) 휠베이스를 520mm로 넓히고 로터를 6개로" />
+        <button class="btn btn-primary btn-sm" id="btnSpecEdit">적용</button>
+      </div>
+
+      <div class="editbar" id="editBar">
+        <span class="scope" id="editScope" style="display:none"></span>
+        <input id="editPrompt" placeholder="이어서 편집: 예) 높이를 160mm로 낮추고 캡은 검정으로" />
+        <button class="btn btn-primary btn-sm" id="btnEdit">적용</button>
+      </div>
+
+      <div class="dock" id="dock">
+        <button id="tSelect" class="on" title="선택 (Q)"><svg><use href="#i-cursor"/></svg></button>
+        <button id="tMove" title="이동 (W)"><svg><use href="#i-move"/></svg></button>
+        <button id="tRotate" title="회전 (E)"><svg><use href="#i-rotate"/></svg></button>
+        <button id="tScale" title="크기 (R)"><svg><use href="#i-scale"/></svg></button>
+        <span class="sep"></span>
+        <button id="tFit" title="화면 맞춤 (F)"><svg><use href="#i-fit"/></svg></button>
+        <button id="tGrid" title="그리드"><svg><use href="#i-grid"/></svg></button>
+        <button id="tSpin" title="턴테이블"><svg><use href="#i-spin"/></svg></button>
+        <button id="tShot" title="스크린샷"><svg><use href="#i-camera"/></svg></button>
+      </div>
+    </div>
+
+    <!-- ================= right ================= -->
+    <aside class="side right">
+      <div class="side-head">속성</div>
+      <div class="side-scroll">
+        <div class="block">
+          <h3>모델</h3>
+          <div style="font-weight:650;font-size:14px;margin-bottom:6px" id="mName">—</div>
+          <img id="designImg" alt="AI 디자인 시안" style="display:none;width:100%;border-radius:9px;margin:2px 0 10px;border:1px solid var(--line)" />
+          <div class="scope-note" id="scopeNote"></div>
+          <div class="kv"><span>파트</span><b id="mParts">, </b></div>
+          <div class="kv"><span>삼각형</span><b id="mTris">, </b></div>
+          <div class="kv"><span>치수 (mm)</span><b id="mDims">, </b></div>
+          <div class="kv" id="scoreRow" style="display:none"><span id="scoreLabel">자산 준비도 (Asset Readiness)</span><b id="mScore">-</b></div>
+          <div class="kv" id="agreeRow" style="display:none"><span>형상 일치도 (실루엣)</span><b id="mAgree">-</b></div>
+          <div id="readyBreak"></div>
+          <div id="fidelity" style="display:none;margin-top:10px;padding-top:10px;border-top:1px solid var(--line)"></div>
+          <div class="hint" id="mBrief" style="margin-top:10px"></div>
+          <details id="cirBox" style="display:none;margin-top:10px">
+            <summary style="font-size:12px;font-weight:700;color:var(--text-3);cursor:pointer">Canonical Asset Graph (CIR · JSON)</summary>
+            <pre id="cirText" style="white-space:pre-wrap;font-size:11px;line-height:1.55;color:var(--text-3);margin-top:8px;font-family:ui-monospace,monospace;max-height:260px;overflow:auto"></pre>
+          </details>
+          <details id="specBox" style="display:none;margin-top:10px" open>
+            <summary style="font-size:12px;font-weight:700;color:var(--text-3);cursor:pointer">설계 사양서 (치수 · 파트 · 마감)</summary>
+            <pre id="specText" style="white-space:pre-wrap;font-size:11.5px;line-height:1.6;color:var(--text-2);margin-top:8px;font-family:inherit"></pre>
+          </details>
+        </div>
+
+        <div class="block">
+          <h3>파트</h3>
+          <div id="parts"></div>
+        </div>
+
+        <!-- deterministic editing: these fields write into the spec JSON and
+             recompile — no model call, and the JSON stays the source of truth -->
+        <div class="block" id="paramDroneBlock" style="display:none">
+          <h3>드론 파라미터</h3>
+          <div id="droneParams"></div>
+          <div class="hint" style="margin-top:7px">휠베이스를 바꾸면 암·모터·로터 링이 함께 움직입니다.
+          값은 사양서에 USER_PROVIDED로 기록됩니다.</div>
+        </div>
+
+        <div class="block" id="partEditBlock" style="display:none">
+          <h3>파트 편집 <span class="tag tag-accent" id="partEditName" style="margin-left:6px"></span></h3>
+          <div id="partEditFields"></div>
+        </div>
+
+        <!-- real components with real (catalogue-approximate) masses: pick one
+             and the matching part takes its dimensions, weight and name -->
+        <div class="block" id="catalogBlock" style="display:none">
+          <h3>부품 라이브러리</h3>
+          <div class="seg" id="catalogTabs" style="margin-bottom:8px"></div>
+          <div id="catalogItems"></div>
+          <div class="hint" style="margin-top:7px">공개 스펙 기반 근사 중량입니다. 선택하면 해당 파트의
+          치수·중량이 바뀌고 사양서에 기록됩니다.</div>
+        </div>
+
+        <!-- step 5: print planning. volume is integrated from the real
+             triangles; time is an estimate and labelled as one -->
+        <div class="block" id="printBlock" style="display:none">
+          <h3>3D 프린팅</h3>
+          <div class="kf" style="margin-bottom:7px"><label style="font-size:11.5px;color:var(--text-3)">프린터</label>
+            <select class="input" id="printPrinter"></select></div>
+          <div class="kf" style="margin-bottom:7px"><label style="font-size:11.5px;color:var(--text-3)">재료</label>
+            <select class="input" id="printMaterial"></select></div>
+          <div class="slider"><label>인필</label>
+            <input type="range" id="printInfill" min="10" max="60" value="15" step="5" />
+            <span class="v" id="printInfillV">15%</span></div>
+          <div id="printResult" style="margin-top:9px"></div>
+        </div>
+
+        <div class="block" id="matBlock" style="display:none">
+          <h3>재질</h3>
+          <select class="input" id="matSelect"></select>
+          <div class="hint" style="margin-top:7px">선택한 파트에 적용됩니다. 목록 맨 위 ＋로 자체 텍스처(알베도 필수,
+          파일명에 normal/rough/metal 포함 시 자동 인식, 1~2K 타일링 JPG/PNG 권장)를 업로드할 수 있습니다.</div>
+          <input type="file" id="texUpload" accept="image/*" multiple hidden />
+        </div>
+
+        <div class="block" id="sheetBlock" style="display:none">
+          <h3>빌드 시트 편집</h3>
+          <div id="sheet"></div>
+          <div class="hint" style="margin-top:8px">수치를 고치면 바로 다시 만듭니다. 프로파일 점을 추가하면
+          곡률이 살아나고, 점을 지우면 단순해집니다. 편집한 값은 고정 수치로 저장됩니다.</div>
+        </div>
+
+        <div class="block" id="jointBlock" style="display:none">
+          <h3>조인트 (Kinematics)</h3>
+          <div id="joints"></div>
+          <div class="hint" style="margin-top:8px">타입을 바꾸면 사용자 확정으로 기록되고 검증이 다시 실행됩니다.
+          가동 슬라이더는 실측된 기하 가동범위 안에서 움직입니다.</div>
+        </div>
+
+        <div class="block" id="physBlock" style="display:none">
+          <h3>충돌체 · 질량</h3>
+          <div id="phys"></div>
+        </div>
+
+        <!-- catalogue fallback only: used when the 3D generation service is
+             unreachable and we fall back to a parametric template -->
+        <div class="block" id="paramBlock" style="display:none">
+          <h3>카탈로그 파라미터 (폴백)</h3>
+          <div id="params"></div>
+        </div>
+
+        <div class="block" id="polyBlock" style="display:none">
+          <h3>폴리곤 최적화</h3>
+          <div class="seg" style="margin-bottom:9px" id="lodSeg">
+            <button data-lod="high" class="on">고품질</button>
+            <button data-lod="mid">표준</button>
+            <button data-lod="low">경량</button>
+          </div>
+          <div class="slider"><label>감축률</label>
+            <input type="range" id="decimate" min="0" max="85" value="0" step="5" /><span class="v" id="decimateV">0%</span></div>
+          <button class="btn btn-ghost btn-sm btn-block" id="btnDecimate" style="margin-top:6px">적용</button>
+          <div class="hint" id="polyNote" style="margin-top:8px"></div>
+        </div>
+
+        <!-- what you can take away depends on what exists yet: step 1 has a mesh
+             and nothing else, CAD formats only mean something once step 3 has
+             authored solids from the specification -->
+        <div class="block">
+          <h3>다운로드 <span class="tag" id="dlStage" style="margin-left:6px"></span></h3>
+          <div class="seg" id="scopeSeg" style="margin-bottom:8px;display:none">
+            <button id="scopeAll" class="on">전체</button>
+            <button id="scopeSel">선택 파트</button>
+          </div>
+          <!-- polygon budget applied at export time to a clone; the viewport
+               model is never touched by a download -->
+          <div class="seg" id="lodExportSeg" style="margin-bottom:10px">
+            <button data-lod="high" class="on">하이</button>
+            <button data-lod="mid">중간</button>
+            <button data-lod="low">로우</button>
+          </div>
+
+          <div id="dlMesh">
+            <div class="dl-group">메시</div>
+            <div class="exp"><span class="f">GLB</span><span class="n">웹 · 파트 계층 보존</span><button data-fmt="glb"><svg><use href="#i-download"/></svg></button></div>
+            <div class="exp"><span class="f">STL</span><span class="n">Binary · 3D 프린팅</span><button data-fmt="stl"><svg><use href="#i-download"/></svg></button></div>
+            <div class="exp"><span class="f">OBJ</span><span class="n">범용 메시 · 텍스트</span><button data-fmt="obj"><svg><use href="#i-download"/></svg></button></div>
+          </div>
+
+          <div id="dlCad" style="display:none">
+            <div class="dl-group">CAD</div>
+            <div class="exp"><span class="f">STEP</span><span class="n">AP214 · CAD 인계</span><button data-fmt="step"><svg><use href="#i-download"/></svg></button></div>
+            <div class="exp"><span class="f">DXF</span><span class="n">2D 도면 · 단면</span><button data-fmt="dxf"><svg><use href="#i-download"/></svg></button></div>
+          </div>
+
+          <div id="dlRobot" style="display:none">
+            <div class="dl-group">시뮬레이션 (구조 컴파일 필요)</div>
+            <div class="exp"><span class="f">USD</span><span class="n">마스터 · Physics 스키마</span><button data-fmt="usd"><svg><use href="#i-download"/></svg></button></div>
+            <div class="exp"><span class="f">URDF</span><span class="n">ROS · Isaac Sim</span><button data-fmt="urdf"><svg><use href="#i-download"/></svg></button></div>
+            <div class="exp"><span class="f">MJCF</span><span class="n">MuJoCo</span><button data-fmt="mjcf"><svg><use href="#i-download"/></svg></button></div>
+            <div class="exp"><span class="f">ZIP</span><span class="n">전체 번들 + 링크별 메시</span><button data-fmt="bundle"><svg><use href="#i-download"/></svg></button></div>
+          </div>
+
+          <button class="btn btn-primary btn-sm btn-block" id="btnKeep" style="margin-top:7px;display:none">자산으로 보관</button>
+          <div class="hint" id="dlNote" style="margin-top:7px"></div>
+        </div>
+
+        <!-- validation still runs on every compile and feeds the readiness score;
+             the raw console is kept out of the workspace so the panel stays about
+             the product, not about the tooling -->
+        <!-- step 4 design checks: each row shows the formula it came from -->
+        <div class="block" id="simBlock" style="display:none">
+          <h3>설계 검사 <span class="tag" id="simMeta" style="margin-left:6px"></span></h3>
+          <div class="kf" style="display:flex;gap:7px;align-items:center;margin-bottom:8px">
+            <label style="font-size:11.5px;color:var(--text-3);white-space:nowrap">배터리 Wh</label>
+            <input class="input" id="simBattery" type="number" min="0" step="10" placeholder="예: 220" style="padding:6px 9px" />
+          </div>
+          <div id="simChecks"></div>
+        </div>
+
+        <div class="block" id="valBlock" style="display:none">
+          <button class="btn btn-ghost btn-sm btn-block" id="btnVerify">재검증</button>
+          <h3>검증 콘솔 <span class="val-sum" id="valSummary"></span></h3>
+          <div id="valConsole" class="val-console"></div>
+        </div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<div class="toasts" id="toasts"></div>
+<script type="module" src="js/app.js"></script>
+</body>
+</html>

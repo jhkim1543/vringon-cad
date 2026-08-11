@@ -1,0 +1,1015 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>VRINGON CAD | 드론 설계 사양서에서 Three.js CAD로</title>
+<meta name="description" content="드론 설계 사양서 JSON의 좌표·파라미터를 고치면 Three.js 형상이 그대로 다시 만들어집니다. 서버 없이 도는 드론 특화 데모." />
+<link rel="icon" href="assets/favicon.svg" />
+<link rel="stylesheet" href="css/vringon.css" />
+<style>
+  /* the library screen, matching library.html so the two read as one product */
+  .lib { flex: 1; min-height: 0; overflow-y: auto; }
+  .lib-main { padding: 22px 30px 60px; }
+  .lib-head { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+  .lib-head h1 { font-size: 19px; }
+  .cats { display: flex; gap: 7px; flex-wrap: wrap; margin-bottom: 22px; }
+  .cats button { padding: 6px 14px; border-radius: 999px; border: 1px solid var(--line-2);
+    font-size: 12.5px; font-weight: 600; color: var(--text-2); background: none; }
+  .cats button.on { background: #ECEDEF; color: #111; border-color: #ECEDEF; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 14px; }
+  .item { border: 1px solid var(--line); border-radius: 10px; overflow: hidden;
+    background: var(--panel); cursor: pointer; transition: border-color .15s, transform .15s;
+    text-align: left; padding: 0; width: 100%; }
+  .item:hover { border-color: #3A3A45; transform: translateY(-2px); }
+  .item .thumb { width: 100%; aspect-ratio: 1.15; display: block; background: #0C0C10; object-fit: cover; }
+  .item .noimg { width: 100%; aspect-ratio: 1.15; display: grid; place-items: center;
+    color: var(--text-3); font-size: 12px; }
+  .item .meta { padding: 10px 12px; }
+  .item .t { font-size: 13px; font-weight: 650; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .item .d { font-size: 11.5px; color: var(--text-3); margin-top: 3px; }
+</style>
+<script type="importmap">
+{ "imports": { "three": "./vendor/three/three.module.js", "three/addons/": "./vendor/three/addons/" } }
+</script>
+</head>
+<body>
+
+<div class="ws">
+  <div class="ws-top">
+    <a class="brand" href="https://github.com/jhkim1543/vringon-cad">
+      <svg width="24" height="16" viewBox="0 0 46 30" fill="none"><path d="M2 3 12 27 21 3" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="33" cy="15" r="11.5" stroke="currentColor" stroke-width="5"/></svg>
+      VRINGON CAD
+    </a>
+    <span style="color:var(--line-2)">/</span>
+    <span style="font-size:13.5px;color:var(--text-2)" id="projName">새 프로젝트</span>
+    <span class="sp"></span>
+    <button class="btn btn-ghost btn-sm" id="btnLib">라이브러리</button>
+  </div>
+
+  <!-- ================= library =================
+       Thumbnails are compiled in the browser from the same specifications the
+       workspace uses, so a card can never show a render that the spec no
+       longer produces. -->
+  <div class="lib" id="lib" style="display:none">
+    <main class="lib-main">
+      <div class="lib-head">
+        <h1>샘플 라이브러리</h1>
+        <span class="tag" id="libCount"></span>
+        <span class="sp" style="flex:1"></span>
+        <button class="btn btn-ghost btn-sm" id="btnLibClose">닫기</button>
+      </div>
+      <div class="hint" style="margin-bottom:18px;max-width:640px">
+        서버에서 미리 작성해 둔 설계 사양서입니다. 카드를 누르면 그 사양서로 워크스페이스가 열리고,
+        JSON 좌표를 고치면 형상이 바로 다시 만들어집니다. 미리보기는 지금 이 브라우저에서
+        사양서를 컴파일해 그린 것입니다.
+      </div>
+      <div class="cats" id="libCats"></div>
+      <div class="grid" id="libGrid"></div>
+    </main>
+  </div>
+
+  <div class="ws-body" id="wsBody">
+    <!-- ================= left ================= -->
+    <aside class="side left">
+      <div class="side-head">
+        생성
+        <span class="sp"></span>
+        <button class="icon-btn" id="btnNew" title="처음으로"><svg><use href="#i-new"/></svg></button>
+      </div>
+      <div class="side-scroll">
+        <div class="composer">
+          <textarea id="prompt" placeholder="드론을 설명하세요.&#10;예: 휠베이스 450mm 점검용 쿼드콥터"></textarea>
+          <div class="row">
+            <span class="sp"></span>
+            <button class="btn btn-primary btn-sm" id="btnGenerate">생성<svg><use href="#i-send"/></svg></button>
+          </div>
+        </div>
+
+        <div class="block" style="margin-top:18px">
+          <h3>드론 예시</h3>
+          <div class="samples" id="chips" style="grid-template-columns:repeat(2,1fr)"></div>
+        </div>
+
+        <div class="block" id="runBlock" style="display:none">
+          <h3>진행</h3>
+          <div id="runSteps"></div>
+        </div>
+
+        <div class="block">
+          <h3>이 페이지에 대해</h3>
+          <div class="hint">
+            1·2단계는 서버에서 미리 실행한 결과이고, 3·4단계는 이 브라우저에서 실제로 돕니다.
+            JSON 좌표를 고치면 형상이 그대로 바뀝니다.
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ================= stage ================= -->
+    <div class="stage" id="stage">
+      <div class="stage-empty" id="stageEmpty">
+        <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.1" opacity=".5"><path d="M12 2 3 7v10l9 5 9-5V7z"/><path d="m3 7 9 5 9-5M12 12v10"/></svg>
+        <div>왼쪽에서 드론을 고르거나 설명을 쓰고 생성을 누르세요<br/>드론 설계 사양서 JSON에서 Three.js 형상이 만들어집니다</div>
+      </div>
+
+      <div class="gen" id="gen">
+        <div class="gen-box">
+          <div class="gen-title" id="genTitle">생성 중</div>
+          <div class="gen-sub" id="genSub"></div>
+          <div class="gen-bar"><i id="genBar"></i></div>
+        </div>
+      </div>
+
+      <div class="stepper" id="stepper">
+        <button class="st" data-step="1" disabled><span class="n">1</span><span class="lb">3D 생성</span></button>
+        <span class="arw">›</span>
+        <button class="st" data-step="2" disabled><span class="n">2</span><span class="lb">JSON 사양서</span></button>
+        <span class="arw">›</span>
+        <button class="st" data-step="3" disabled><span class="n">3</span><span class="lb">Three.js CAD</span></button>
+        <span class="arw">›</span>
+        <button class="st" data-step="4" disabled><span class="n">4</span><span class="lb">시뮬레이션</span></button>
+        <span class="arw">›</span>
+        <button class="st" data-step="5" disabled><span class="n">5</span><span class="lb">3D 프린팅</span></button>
+      </div>
+
+      <button class="btn btn-primary" id="stageNext"
+        style="position:absolute;right:18px;bottom:84px;z-index:12;display:none;padding:11px 20px;font-size:14px;border-radius:10px"></button>
+      <button class="stage-btn show" id="btnExplode" style="display:none">분해하기</button>
+
+      <div class="simdock" id="simDock">
+        <button class="btn btn-primary btn-sm" id="btnFly">이륙 · 호버</button>
+        <button class="btn btn-ghost btn-sm" id="btnFly6" title="추력·관성·제어기를 적분하는 6자유도 비행">6-DoF 비행</button>
+        <button class="btn btn-ghost btn-sm" id="btnRotorOut">로터 고장</button>
+        <button class="btn btn-ghost btn-sm" id="btnDrop">낙하</button>
+        <button class="btn btn-ghost btn-sm" id="btnSimStop">정지</button>
+        <span style="display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--text-3);padding:0 4px">
+          바람 <input type="range" id="simWind" min="0" max="12" value="0" step="1" style="width:56px" />
+          <b id="simWindV" style="color:var(--text-2);font-variant-numeric:tabular-nums">0</b>
+        </span>
+        <span style="display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--text-3);padding:0 4px">
+          탑재 <input type="range" id="simPayload" min="0" max="10" value="0" step="0.5" style="width:56px" />
+          <b id="simPayloadV" style="color:var(--text-2);font-variant-numeric:tabular-nums">0kg</b>
+        </span>
+      </div>
+
+      <div class="dock" id="dock" style="display:none">
+        <button id="tFit" title="화면 맞춤"><svg><use href="#i-fit"/></svg></button>
+        <button id="tGrid" title="그리드"><svg><use href="#i-grid"/></svg></button>
+        <button id="tSpin" title="턴테이블"><svg><use href="#i-spin"/></svg></button>
+      </div>
+    </div>
+
+    <!-- ================= right ================= -->
+    <aside class="side right">
+      <div class="side-head">속성</div>
+      <div class="side-scroll">
+        <div class="block">
+          <h3>모델</h3>
+          <div style="font-weight:650;font-size:14px;margin-bottom:8px" id="mName">—</div>
+          <div class="kv"><span>파트</span><b id="mParts">—</b></div>
+          <div class="kv"><span>삼각형</span><b id="mTris">—</b></div>
+          <div class="kv"><span>치수 (mm)</span><b id="mDims">—</b></div>
+          <div class="kv"><span>컴파일</span><b id="mTime">—</b></div>
+          <div class="hint" id="mNote" style="margin-top:10px"></div>
+        </div>
+
+        <div class="block" id="paramDroneBlock" style="display:none">
+          <h3>드론 파라미터</h3>
+          <div id="droneParams"></div>
+          <div class="hint" style="margin-top:7px">휠베이스를 바꾸면 암·모터·로터·가드 링이 함께 움직입니다.</div>
+        </div>
+
+        <div class="block" id="catalogBlock" style="display:none">
+          <h3>부품 라이브러리</h3>
+          <div class="seg" id="catalogTabs" style="margin-bottom:8px"></div>
+          <div id="catalogItems"></div>
+          <div class="hint" style="margin-top:7px">공개 스펙 기반 근사 중량. 선택하면 파트 치수·중량이 바뀌거나 새 파트로 추가됩니다.</div>
+        </div>
+
+        <div class="block" id="printBlock" style="display:none">
+          <h3>3D 프린팅</h3>
+          <div class="kf" style="margin-bottom:7px"><label style="font-size:11.5px;color:var(--text-3)">프린터</label>
+            <select class="input" id="printPrinter"></select></div>
+          <div class="kf" style="margin-bottom:7px"><label style="font-size:11.5px;color:var(--text-3)">재료</label>
+            <select class="input" id="printMaterial"></select></div>
+          <div class="slider"><label>인필</label>
+            <input type="range" id="printInfill" min="10" max="60" value="15" step="5" />
+            <span class="v" id="printInfillV">15%</span></div>
+          <div id="printResult" style="margin-top:9px"></div>
+        </div>
+
+        <div class="block" id="simBlock" style="display:none">
+          <h3>설계 검사 <span class="tag" id="simMeta" style="margin-left:6px"></span></h3>
+          <div class="kf" style="display:flex;gap:7px;align-items:center;margin-bottom:8px">
+            <label style="font-size:11.5px;color:var(--text-3);white-space:nowrap">배터리 Wh</label>
+            <input class="input" id="simBattery" type="number" min="0" step="10" placeholder="예: 220" style="padding:6px 9px" />
+          </div>
+          <div id="simChecks"></div>
+        </div>
+
+        <div class="block" id="jsonBlock" style="display:none">
+          <h3>JSON 설계 사양서 <span class="tag tag-accent" id="jsonMeta" style="margin-left:6px"></span></h3>
+          <div class="jsonwrap show">
+            <textarea id="jsonText" spellcheck="false" style="min-height:280px"></textarea>
+            <div class="jsonrow">
+              <button class="btn btn-ghost btn-sm" id="btnRevert">되돌리기</button>
+              <button class="btn btn-primary btn-sm" id="btnBuild">다시 만들기</button>
+            </div>
+            <div class="jsonmsg" id="jsonMsg"></div>
+          </div>
+        </div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<svg style="display:none">
+  <symbol id="i-new" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-send" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h13M12 5.5 18.5 12 12 18.5"/></symbol>
+  <symbol id="i-fit" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V5a1 1 0 0 1 1-1h4M20 9V5a1 1 0 0 0-1-1h-4M4 15v4a1 1 0 0 0 1 1h4M20 15v4a1 1 0 0 1-1 1h-4"/></symbol>
+  <symbol id="i-grid" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/></symbol>
+  <symbol id="i-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="12" rx="9" ry="4"/><path d="M3 12a9 4 0 0 0 18 0"/><path d="M12 8v8"/></symbol>
+</svg>
+
+<div class="toasts" id="toasts"></div>
+
+<script type="module">
+import * as THREE from "three";
+import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
+import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+import { buildFromSpec } from "./js/spec-cad.js";
+import { createDroneSim } from "./js/drone-sim.js";
+import { applyParameter } from "./js/drone-params.js";
+import { COMPONENT_CATALOG, CATALOG_GROUPS, fitTargets, applyComponent, addComponentAsPart } from "./js/drone-catalog.js";
+import { PRINTERS, MATERIALS as PRINT_MATERIALS, estimatePrint } from "./js/print-estimate.js";
+
+/* Each sample carries the prompt it was actually generated from, so what the
+   composer shows is the real input and not a caption written afterwards.
+   tools/build-samples.mjs writes specs/index.json against a running server. */
+let SAMPLES = [];
+const $ = (id) => document.getElementById(id);
+const short = (s) => (s.prompt || "").split(",")[0].trim();
+
+function toast(msg, ok = false) {
+  const t = document.createElement("div");
+  t.className = `toast${ok ? " ok" : ""}`;
+  t.textContent = msg;
+  $("toasts").appendChild(t);
+  setTimeout(() => t.remove(), 3600);
+}
+
+/* ---------------------------------------------------------------- viewer */
+const stage = $("stage");
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.55;
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+stage.appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x0C0C10);
+const pmrem = new THREE.PMREMGenerator(renderer);
+scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+
+const camera = new THREE.PerspectiveCamera(38, 1, 1, 8000);
+camera.position.set(180, 140, 210);
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.dampingFactor = 0.075;
+controls.autoRotateSpeed = 1.6;
+// no polar clamp: the underside is where base thickness and gate marks live
+
+const key = new THREE.DirectionalLight(0xffffff, 2.6);
+key.position.set(240, 420, 260);
+key.castShadow = true;
+key.shadow.mapSize.set(2048, 2048);
+key.shadow.camera.near = 20; key.shadow.camera.far = 1400;
+key.shadow.camera.left = key.shadow.camera.bottom = -260;
+key.shadow.camera.right = key.shadow.camera.top = 260;
+key.shadow.bias = -0.0012; key.shadow.normalBias = 0.6;
+const fill = new THREE.DirectionalLight(0xc8d2ff, 0.55);
+fill.position.set(-320, 180, 140);
+const rim = new THREE.DirectionalLight(0xbcc6ff, 0.9);
+rim.position.set(-140, 240, -360);
+scene.add(key, fill, rim,
+  new THREE.HemisphereLight(0xc4ccdd, 0x3a3d48, 1.15),
+  new THREE.AmbientLight(0xffffff, 0.28));
+
+const grid = new THREE.GridHelper(1200, 48, 0x2a2a34, 0x1a1a20);
+grid.material.transparent = true; grid.material.opacity = 0.55;
+scene.add(grid);
+const shadowCatcher = new THREE.Mesh(
+  new THREE.CircleGeometry(600, 64).rotateX(-Math.PI / 2),
+  new THREE.ShadowMaterial({ opacity: 0.42 }));
+shadowCatcher.position.y = 0.02;
+shadowCatcher.receiveShadow = true;
+scene.add(shadowCatcher);
+
+function resize() {
+  const w = stage.clientWidth, h = stage.clientHeight;
+  if (!w || !h) return;
+  renderer.setSize(w, h);
+  camera.aspect = w / h;
+  camera.updateProjectionMatrix();
+}
+new ResizeObserver(resize).observe(stage);
+resize();
+
+let gridWanted = true;
+let droneSim = null;
+const simClock = new THREE.Clock();
+renderer.setAnimationLoop(() => {
+  controls.update();
+  const below = camera.position.y < controls.target.y;
+  grid.visible = gridWanted && !below;
+  shadowCatcher.visible = !below;
+  const dt = simClock.getDelta();
+  if (droneSim) droneSim.update(dt);
+  renderer.render(scene, camera);
+});
+
+let model = null;
+function dispose(root) {
+  root.traverse((o) => {
+    if (!o.isMesh) return;
+    o.geometry?.dispose();
+    (Array.isArray(o.material) ? o.material : [o.material]).forEach((m) => m?.dispose());
+  });
+}
+function clearModel() {
+  if (!model) return;
+  scene.remove(model); dispose(model); model = null;
+}
+
+function fitView() {
+  if (!model) return;
+  const bb = new THREE.Box3().setFromObject(model);
+  const c = bb.getCenter(new THREE.Vector3());
+  const r = Math.max(20, bb.getSize(new THREE.Vector3()).length() / 2);
+  controls.target.copy(c);
+  const vHalf = THREE.MathUtils.degToRad(camera.fov / 2);
+  const hHalf = Math.atan(Math.tan(vHalf) * Math.max(0.6, camera.aspect));
+  const dist = (r / Math.sin(Math.min(vHalf, hHalf))) * 1.12;
+  const dir = new THREE.Vector3(0.62, 0.36, 0.7).normalize();
+  camera.position.copy(c).add(dir.multiplyScalar(dist));
+  camera.near = Math.max(0.5, r / 60); camera.far = r * 60;
+  camera.updateProjectionMatrix();
+  controls.update();
+}
+
+$("tFit").onclick = () => fitView();
+$("tGrid").onclick = (e) => { gridWanted = !gridWanted; e.currentTarget.classList.toggle("on", !gridWanted); };
+$("tSpin").onclick = (e) => {
+  controls.autoRotate = !controls.autoRotate;
+  e.currentTarget.classList.toggle("on", controls.autoRotate);
+};
+
+/* ================================================================ pipeline
+   The same three stages as the workspace, and the same rule that each one
+   waits for a press. Stages 1 and 2 need an API key, so here they replay a run
+   that already happened on the server; stage 3 compiles for real. Saying which
+   is which beats letting a canned result pass as a live one. */
+const PIPE = [
+  { n: 1, label: "3D 생성", cta: "메시 3D 생성", note: "샘플 사진을 이미지→3D 엔진에 넣어 받아 둔 메시를 불러옵니다", live: false },
+  { n: 2, label: "JSON 사양서", cta: "정밀 3D 설계 사양서 생성하기", note: "설계 AI가 설계 사양서를 JSON으로 씁니다", live: false },
+  { n: 3, label: "Three.js CAD", cta: "코드 베이스 3D 생성", note: "사양서의 단면 좌표만 읽어 형상을 만듭니다", live: true },
+  { n: 4, label: "시뮬레이션", cta: "시뮬레이션 실행", note: "로터 회전·호버·로터 고장·낙하와 설계 검사", live: true },
+  { n: 5, label: "3D 프린팅", cta: "3D 프린팅 · 다운로드", note: "프린터·재료별 예상 출력 시간", live: true },
+];
+const pipe = { done: 0, running: 0, active: false, sample: null, spec: null };
+
+function renderStepper() {
+  $("stepper").classList.toggle("show", pipe.active);
+  for (const b of document.querySelectorAll("#stepper .st")) {
+    const n = Number(b.dataset.step);
+    b.classList.toggle("done", n <= pipe.done && n !== pipe.running);
+    b.classList.toggle("on", n === pipe.done + 1 || n === pipe.running);
+    b.classList.toggle("run", n === pipe.running);
+    b.disabled = n > pipe.done + 1 || !!pipe.running;
+  }
+  const next = PIPE[pipe.done];
+  const cta = $("stageNext");
+  cta.style.display = pipe.active && next && !pipe.running ? "" : "none";
+  cta.disabled = !!pipe.running;
+  cta.textContent = next ? next.cta : "";
+  renderRunList();
+}
+
+function renderRunList() {
+  $("runBlock").style.display = pipe.active ? "" : "none";
+  $("runSteps").innerHTML = PIPE.map((s) => {
+    const state = s.n <= pipe.done ? "done" : s.n === pipe.running ? "run" : "";
+    const where = s.live ? "이 브라우저에서 실행" : "서버에서 미리 실행";
+    return `<div class="gen-step ${state}"><span class="dot"></span>${s.n}. ${s.label}`
+      + `<span style="color:var(--text-3);font-size:11px;margin-left:6px">${where}</span></div>`;
+  }).join("");
+}
+
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+/* Thumbnails and the pipeline read the same files; fetch each one once. */
+const specCache = new Map();
+async function loadSpec(id) {
+  if (!specCache.has(id)) {
+    specCache.set(id, fetch(`./specs/${id}.json`).then((r) => {
+      if (!r.ok) throw new Error(`사양서를 찾을 수 없습니다 (${id})`);
+      return r.json();
+    }));
+  }
+  // a failed fetch must not poison the cache for the next attempt
+  try { return await specCache.get(id); }
+  catch (e) { specCache.delete(id); throw e; }
+}
+function showGen(on, title, sub) {
+  $("gen").classList.toggle("on", on);
+  if (title) $("genTitle").textContent = title;
+  if (sub) $("genSub").textContent = sub;
+  $("genBar").style.width = `${(pipe.done / PIPE.length) * 100}%`;
+}
+
+async function runStep(n) {
+  if (pipe.running || !pipe.sample) return;
+  const step = PIPE[n - 1];
+  if (!step) return;
+  pipe.running = n;
+  renderStepper();
+  showGen(true, `${n}단계 · ${step.label}`, step.note);
+  try {
+    if (n === 1) {
+      /* Samples with a photograph have a real 메시 클라우드 mesh committed alongside
+         them; the others fall back to the compiled specification. Whichever
+         one lands, the note says which it is — a stand-in passed off as the
+         real output is the one thing a sales demo cannot afford. */
+      const spec = await loadSpec(pipe.sample.id);
+      pipe.spec = spec;
+      teardownSim();
+      $("dock").style.display = "";
+      let mesh = null;
+      try { mesh = await buildMesh(pipe.sample.id, spec); }
+      catch (e) { console.warn("mesh load failed", e); }
+      if (mesh) {
+        $("mNote").textContent = `이 샘플 사진을 이미지→3D 엔진에 넣어 받은 실제 메시입니다 `
+          + `(${mesh.mb.toFixed(1)}MB). 파트 경계가 없는 한 덩어리라, 파트별 편집은 3단계 CAD에서 됩니다.`;
+        toast(`고품질 메시 · 삼각형 ${mesh.tris.toLocaleString()}개`, true);
+      } else {
+        await sleep(600);
+        build(spec);
+        $("mNote").textContent = "이 샘플은 사진이 없어 이미지→3D를 돌리지 못했습니다. "
+          + "사양서를 컴파일한 형상이 대신 서 있습니다.";
+        toast("사양서 형상으로 대체 표시 (이 샘플은 고품질 메시 없음)", true);
+      }
+    } else if (n === 2) {
+      showGen(true, "2단계 · JSON 사양서", "서버에서 작성해 둔 사양서를 불러옵니다");
+      await sleep(900);
+      const spec = await loadSpec(pipe.sample.id);
+      pipe.spec = spec;
+      setSpec(spec);
+      buildDroneParamUI();
+      buildCatalogUI();
+      const jb = $("jsonBlock");
+      jb.scrollIntoView({ behavior: "smooth", block: "start" });
+      jb.style.outline = "1px solid var(--accent)"; jb.style.borderRadius = "10px";
+      setTimeout(() => { jb.style.outline = ""; }, 2600);
+      toast(`사양서를 작성했습니다 — 파트 ${(spec.parts || []).length}개. 오른쪽 JSON을 고칠 수 있습니다`, true);
+    } else if (n === 3) {
+      await sleep(900);
+      teardownSim();
+      build(pipe.spec);
+      $("dock").style.display = "";
+      $("btnExplode").style.display = "";
+      toast("사양서에서 형상을 만들었습니다", true);
+    } else if (n === 4) {
+      teardownSim();
+      spawnSim();
+      droneSim.fly();
+      toast(`시뮬레이션 시작 — 로터 ${droneSim.rotorCount}개`, true);
+    } else {
+      $("printBlock").style.display = "";
+      if (!$("printPrinter").options.length) {
+        $("printPrinter").innerHTML = PRINTERS.map((x) => `<option value="${x.id}">${x.name}</option>`).join("");
+        $("printMaterial").innerHTML = PRINT_MATERIALS.map((m) => `<option value="${m.id}">${m.name}</option>`).join("");
+      }
+      renderPrintEstimate();
+      $("printBlock").scrollIntoView({ behavior: "smooth", block: "start" });
+      toast("프린터·재료를 고르면 예상 출력 시간이 계산됩니다", true);
+    }
+    pipe.done = Math.max(pipe.done, n);
+  } catch (e) {
+    toast(`${n}단계 실패: ${e.message}`);
+  } finally {
+    pipe.running = 0;
+    showGen(false);
+    renderStepper();
+  }
+}
+
+function renderSimChecks() {
+  if (!droneSim) return;
+  $("simChecks").innerHTML = droneSim.checks({ batteryWh: Number($("simBattery").value) || 0 }).map((c) => `
+    <div class="simcheck">
+      <div class="r"><span>${c.label}</span>
+        <b class="${c.ok === true ? "ok" : c.ok === false ? "bad" : ""}">${c.value}</b></div>
+      <div class="n">${c.note}</div>
+    </div>`).join("");
+}
+
+/* deterministic knobs: a slider writes into the spec JSON and recompiles */
+let quickTimer = 0;
+function quickRebuild() {
+  if (!pipe.spec) return;
+  const simWasOn = !!droneSim;   // a knob edit must not silently end step 4
+  teardownSim();
+  build(pipe.spec);
+  const ta = $("jsonText");
+  if (ta) { ta.value = JSON.stringify(pipe.spec, null, 2); ta.dataset.pristine = ta.value; }
+  if (simWasOn) spawnSim();
+}
+function spawnSim() {
+  droneSim = createDroneSim({ root: model, spec: pipe.spec });
+  $("simDock").classList.add("show");
+  $("simBlock").style.display = "";
+  $("simMeta").textContent = `로터 ${droneSim.rotorCount}개 인식`;
+  droneSim.setWind(Number($("simWind").value) || 0);
+  renderSimChecks();
+}
+function buildDroneParamUI() {
+  const host = $("droneParams");
+  const params = pipe.spec?.parameters || [];
+  $("paramDroneBlock").style.display = params.length ? "" : "none";
+  host.innerHTML = "";
+  for (const pm of params) {
+    const row = document.createElement("div");
+    row.className = "slider";
+    const lab = document.createElement("label"); lab.textContent = `${pm.label_ko} (${pm.unit})`;
+    const num = document.createElement("input");
+    num.type = "number"; num.value = pm.value == null ? "" : pm.value;
+    num.style.cssText = "width:76px;background:#0F0F13;border:1px solid var(--line-2);border-radius:6px;color:var(--text);padding:4px 7px;font-size:12px";
+    let rng = null;
+    if (pm.min != null && pm.max != null && pm.value != null) {
+      rng = document.createElement("input");
+      rng.type = "range"; rng.min = pm.min; rng.max = pm.max; rng.step = 1; rng.value = pm.value;
+      rng.oninput = () => { num.value = rng.value; applyParameter(pipe.spec, pm.id, Number(rng.value));
+        clearTimeout(quickTimer); quickTimer = setTimeout(quickRebuild, 220); };
+    }
+    num.onchange = () => { const v = Number(num.value); if (!Number.isFinite(v)) return;
+      if (rng) rng.value = v; applyParameter(pipe.spec, pm.id, v);
+      clearTimeout(quickTimer); quickTimer = setTimeout(quickRebuild, 220); };
+    row.append(lab); if (rng) row.append(rng); row.append(num);
+    host.appendChild(row);
+  }
+}
+$("simWind").oninput = () => {
+  $("simWindV").textContent = `${$("simWind").value}m/s`;
+  droneSim?.setWind(Number($("simWind").value));
+};
+$("simBattery").onchange = () => renderSimChecks();
+
+function teardownSim() {
+  if (droneSim) { droneSim.reset(); droneSim = null; }
+  $("simDock").classList.remove("show");
+  $("simBlock").style.display = "none";
+}
+$("btnFly").onclick = () => droneSim?.fly();
+$("btnFly6").onclick = () => {
+  if (!droneSim) return;
+  droneSim.flyPhysical(0.6);
+  const f = droneSim.flightFacts();
+  toast(`6-DoF 비행 — 질량 ${f.mass.toFixed(2)}kg · 추력 여유 ${f.thrustMargin.toFixed(2)}배`, true);
+};
+$("btnRotorOut").onclick = () => {
+  if (!droneSim) return;
+  if (droneSim.state.mode === "physical") {
+    droneSim.failRotorPhysical();
+    toast("6-DoF 로터 고장 — 잔여 로터의 배분 결과가 그대로 나타납니다", true);
+  } else droneSim.rotorOut();
+};
+$("btnDrop").onclick = () => droneSim?.drop(400);
+$("btnSimStop").onclick = () => droneSim?.stop();
+$("simPayload").oninput = () => {
+  $("simPayloadV").textContent = `${$("simPayload").value}kg`;
+  droneSim?.setPayload(Number($("simPayload").value));
+  renderSimChecks();
+};
+
+function renderPrintEstimate() {
+  if (!model) return;
+  const printer = PRINTERS.find((x) => x.id === $("printPrinter").value) || PRINTERS[0];
+  const material = PRINT_MATERIALS.find((m) => m.id === $("printMaterial").value) || PRINT_MATERIALS[0];
+  const infill = Number($("printInfill").value) / 100;
+  const est = estimatePrint({ root: model, printer, material, infill, parts: model.children.length });
+  const hh = Math.floor(est.hours), mm = Math.round((est.hours - hh) * 60);
+  $("printResult").innerHTML = `
+    <div class="kv"><span>부피 (솔리드)</span><b>${est.solid_cm3.toFixed(1)} cm³</b></div>
+    <div class="kv"><span>재료 사용</span><b>${est.grams.toFixed(0)} g ${material.name}</b></div>
+    <div class="kv"><span>예상 출력 시간</span><b>${hh}시간 ${mm}분</b></div>
+    <div class="kv"><span>빌드 볼륨</span><b>${est.fits ? "맞음" : `1/${(1 / est.fitScale).toFixed(1)} 축소 필요`}</b></div>
+    <div class="hint" style="margin-top:7px">${printer.note} · ${material.note}<br/>
+    지속 유량(${printer.flow_mm3s}mm³/s × ${material.speed_k}) 기반 근사 — 슬라이서가 더 정확합니다.</div>`;
+}
+["printPrinter", "printMaterial"].forEach((id) => { $(id).onchange = renderPrintEstimate; });
+$("printInfill").oninput = () => { $("printInfillV").textContent = `${$("printInfill").value}%`; renderPrintEstimate(); };
+
+let catalogGroup = CATALOG_GROUPS[0];
+function buildCatalogUI() {
+  if (!pipe.spec) { $("catalogBlock").style.display = "none"; return; }
+  $("catalogBlock").style.display = "";
+  $("catalogTabs").innerHTML = CATALOG_GROUPS.map((g) =>
+    `<button class="${g === catalogGroup ? "on" : ""}" data-g="${g}">${g}</button>`).join("");
+  $("catalogItems").innerHTML = COMPONENT_CATALOG.filter((c) => c.group === catalogGroup).map((c) => {
+    const targets = fitTargets(pipe.spec, c);
+    const canAdd = !targets.length && c.group !== "모터";
+    return `<button class="part" data-c="${c.id}" ${targets.length || canAdd ? "" : "disabled style='opacity:.4'"}>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:12.5px;font-weight:600">${c.name}
+          <span style="color:var(--text-3);font-weight:500">· ${c.mass_g}g</span></div>
+        <div style="font-size:11px;color:var(--text-3)">${c.spec}${targets.length ? "" : canAdd ? " · 파트로 추가" : " · 링 필요"}</div>
+      </div></button>`;
+  }).join("");
+}
+$("catalogTabs").onclick = (e) => {
+  const b = e.target.closest("button"); if (!b) return;
+  catalogGroup = b.dataset.g; buildCatalogUI();
+};
+$("catalogItems").onclick = (e) => {
+  const b = e.target.closest(".part"); if (!b || b.disabled) return;
+  const item = COMPONENT_CATALOG.find((c) => c.id === b.dataset.c);
+  const targets = fitTargets(pipe.spec, item);
+  if (targets.length) {
+    applyComponent(pipe.spec, targets[0].part_id, item);
+    toast(`${targets[0].display_name_ko || targets[0].part_id} ← ${item.name}`, true);
+  } else if (item.group !== "모터") {
+    addComponentAsPart(pipe.spec, item);
+    toast(`${item.name}을(를) 새 파트로 추가했습니다`, true);
+    if (item.wh) $("simBattery").value = item.wh;
+  } else return;
+  clearTimeout(quickTimer); quickTimer = setTimeout(quickRebuild, 220);
+};
+
+let exploded = false;
+$("btnExplode").onclick = () => {
+  if (!model) return;
+  exploded = !exploded;
+  const bb = new THREE.Box3().setFromObject(model);
+  const c = bb.getCenter(new THREE.Vector3());
+  for (const o of model.children) {
+    if (!o.userData.__homePos) o.userData.__homePos = o.position.clone();
+    if (exploded) {
+      const ob = new THREE.Box3().setFromObject(o);
+      const dir = ob.getCenter(new THREE.Vector3()).sub(c);
+      if (dir.lengthSq() < 1) dir.set(0, 1, 0);
+      o.position.copy(o.userData.__homePos).addScaledVector(dir.normalize(), 90);
+    } else {
+      o.position.copy(o.userData.__homePos);
+    }
+  }
+  $("btnExplode").textContent = exploded ? "조립하기" : "분해하기";
+  $("btnExplode").classList.toggle("on", exploded);
+};
+
+$("stageNext").onclick = () => runStep(pipe.done + 1);
+for (const b of document.querySelectorAll("#stepper .st")) {
+  b.onclick = () => runStep(Number(b.dataset.step));
+}
+
+/* ------------------------------------------------------------- compile */
+function setSpec(spec) {
+  pipe.spec = spec;
+  const ta = $("jsonText");
+  ta.value = JSON.stringify(spec, null, 2);
+  ta.dataset.pristine = ta.value;
+  ta.classList.remove("bad");
+  $("jsonBlock").style.display = "";
+  $("jsonMeta").textContent = `${spec.classification?.platform_architecture || spec.classification?.recipe_id || "-"} · 파트 ${(spec.parts || []).length}`;
+  const msg = $("jsonMsg");
+  msg.classList.remove("bad");
+  msg.textContent = "좌표를 고치고 다시 만들기를 누르면 형상이 그대로 바뀝니다.";
+}
+
+/* Stage-1 meshes that really came out of 메시 클라우드, generated once by
+   tools/build-meshes.mjs. Only samples with their own photograph have one;
+   the rest fall back to the compiled specification and say so. */
+let MESHES = {};
+
+/* 메시 클라우드 returns a unit-ish model with no notion of millimetres, so it is scaled
+   to the span the specification declares. Without this the mesh arrives about
+   a thousand times too small and the camera fits onto an invisible speck. */
+async function buildMesh(sampleId, spec) {
+  const entry = MESHES[sampleId];
+  if (!entry) return null;
+  const t0 = performance.now();
+  const gltf = await new GLTFLoader().loadAsync(`./assets/meshes/${entry.file}`);
+  const root = gltf.scene;
+
+  const raw = new THREE.Box3().setFromObject(root);
+  const rawSize = raw.getSize(new THREE.Vector3());
+  const want = specSpan(spec);
+  const have = Math.max(rawSize.x, rawSize.y, rawSize.z);
+  if (want && have > 0) root.scale.setScalar(want / have);
+
+  const box = new THREE.Box3().setFromObject(root);
+  const c = box.getCenter(new THREE.Vector3());
+  root.position.set(-c.x, -box.min.y, -c.z);
+
+  clearModel();
+  model = root;
+  model.traverse((o) => { if (o.isMesh) o.castShadow = o.receiveShadow = true; });
+  scene.add(model);
+  $("stageEmpty").style.display = "none";
+  fitView();
+
+  let tris = 0;
+  model.traverse((o) => {
+    if (!o.isMesh) return;
+    const g = o.geometry;
+    tris += g.index ? g.index.count / 3 : g.attributes.position.count / 3;
+  });
+  const s = new THREE.Box3().setFromObject(model).getSize(new THREE.Vector3());
+  $("mName").textContent = pipe.sample ? short(pipe.sample) : "모델";
+  $("mParts").textContent = "1 (덩어리)";
+  $("mTris").textContent = Math.round(tris).toLocaleString();
+  $("mDims").textContent = `${s.x.toFixed(1)} × ${s.y.toFixed(1)} × ${s.z.toFixed(1)}`;
+  $("mTime").textContent = `${Math.round(performance.now() - t0)}ms`;
+  return { tris: Math.round(tris), mb: entry.bytes / 1048576 };
+}
+
+/* The longest dimension the specification claims, used only to give the mesh a
+   believable size next to the CAD result. Parts carry {w,h,d} and {x,y,z}
+   objects, and parts repeated around a ring sit at a radius the part's own
+   centre does not record, so the declared wheelbase and wingspan are taken as
+   floors rather than trusting the part extents alone. */
+function specSpan(spec) {
+  const sp = spec?.size_performance || {};
+  let max = Math.max(Number(sp.wheelbase_mm) || 0, Number(sp.wingspan_mm) || 0);
+  for (const p of spec?.parts || []) {
+    const s = p.geometry?.size_mm, c = p.geometry?.center_mm;
+    const r = Number(p.geometry?.repeat?.radius_mm) || 0;
+    for (const ax of [["w", "x"], ["h", "y"], ["d", "z"]]) {
+      const half = (Number(s?.[ax[0]]) || 0) / 2;
+      const at = Math.abs(Number(c?.[ax[1]]) || 0);
+      max = Math.max(max, (at + half + r) * 2);
+    }
+  }
+  return max;
+}
+
+function build(spec) {
+  const t0 = performance.now();
+  const built = buildFromSpec(spec, { sourceMesh: null });
+  clearModel();
+  model = built.root;
+  model.traverse((o) => { if (o.isMesh) o.castShadow = o.receiveShadow = true; });
+  scene.add(model);
+  $("stageEmpty").style.display = "none";
+  fitView();
+
+  let tris = 0;
+  model.traverse((o) => {
+    if (!o.isMesh) return;
+    const g = o.geometry;
+    tris += g.index ? g.index.count / 3 : g.attributes.position.count / 3;
+  });
+  const s = new THREE.Box3().setFromObject(model).getSize(new THREE.Vector3());
+
+  $("mName").textContent = pipe.sample ? short(pipe.sample) : "모델";
+  $("mParts").textContent = model.children.length;
+  $("mTris").textContent = Math.round(tris).toLocaleString();
+  $("mDims").textContent = `${s.x.toFixed(1)} × ${s.y.toFixed(1)} × ${s.z.toFixed(1)}`;
+  $("mTime").textContent = `${Math.round(performance.now() - t0)}ms`;
+  $("mNote").textContent = built.notes.length
+    ? built.notes.join(" · ")
+    : "사양서의 단면 좌표를 그대로 따랐습니다.";
+  return built;
+}
+
+$("btnBuild").onclick = () => {
+  const ta = $("jsonText"), msg = $("jsonMsg");
+  let spec;
+  try { spec = JSON.parse(ta.value); }
+  catch (e) {
+    ta.classList.add("bad"); msg.classList.add("bad");
+    msg.textContent = `JSON 문법 오류: ${e.message}`;
+    return;
+  }
+  ta.classList.remove("bad"); msg.classList.remove("bad");
+  try {
+    pipe.spec = spec;
+    build(spec);
+    msg.textContent = "사양서대로 다시 만들었습니다.";
+    toast("형상을 다시 만들었습니다", true);
+  } catch (e) {
+    msg.classList.add("bad");
+    msg.textContent = `형상을 만들지 못했습니다: ${e.message}`;
+  }
+};
+
+$("btnRevert").onclick = () => {
+  const ta = $("jsonText");
+  ta.value = ta.dataset.pristine || "";
+  $("btnBuild").click();
+  $("jsonMsg").textContent = "편집을 되돌렸습니다.";
+};
+
+/* ================================================================ library
+   Every card is rendered here and now from the same specification the
+   workspace compiles, on a throwaway renderer. A stored thumbnail would keep
+   showing the old shape after the spec changed. */
+let thumbsDone = false;
+async function renderThumbnails() {
+  if (thumbsDone) return;
+  thumbsDone = true;
+  const W = 300, H = 260;
+  const r2 = new THREE.WebGLRenderer({ antialias: true, alpha: false, preserveDrawingBuffer: true });
+  r2.setSize(W, H);
+  r2.setPixelRatio(1);
+  r2.outputColorSpace = THREE.SRGBColorSpace;
+  r2.toneMapping = THREE.ACESFilmicToneMapping;
+  r2.toneMappingExposure = 1.5;
+
+  const s2 = new THREE.Scene();
+  s2.background = new THREE.Color(0x0C0C10);
+  const p2 = new THREE.PMREMGenerator(r2);
+  s2.environment = p2.fromScene(new RoomEnvironment(), 0.04).texture;
+  const k2 = new THREE.DirectionalLight(0xffffff, 2.4); k2.position.set(200, 340, 220);
+  s2.add(k2, new THREE.HemisphereLight(0xc4ccdd, 0x3a3d48, 1.15), new THREE.AmbientLight(0xffffff, 0.3));
+  const c2 = new THREE.PerspectiveCamera(38, W / H, 0.5, 8000);
+
+  for (const s of SAMPLES) {
+    const img = document.querySelector(`.item[data-id="${s.id}"] .thumb`);
+    if (!img) continue;
+    try {
+      const spec = await loadSpec(s.id);
+      const { root } = buildFromSpec(spec, { sourceMesh: null });
+      s2.add(root);
+      const bb = new THREE.Box3().setFromObject(root);
+      const ctr = bb.getCenter(new THREE.Vector3());
+      const rad = Math.max(10, bb.getSize(new THREE.Vector3()).length() / 2);
+      const vHalf = THREE.MathUtils.degToRad(c2.fov / 2);
+      const hHalf = Math.atan(Math.tan(vHalf) * c2.aspect);
+      const dist = (rad / Math.sin(Math.min(vHalf, hHalf))) * 1.18;
+      c2.position.copy(ctr).add(new THREE.Vector3(0.6, 0.42, 0.68).normalize().multiplyScalar(dist));
+      c2.near = Math.max(0.4, rad / 60); c2.far = rad * 60;
+      c2.lookAt(ctr);
+      c2.updateProjectionMatrix();
+      r2.render(s2, c2);
+      img.src = r2.domElement.toDataURL("image/png");
+      img.style.display = "";
+      const ph = img.parentElement.querySelector(".noimg");
+      if (ph) ph.remove();
+      s2.remove(root);
+      dispose(root);
+      await sleep(0);   // let the grid paint between items
+    } catch (e) {
+      console.warn("thumbnail failed", s.id, e);
+    }
+  }
+  p2.dispose();
+  r2.dispose();
+}
+
+let libFilter = "전체";
+function renderLibrary() {
+  const groups = ["전체", ...new Set(SAMPLES.map((s) => s.group || "기타"))];
+  $("libCats").innerHTML = groups.map((g) =>
+    `<button class="${g === libFilter ? "on" : ""}" data-g="${g}">${g}</button>`).join("");
+  const shown = SAMPLES.filter((s) => libFilter === "전체" || (s.group || "기타") === libFilter);
+  $("libCount").textContent = `${shown.length}개`;
+  $("libGrid").innerHTML = shown.map((s) => `
+    <button class="item" data-id="${s.id}">
+      <img class="thumb" alt="" style="display:none" />
+      <div class="noimg">미리보기 생성 중</div>
+      <div class="meta">
+        <div class="t">${short(s)}</div>
+        <div class="d">${s.recipe || "-"} · 파트 ${s.parts || "?"}</div>
+      </div>
+    </button>`).join("");
+  thumbsDone = false;
+  renderThumbnails();
+}
+
+$("libCats").onclick = (e) => {
+  const b = e.target.closest("button");
+  if (!b) return;
+  libFilter = b.dataset.g;
+  renderLibrary();
+};
+$("libGrid").onclick = (e) => {
+  const b = e.target.closest(".item");
+  if (!b) return;
+  const s = SAMPLES.find((x) => x.id === b.dataset.id);
+  closeLib();
+  $("prompt").value = s.prompt;
+  startRun(s.prompt);
+};
+
+function openLib() {
+  $("lib").style.display = "";
+  $("wsBody").style.display = "none";
+  renderLibrary();
+}
+function closeLib() {
+  $("lib").style.display = "none";
+  $("wsBody").style.display = "";
+  resize();
+}
+$("btnLib").onclick = () => ($("lib").style.display === "none" ? openLib() : closeLib());
+$("btnLibClose").onclick = closeLib;
+
+/* ------------------------------------------------------------ entry point
+   A prompt with no API behind it still has to land somewhere honest: the
+   nearest bundled sample, said out loud when it is not what was asked for. */
+function pickSample(text) {
+  const t = (text || "").toLowerCase();
+  const score = (s) => {
+    const words = s.prompt.toLowerCase().split(/[\s,·]+/).filter((w) => w.length > 1);
+    return words.filter((w) => t.includes(w)).length;
+  };
+  const ranked = SAMPLES.map((s) => ({ s, n: score(s) })).sort((a, b) => b.n - a.n);
+  return ranked[0].n > 0 ? { sample: ranked[0].s, matched: true } : { sample: SAMPLES[0], matched: false };
+}
+
+function startRun(text) {
+  const { sample, matched } = pickSample(text);
+  pipe.sample = sample;
+  pipe.done = 0; pipe.running = 0; pipe.active = true; pipe.spec = null;
+  clearModel();
+  $("stageEmpty").style.display = "";
+  $("jsonBlock").style.display = "none";
+  $("dock").style.display = "none";
+  $("projName").textContent = short(sample);
+  ["mParts", "mTris", "mDims", "mTime"].forEach((id) => ($(id).textContent = "—"));
+  $("mName").textContent = short(sample);
+  $("mNote").textContent = "";
+  renderStepper();
+  if (!matched && text) {
+    toast(`공개 데모에는 준비된 제품만 있습니다. "${short(sample)}"로 진행합니다`);
+  }
+  runStep(1);
+}
+
+$("btnGenerate").onclick = () => {
+  const p = $("prompt").value.trim();
+  if (!p) { toast("제품 설명을 입력하거나 아래 예시를 고르세요"); return; }
+  startRun(p);
+};
+$("prompt").addEventListener("keydown", (e) => {
+  if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) $("btnGenerate").click();
+});
+
+$("chips").onclick = (e) => {
+  const b = e.target.closest(".sample");
+  if (!b) return;
+  const s = SAMPLES.find((x) => x.id === b.dataset.id);
+  $("prompt").value = s.prompt;
+  startRun(s.prompt);
+};
+
+$("btnNew").onclick = () => {
+  teardownSim();
+  clearModel();
+  pipe.done = 0; pipe.running = 0; pipe.active = false; pipe.sample = null; pipe.spec = null;
+  $("prompt").value = "";
+  $("projName").textContent = "새 프로젝트";
+  $("stageEmpty").style.display = "";
+  $("jsonBlock").style.display = "none";
+  $("dock").style.display = "none";
+  $("mName").textContent = "—";
+  ["mParts", "mTris", "mDims", "mTime"].forEach((id) => ($(id).textContent = "—"));
+  $("mNote").textContent = "";
+  showGen(false);
+  renderStepper();
+  toast("처음으로 돌아왔습니다");
+};
+
+/* ------------------------------------------------------------------ boot */
+(async () => {
+  try {
+    SAMPLES = await fetch("./specs/index.json").then((r) => r.json());
+    if (!SAMPLES.length) throw new Error("샘플이 비어 있습니다");
+    /* Missing meshes are not an error: stage 1 falls back to the compiled
+       specification and labels itself accordingly. */
+    MESHES = await fetch("./assets/meshes/index.json").then((r) => r.json()).catch(() => ({}));
+  } catch (e) {
+    $("chips").innerHTML = `<span class="hint">샘플 목록을 불러오지 못했습니다: ${e.message}</span>`;
+    $("btnLib").disabled = true;
+    return;
+  }
+  /* Chips are photographs, so only samples that have their own photo can
+     appear here — an octocopter under a hexacopter picture reads as a mistake
+     in the geometry rather than in the thumbnail. Everything else is in the
+     library, where the tile is rendered from the sample's own compiled CAD. */
+  const IMG = { "inspect-quad": "inspection-quad", "agri-hexa": "agri-hexa",
+    "map-wing": "mapping-fixedwing", "sar-vtol": "sar-vtol" };
+  $("chips").innerHTML = SAMPLES.filter((s) => IMG[s.id]).slice(0, 4)
+    .map((s) => `<button class="sample" data-id="${s.id}">
+      <img class="thumb" src="./assets/samples/drones/${IMG[s.id]}.jpg" alt="" loading="lazy" />
+      <span class="lb">${short(s)}</span></button>`).join("");
+  renderStepper();
+})();
+</script>
+</body>
+</html>

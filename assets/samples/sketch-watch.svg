@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 520" width="420" height="520">
+  <rect width="420" height="520" fill="#f4f2ec"/>
+  <g stroke="#9aa0aa" stroke-width="1" opacity=".4" stroke-dasharray="4 5">
+    <path d="M210 30 V500"/><path d="M40 260 H380"/>
+  </g>
+  <g fill="none" stroke="#23262c" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+    <!-- case + bezel -->
+    <circle cx="210" cy="260" r="96"/>
+    <circle cx="210" cy="260" r="82" stroke-width="2"/>
+    <circle cx="210" cy="260" r="70" stroke-width="1.6" opacity=".7"/>
+    <!-- crown -->
+    <path d="M306 248 h20 a6 6 0 0 1 6 6 v12 a6 6 0 0 1 -6 6 h-20"/>
+    <path d="M310 252 v20 M318 252 v20 M326 252 v20" stroke-width="1.2" opacity=".5"/>
+    <!-- lugs -->
+    <path d="M172 172 l-8 -34 h34 l6 30"/>
+    <path d="M248 172 l8 -34 h-34 l-6 30"/>
+    <path d="M172 348 l-8 34 h34 l6 -30"/>
+    <path d="M248 348 l8 34 h-34 l-6 -30"/>
+    <!-- strap -->
+    <path d="M164 138 V64 a10 10 0 0 1 10 -10 h72 a10 10 0 0 1 10 10 v74"/>
+    <path d="M164 382 v74 a10 10 0 0 0 10 10 h72 a10 10 0 0 0 10 -10 v-74"/>
+    <path d="M170 96 h80 M170 116 h80 M170 428 h80 M170 448 h80" stroke-width="1.2" opacity=".4"/>
+    <!-- hands -->
+    <path d="M210 260 V206 M210 260 l38 22" stroke-width="3"/>
+  </g>
+  <!-- hour indices -->
+  <g stroke="#23262c" stroke-width="2.4" opacity=".8">
+    <path d="M210 190 v12 M210 318 v12 M140 260 h12 M268 260 h12"/>
+  </g>
+  <g stroke="#c2452f" stroke-width="1.4" fill="none" opacity=".85">
+    <path d="M114 260 h-52 M306 260 h52"/>
+    <path d="M70 252 l-8 8 l8 8 M350 252 l8 8 l-8 8" fill="#c2452f"/>
+    <path d="M192 138 v-16 M228 138 v-16 M192 130 h36"/>
+  </g>
+  <g font-family="'Courier New',monospace" font-size="13" fill="#c2452f">
+    <text x="176" y="244">Ø 40</text>
+    <text x="238" y="126">lug 20</text>
+  </g>
+  <g font-family="'Courier New',monospace" font-size="12.5" fill="#5a606b">
+    <text x="344" y="286">crown</text>
+    <text x="286" y="420">strap</text>
+    <text x="42" y="180">bezel</text>
+  </g>
+  <g stroke="#5a606b" stroke-width="1" opacity=".55" fill="none">
+    <path d="M342 280 L332 268"/><path d="M282 416 L256 424"/><path d="M78 184 L146 216"/>
+  </g>
+</svg>

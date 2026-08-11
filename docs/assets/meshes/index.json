@@ -1,0 +1,18 @@
+{
+  "inspect-quad": {
+    "file": "inspect-quad.glb",
+    "bytes": 12424420
+  },
+  "agri-hexa": {
+    "file": "agri-hexa.glb",
+    "bytes": 9618044
+  },
+  "map-wing": {
+    "file": "map-wing.glb",
+    "bytes": 3098624
+  },
+  "sar-vtol": {
+    "file": "sar-vtol.glb",
+    "bytes": 9269524
+  }
+}

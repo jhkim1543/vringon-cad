@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 400" width="480" height="400">
+  <rect width="480" height="400" fill="#f4f2ec"/>
+  <g fill="none" stroke="#23262c" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+    <!-- isometric box: top face -->
+    <path d="M120 132 L262 92 L404 132 L262 174 Z"/>
+    <!-- front + side -->
+    <path d="M120 132 V266 L262 308 V174"/>
+    <path d="M404 132 V266 L262 308"/>
+    <!-- lid parting line -->
+    <path d="M120 168 L262 210 L404 168" stroke-width="1.6" opacity=".65" stroke-dasharray="7 5"/>
+  </g>
+  <!-- corner bosses -->
+  <g fill="none" stroke="#23262c" stroke-width="1.8" opacity=".85">
+    <ellipse cx="148" cy="134" rx="9" ry="4.5"/>
+    <ellipse cx="376" cy="134" rx="9" ry="4.5"/>
+    <ellipse cx="262" cy="106" rx="9" ry="4.5"/>
+    <ellipse cx="262" cy="162" rx="9" ry="4.5"/>
+  </g>
+  <!-- cable gland -->
+  <g fill="none" stroke="#23262c" stroke-width="2.2">
+    <path d="M120 212 h-26 M94 200 v24"/>
+    <path d="M94 206 h-16 v12 h16"/>
+  </g>
+  <!-- ribs on front face -->
+  <g stroke="#5a606b" stroke-width="1.2" opacity=".45">
+    <path d="M156 190 V284 M192 200 V294 M228 210 V304"/>
+  </g>
+  <g stroke="#c2452f" stroke-width="1.4" fill="none" opacity=".85">
+    <path d="M120 330 v18 M262 372 v18 M120 340 L262 382"/>
+    <path d="M128 336 l-8 4 l7 5 M254 378 l8 4 l-7 5" fill="#c2452f"/>
+    <path d="M420 132 h18 M420 266 h18 M432 132 V266"/>
+    <path d="M428 140 l4 -8 l4 8 M428 258 l4 8 l4 -8" fill="#c2452f"/>
+  </g>
+  <g font-family="'Courier New',monospace" font-size="13" fill="#c2452f">
+    <text x="150" y="378">W 160</text>
+    <text x="444" y="204">H 70</text>
+  </g>
+  <g font-family="'Courier New',monospace" font-size="12.5" fill="#5a606b">
+    <text x="292" y="196">lid / base 분할</text>
+    <text x="30" y="196">cable gland</text>
+    <text x="286" y="84">boss ×4</text>
+  </g>
+  <g stroke="#5a606b" stroke-width="1" opacity=".55" fill="none">
+    <path d="M288 192 L268 202"/><path d="M282 80 L266 100"/>
+  </g>
+</svg>

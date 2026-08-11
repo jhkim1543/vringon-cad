@@ -1,0 +1,8 @@
+node_modules/
+config.local.json
+generated/
+shots/
+data/
+contacts.jsonl
+server.log
+assets/uploads/

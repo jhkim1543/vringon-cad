@@ -1,0 +1,50 @@
+[
+  {
+    "id": "inspect-quad",
+    "prompt": "휠베이스 450mm 교량 점검용 쿼드콥터, 상부 짐벌 줌 카메라, 프로펠러 가드",
+    "group": "점검",
+    "name": "중앙 바디 하부쉘",
+    "recipe": "QUAD_X",
+    "parts": 12
+  },
+  {
+    "id": "agri-hexa",
+    "prompt": "농업 살포 헥사콥터, 휠베이스 1400mm, 하부 10L 탱크와 노즐 붐",
+    "group": "농업",
+    "name": "중앙 바디 셸",
+    "recipe": "HEXA",
+    "parts": 13
+  },
+  {
+    "id": "map-wing",
+    "prompt": "측량용 고정익, 날개폭 1200mm, 하방 카메라 창, 유선형 동체",
+    "group": "측량",
+    "name": "유선형 동체",
+    "recipe": "FIXED_WING",
+    "parts": 11
+  },
+  {
+    "id": "sar-vtol",
+    "prompt": "수색구조 하이브리드 VTOL, 리프트 붐 2개와 리프트 로터 4개, 전방 짐벌과 탐조등",
+    "group": "공공안전",
+    "name": "유선형 동체",
+    "recipe": "LIFT_AND_CRUISE",
+    "parts": 18
+  },
+  {
+    "id": "delivery-octo",
+    "prompt": "배송용 X8 동축 옥토콥터, 하부 카고 베이, 넓은 랜딩기어",
+    "group": "물류",
+    "name": "중앙 바디",
+    "recipe": "OCTO_X8",
+    "parts": 14
+  },
+  {
+    "id": "isr-wing",
+    "prompt": "방산 정찰용 고정익, 날개폭 1800mm, 하방 안정화 센서 터렛, 견고한 동체",
+    "group": "방산",
+    "name": "견고한 동체",
+    "recipe": "FIXED_WING",
+    "parts": 10
+  }
+]

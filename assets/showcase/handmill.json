@@ -1,0 +1,60 @@
+{
+  "id": "showcase_handmill",
+  "title": "커피 핸드밀 그라인더",
+  "brief": "스테인리스 배럴 바디에 유리 캐치 자, 황동 호퍼 리드와 크랭크 어셈블리로 구성된 수동 그라인더입니다. 크랭크 길이와 배럴 치수가 전부 파라미터로 연동되며, 시뮬레이션으로 크랭크가 회전합니다.",
+  "params": {
+    "bodyD":  { "label": "배럴 직경",   "value": 52,  "min": 40, "max": 70,  "step": 1 },
+    "bodyH":  { "label": "배럴 높이",   "value": 82,  "min": 60, "max": 120, "step": 1 },
+    "jarH":   { "label": "캐치 자 높이", "value": 58,  "min": 40, "max": 90,  "step": 1 },
+    "crankL": { "label": "크랭크 길이", "value": 62,  "min": 45, "max": 90,  "step": 1 },
+    "knobH":  { "label": "노브 높이",   "value": 20,  "min": 14, "max": 30,  "step": 1 },
+    "bandY":  { "label": "액센트 밴드 위치", "value": 62, "min": 20, "max": 95, "step": 1 }
+  },
+  "parts": [
+    {
+      "id": "catch_jar", "label": "캐치 자 (유리)", "material": "glass",
+      "meshes": [
+        { "prim": "lathe", "profile": [
+          [ "bodyD*0.14", 0 ], [ "bodyD/2-4", 0 ], [ "bodyD/2-1", 5 ],
+          [ "bodyD/2-1", "jarH-6" ], [ "bodyD/2-2.5", "jarH" ], [ "bodyD*0.30", "jarH" ]
+        ] }
+      ]
+    },
+    {
+      "id": "barrel", "label": "배럴 바디", "material": "steel",
+      "meshes": [
+        { "prim": "lathe", "profile": [
+          [ "bodyD*0.30", "jarH" ], [ "bodyD/2-2.5", "jarH" ], [ "bodyD/2", "jarH+6" ],
+          [ "bodyD/2", "jarH+bodyH-8" ], [ "bodyD/2-2", "jarH+bodyH" ], [ "bodyD*0.32", "jarH+bodyH" ]
+        ] }
+      ]
+    },
+    {
+      "id": "accent_band", "label": "액센트 밴드", "material": "copper",
+      "meshes": [
+        { "prim": "torus", "args": [ "bodyD/2+0.4", 1.4 ], "y": "jarH+bandY", "rxDeg": 90 }
+      ]
+    },
+    {
+      "id": "hopper_lid", "label": "호퍼 리드", "material": "brass",
+      "meshes": [
+        { "prim": "lathe", "profile": [
+          [ "bodyD*0.32", "jarH+bodyH" ], [ "bodyD/2-1", "jarH+bodyH+2" ], [ "bodyD/2-2", "jarH+bodyH+9" ],
+          [ "bodyD*0.22", "jarH+bodyH+15" ], [ "bodyD*0.09", "jarH+bodyH+17" ]
+        ] }
+      ]
+    },
+    {
+      "id": "crank", "label": "크랭크 어셈블리", "material": "steel",
+      "meshes": [
+        { "prim": "chamferCyl", "args": [ 5, 22, 1.2 ], "y": "jarH+bodyH+14" },
+        { "prim": "chamferCyl", "args": [ 7.5, 5, 1.5 ], "y": "jarH+bodyH+24" },
+        { "prim": "roundedBox", "args": [ "crankL+10", 5, 13, 2.4 ], "x": "crankL/2", "y": "jarH+bodyH+27" },
+        { "prim": "chamferCyl", "args": [ 6.5, "knobH", 2 ], "x": "crankL", "y": "jarH+bodyH+25" }
+      ]
+    }
+  ],
+  "sims": [
+    { "part": "crank", "mode": "spinY", "rpm": 34, "pivot": [ 0, 0 ] }
+  ]
+}

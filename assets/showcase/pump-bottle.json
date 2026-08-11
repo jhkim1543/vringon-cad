@@ -1,0 +1,54 @@
+{
+  "id": "showcase_pump_bottle",
+  "title": "화장품 펌프 보틀",
+  "brief": "펄 화이트 바디에 골드 컬러, 노즐 일체형 펌프 헤드로 구성된 화장품 용기입니다. 용기 직경·높이·노즐 길이가 파라미터로 연동되고, 시뮬레이션에서 펌프 헤드가 실제로 눌립니다.",
+  "params": {
+    "bodyD":   { "label": "용기 직경",   "value": 42,  "min": 30, "max": 60,  "step": 1 },
+    "bodyH":   { "label": "용기 높이",   "value": 128, "min": 80, "max": 180, "step": 1 },
+    "neckD":   { "label": "넥 직경",     "value": 22,  "min": 16, "max": 32,  "step": 0.5 },
+    "pumpH":   { "label": "펌프 높이",   "value": 24,  "min": 16, "max": 36,  "step": 1 },
+    "nozzleL": { "label": "노즐 길이",   "value": 18,  "min": 10, "max": 30,  "step": 1 },
+    "shoulderR": { "label": "숄더 곡률", "value": 16,  "min": 6,  "max": 26,  "step": 1 }
+  },
+  "parts": [
+    {
+      "id": "bottle_body", "label": "보틀 바디", "material": "abs_white",
+      "meshes": [
+        { "prim": "lathe", "profile": [
+          [ "bodyD*0.10", 0 ], [ "bodyD/2-3", 0 ], [ "bodyD/2", 6 ],
+          [ "bodyD/2", "bodyH-shoulderR" ], [ "bodyD/2-shoulderR*0.45", "bodyH-shoulderR*0.25" ],
+          [ "neckD/2", "bodyH" ]
+        ] }
+      ]
+    },
+    {
+      "id": "collar", "label": "컬러 링", "material": "gold",
+      "meshes": [
+        { "prim": "lathe", "profile": [
+          [ "neckD/2", "bodyH" ], [ "neckD/2+1.6", "bodyH+1.5" ],
+          [ "neckD/2+1.6", "bodyH+11" ], [ "neckD/2-0.6", "bodyH+12.5" ]
+        ] }
+      ]
+    },
+    {
+      "id": "pump_head", "label": "펌프 헤드", "material": "abs_white",
+      "meshes": [
+        { "prim": "lathe", "profile": [
+          [ "neckD/2-1.5", "bodyH+12.5" ], [ "neckD/2-0.5", "bodyH+15" ],
+          [ "neckD/2-0.5", "bodyH+pumpH+2" ], [ "neckD/2-3.5", "bodyH+pumpH+8" ], [ "neckD*0.09", "bodyH+pumpH+8" ]
+        ] },
+        { "prim": "chamferCyl", "args": [ 3.6, "nozzleL", 1 ], "x": "neckD/2-2+nozzleL/2", "y": "bodyH+pumpH+1", "rzDeg": 90 },
+        { "prim": "chamferCyl", "args": [ 2.2, 3, 0.6 ], "x": "neckD/2-2+nozzleL+2", "y": "bodyH+pumpH+1", "rzDeg": 90 }
+      ]
+    },
+    {
+      "id": "base_ring", "label": "베이스 링", "material": "gold",
+      "meshes": [
+        { "prim": "torus", "args": [ "bodyD/2-1.2", 1.1 ], "y": 2.2, "rxDeg": 90 }
+      ]
+    }
+  ],
+  "sims": [
+    { "part": "pump_head", "mode": "lift", "travel": -6, "period": 1.4 }
+  ]
+}

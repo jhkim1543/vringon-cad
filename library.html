@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>라이브러리, VRINGON CAD</title>
+<link rel="icon" href="assets/favicon.svg" />
+<link rel="stylesheet" href="css/vringon.css" />
+<style>
+  .lib { display: flex; min-height: calc(100vh - 55px); }
+  .lib-side { width: 210px; flex-shrink: 0; border-right: 1px solid var(--line); background: var(--bg-2); padding: 18px 12px; }
+  .lib-side .cap { font-size: 12px; color: var(--text-3); font-weight: 700; padding: 0 10px 10px; }
+  .lib-side a { display: flex; align-items: center; gap: 9px; padding: 9px 12px; border-radius: 8px;
+    font-size: 13.5px; font-weight: 600; color: var(--text-2); }
+  .lib-side a:hover { background: #1A1A20; color: var(--text); }
+  .lib-side a.on { background: var(--accent-soft); color: var(--text); }
+  .lib-main { flex: 1; padding: 22px 30px 60px; min-width: 0; }
+  .lib-head { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }
+  .lib-head h1 { font-size: 19px; }
+  .cats { display: flex; gap: 7px; flex-wrap: wrap; margin-bottom: 26px; }
+  .cats button { padding: 6px 14px; border-radius: 999px; border: 1px solid var(--line-2);
+    font-size: 12.5px; font-weight: 600; color: var(--text-2); }
+  .cats button.on { background: #ECEDEF; color: #111; border-color: #ECEDEF; }
+  .day { margin-bottom: 34px; }
+  .day .dt { font-size: 13px; font-weight: 700; margin-bottom: 12px; color: var(--text-2); }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 14px; }
+  .item { position: relative; border: 1px solid var(--line); border-radius: 10px; overflow: hidden;
+    background: var(--panel); cursor: pointer; transition: border-color .15s; text-align: left; }
+  .item:hover { border-color: #3A3A45; }
+  .item img { width: 100%; aspect-ratio: 1.15; object-fit: cover; display: block; background: #0C0C10; }
+  .item .noimg { width: 100%; aspect-ratio: 1.15; display: grid; place-items: center; color: var(--text-3); font-size: 12px; }
+  .item .meta { padding: 10px 12px; }
+  .item .t { font-size: 13px; font-weight: 650; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .item .d { font-size: 11.5px; color: var(--text-3); margin-top: 2px; }
+  .item .del { position: absolute; top: 8px; right: 8px; width: 26px; height: 26px; border-radius: 7px;
+    background: rgba(12,12,14,.75); color: var(--text-2); display: none; place-items: center; }
+  .item:hover .del { display: grid; }
+  .item .del:hover { color: var(--danger); }
+  .empty { color: var(--text-3); font-size: 14px; padding: 60px 0; text-align: center; }
+
+  /* ---- asset catalogue ---- */
+  .tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--line); margin-bottom: 20px; }
+  .tabs button { padding: 9px 16px; font-size: 13.5px; font-weight: 650; color: var(--text-3);
+    border-bottom: 2px solid transparent; margin-bottom: -1px; }
+  .tabs button.on { color: var(--text); border-bottom-color: var(--accent); }
+  .tabs .cnt { font-size: 11px; color: var(--text-3); margin-left: 5px; }
+  .asset-wrap { display: flex; gap: 22px; align-items: flex-start; }
+  .cat-tree { width: 190px; flex-shrink: 0; font-size: 12.5px; }
+  .cat-tree .grp { font-weight: 700; color: var(--text-2); padding: 7px 8px; border-radius: 7px; cursor: pointer; display: flex; gap: 6px; }
+  .cat-tree .grp:hover { background: #17171C; }
+  .cat-tree .grp.on { background: var(--accent-soft); color: var(--text); }
+  .cat-tree .sub { padding: 5px 8px 5px 22px; color: var(--text-3); border-radius: 6px; cursor: pointer; }
+  .cat-tree .sub:hover { background: #17171C; color: var(--text-2); }
+  .cat-tree .sub.on { color: var(--accent-hi); font-weight: 650; }
+  .asset-main { flex: 1; min-width: 0; }
+  .qbar { display: flex; gap: 8px; margin-bottom: 8px; }
+  .qbar input { flex: 1; }
+  .qchips { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 16px; }
+  .qchips button { padding: 5px 11px; border-radius: 999px; border: 1px solid var(--line-2);
+    font-size: 11.5px; color: var(--text-3); }
+  .qchips button:hover { color: var(--text); border-color: #3A3A45; }
+  .qexplain { font-size: 12px; color: var(--accent-hi); background: var(--accent-soft);
+    padding: 8px 11px; border-radius: 8px; margin-bottom: 14px; display: none; }
+  .acard { display: grid; grid-template-columns: 116px 1fr auto; gap: 14px; align-items: center;
+    border: 1px solid var(--line); border-radius: 11px; background: var(--panel); padding: 11px;
+    margin-bottom: 10px; cursor: pointer; transition: border-color .15s; }
+  .acard:hover { border-color: #3A3A45; }
+  .acard img { width: 116px; height: 80px; object-fit: cover; border-radius: 8px; background: #0C0C10; }
+  .acard .noimg { width: 116px; height: 80px; border-radius: 8px; background: #0C0C10; display: grid;
+    place-items: center; color: var(--text-3); font-size: 11px; }
+  .acard h4 { font-size: 14px; font-weight: 650; }
+  .acard .sub2 { font-size: 11.5px; color: var(--text-3); margin-top: 3px; }
+  .acard .badges { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 7px; }
+  .bd { font-size: 10.5px; padding: 2px 7px; border-radius: 5px; background: #1C1C22; color: var(--text-3); }
+  /* status reads by weight, not by colour: green/blue chips looked auto-generated */
+  .bd.st-released { background: #24242C; color: var(--text); }
+  .bd.st-review { background: #24242C; color: var(--text-2); }
+  .bd.st-deprecated { background: #24242C; color: var(--text-3); text-decoration: line-through; }
+  .acard .score { text-align: right; font-size: 20px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .acard .score span { display: block; font-size: 10.5px; font-weight: 600; color: var(--text-3); }
+  .acard .why { font-size: 11px; color: var(--text-3); margin-top: 5px; }
+  .qexplain { color: var(--text-2) !important; background: #17171C !important; }
+</style>
+</head>
+<body>
+
+<div class="ws-top">
+  <a class="brand" href="index.html">
+    <svg width="24" height="16" viewBox="0 0 46 30" fill="none"><path d="M2 3 12 27 21 3" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="33" cy="15" r="11.5" stroke="currentColor" stroke-width="5"/></svg>
+    VRINGON CAD
+  </a>
+  <span class="sp"></span>
+  <span class="tag" id="userTag">—</span>
+  <button class="btn btn-ghost btn-sm" id="btnLogout">로그아웃</button>
+</div>
+
+<div class="lib">
+  <aside class="lib-side">
+    <div class="cap">워크스페이스</div>
+    <a href="app.html">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+      새 디자인 생성
+    </a>
+    <a class="on" href="library.html">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M9 9v11"/></svg>
+      라이브러리
+    </a>
+  </aside>
+
+  <main class="lib-main">
+    <div class="lib-head">
+      <h1 id="projTitle">라이브러리</h1>
+      <span class="sp" style="flex:1"></span>
+      <a class="btn btn-primary btn-sm" href="app.html">＋ 새 디자인</a>
+    </div>
+
+    <div class="tabs" id="tabs">
+      <button data-tab="work" class="on">작업 <span class="cnt" id="cntWork"></span></button>
+      <button data-tab="asset">자산 <span class="cnt" id="cntAsset"></span></button>
+    </div>
+
+    <!-- 작업: 생성만 하고 아직 보관하지 않은 결과물 -->
+    <section id="tabWork">
+      <div class="cats" id="cats"></div>
+      <div id="list"></div>
+    </section>
+
+    <!-- 자산: 기업 카탈로그로 승격된 3D 자산 -->
+    <section id="tabAsset" style="display:none">
+      <div class="asset-wrap">
+        <nav class="cat-tree" id="catTree"></nav>
+        <div class="asset-main">
+          <div class="qbar">
+            <input class="input" id="q" placeholder="자연어로 물어보세요, 예: 베어링 교체가 필요한 제품" />
+            <button class="btn btn-primary btn-sm" id="btnQ">검색</button>
+          </div>
+          <div class="qchips" id="qchips"></div>
+          <div class="qexplain" id="qexplain"></div>
+          <div id="assetList"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script type="module">
+  import { requireAuth, logout } from "./js/auth.js";
+  import { CATALOG } from "./js/catalog.js";
+
+  const user = requireAuth();
+  document.getElementById("userTag").textContent = user;
+  document.getElementById("btnLogout").onclick = logout;
+
+  const LIB_KEY = `vringon.library.${user}`;
+  const read = () => { try { return JSON.parse(localStorage.getItem(LIB_KEY)) || []; } catch { return []; } };
+  const write = (v) => localStorage.setItem(LIB_KEY, JSON.stringify(v));
+
+  let cat = "all";
+  const cats = document.getElementById("cats");
+  const usedArchetypes = () => [...new Set(read().map((e) => e.archetype))];
+  function renderCats() {
+    const list = ["all", ...usedArchetypes()];
+    const label = (c) => c === "all" ? "전체" : c === "freeform" ? "프리폼 설계" : (CATALOG[c]?.ko || c);
+    cats.innerHTML = list.map((c) =>
+      `<button data-c="${c}" class="${c === cat ? "on" : ""}">${label(c)}</button>`).join("");
+  }
+  cats.onclick = (e) => {
+    const b = e.target.closest("button"); if (!b) return;
+    cat = b.dataset.c; renderCats(); renderList();
+  };
+
+  const fmt = (ts) => {
+    const d = new Date(ts);
+    return `${d.getFullYear()}.${d.getMonth() + 1}.${d.getDate()}`;
+  };
+  const fmtTime = (ts) => {
+    const d = new Date(ts);
+    const h = d.getHours(), ampm = h < 12 ? "AM" : "PM";
+    return `${String(h % 12 || 12).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}${ampm}`;
+  };
+
+  function renderList() {
+    const host = document.getElementById("list");
+    const items = read().filter((e) => cat === "all" || e.archetype === cat);
+    if (!items.length) {
+      host.innerHTML = `<div class="empty">저장된 디자인이 없습니다. 새 디자인을 생성하면 자동으로 이곳에 보관됩니다.</div>`;
+      return;
+    }
+    const byDay = {};
+    for (const e of items) (byDay[fmt(e.at)] = byDay[fmt(e.at)] || []).push(e);
+    host.innerHTML = Object.entries(byDay).map(([day, list]) => `
+      <section class="day">
+        <div class="dt">${day}</div>
+        <div class="grid">
+          ${list.map((e) => `
+            <div class="item" data-id="${e.id}">
+              ${e.thumb ? `<img src="${e.thumb}" alt="" />` : `<div class="noimg">미리보기 없음</div>`}
+              <div class="meta">
+                <div class="t">${e.title}</div>
+                <div class="d">${CATALOG[e.archetype]?.ko || "프리폼 설계"} · ${fmtTime(e.at)}</div>
+              </div>
+              <button class="del" title="삭제">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 5l14 14M19 5 5 19"/></svg>
+              </button>
+            </div>`).join("")}
+        </div>
+      </section>`).join("");
+  }
+
+  document.getElementById("list").onclick = (e) => {
+    const del = e.target.closest(".del");
+    const item = e.target.closest(".item");
+    if (!item) return;
+    const id = item.dataset.id;
+    if (del) {
+      write(read().filter((x) => x.id !== id));
+      renderCats(); renderList();
+      return;
+    }
+    const entry = read().find((x) => x.id === id);
+    if (entry) {
+      sessionStorage.setItem("vringon.open", JSON.stringify(entry));
+      location.href = "app.html";
+    }
+  };
+
+  renderCats();
+  renderList();
+
+  /* ================= 자산 탭 — 3D 제품 카탈로그 ================= */
+  let ASSETS = [];
+  let catFilter = { category: null, family: null };
+
+  const CATS = {
+    "정밀 가공품": ["Index Coupling", "Housing", "Shaft", "Impeller", "Valve",
+      "Ring", "Bearing", "Coupling", "Sprocket", "Arm", "Manifold", "Fixture", "Tooling"],
+    "산업 장비": ["Pump", "Compressor", "Motor", "Gearbox", "Valve"],
+    "로봇·자동화": ["Robot Arm", "Gripper", "AMR", "Actuator", "Linear Stage"],
+    "자동차 부품": ["Brake", "Suspension", "Powertrain", "Interior"],
+    "전자제품": ["Enclosure", "Connector", "Sensor", "Display"],
+    "기타": ["General"],
+  };
+
+  /* the eight relation/shape queries the catalogue is built to answer */
+  const SAMPLE_QUERIES = [
+    "베어링 교체가 필요한 제품",
+    "알루미늄이 사용된 파트가 있는 제품",
+    "모터가 들어간 제품 전부",
+    "단종 부품을 대체할 수 있는 자산",
+    "회전 조인트가 있는 자산",
+    "이 STEP에서 파생된 파일",
+  ];
+
+  async function loadAssets() {
+    try {
+      const r = await fetch("/api/assets").then((x) => x.json());
+      ASSETS = r.assets || [];
+    } catch { ASSETS = []; }
+    document.getElementById("cntAsset").textContent = ASSETS.length ? `(${ASSETS.length})` : "";
+    document.getElementById("cntWork").textContent = read().length ? `(${read().length})` : "";
+    renderTree();
+    renderAssets(ASSETS.map((a) => ({ asset: a, reasons: [] })));
+  }
+
+  function renderTree() {
+    const counts = {};
+    for (const a of ASSETS) {
+      counts[a.category] = counts[a.category] || { n: 0, fam: {} };
+      counts[a.category].n++;
+      counts[a.category].fam[a.family || "—"] = (counts[a.category].fam[a.family || "—"] || 0) + 1;
+    }
+    const host = document.getElementById("catTree");
+    host.innerHTML = `<div class="grp ${!catFilter.category ? "on" : ""}" data-cat="">제품 카탈로그
+        <span style="margin-left:auto;color:var(--text-3)">${ASSETS.length}</span></div>`
+      /* CATS fixes the display order, but the list of categories comes from the
+         data. A hardcoded list silently dropped 정밀 가공품 and the sidebar
+         counts stopped adding up to the total. */
+      + [...Object.keys(CATS), ...Object.keys(counts).filter((c) => !(c in CATS))].map((c) => {
+        const info = counts[c];
+        if (!info) return "";
+        const subs = Object.entries(info.fam).map(([f, n]) =>
+          `<div class="sub ${catFilter.family === f ? "on" : ""}" data-cat="${c}" data-fam="${f}">${f} <span style="color:var(--text-3)">${n}</span></div>`).join("");
+        return `<div class="grp ${catFilter.category === c && !catFilter.family ? "on" : ""}" data-cat="${c}">${c}
+          <span style="margin-left:auto;color:var(--text-3)">${info.n}</span></div>${subs}`;
+      }).join("");
+  }
+
+  document.getElementById("catTree").onclick = (e) => {
+    const sub = e.target.closest(".sub");
+    const grp = e.target.closest(".grp");
+    if (sub) catFilter = { category: sub.dataset.cat, family: sub.dataset.fam };
+    else if (grp) catFilter = { category: grp.dataset.cat || null, family: null };
+    else return;
+    renderTree();
+    const list = ASSETS.filter((a) =>
+      (!catFilter.category || a.category === catFilter.category)
+      && (!catFilter.family || (a.family || "—") === catFilter.family));
+    renderAssets(list.map((a) => ({ asset: a, reasons: [] })));
+  };
+
+  function renderAssets(hits) {
+    const host = document.getElementById("assetList");
+    if (!hits.length) {
+      host.innerHTML = `<div class="empty">보관된 자산이 없습니다.<br/>
+        워크스페이스에서 구조 컴파일 후 <b>자산으로 보관</b>을 누르면 이곳에 등록됩니다.</div>`;
+      return;
+    }
+    host.innerHTML = hits.map(({ asset: a, reasons }) => `
+      <div class="acard" data-id="${a.assetId}">
+        ${a.thumb ? `<img src="${a.thumb}" alt="" />` : `<div class="noimg">미리보기 없음</div>`}
+        <div>
+          <h4>${a.name}</h4>
+          <div class="sub2">${[a.model, a.manufacturer, a.category, a.family].filter(Boolean).join(" · ")}</div>
+          <div class="badges">
+            <span class="bd st-${a.status}">${a.status}</span>
+            <span class="bd">v${a.version}</span>
+            <span class="bd">링크 ${a.links}</span>
+            <span class="bd">조인트 ${a.joints}</span>
+            <span class="bd">${a.mass ? a.mass.toFixed(2) + "kg" : "질량, "}</span>
+            ${a.formats.map((f) => `<span class="bd">${f.toUpperCase()}</span>`).join("")}
+          </div>
+          ${reasons.length ? `<div class="why">${reasons.join(" · ")}</div>` : ""}
+        </div>
+        <div class="score">${a.readiness ?? ", "}<span>준비도</span></div>
+      </div>`).join("");
+  }
+
+  document.getElementById("assetList").onclick = (e) => {
+    const c = e.target.closest(".acard");
+    if (c) location.href = `asset.html?id=${encodeURIComponent(c.dataset.id)}`;
+  };
+
+  async function runQuery(question) {
+    const ex = document.getElementById("qexplain");
+    ex.style.display = "block";
+    ex.textContent = "검색 중…";
+    try {
+      const r = await fetch("/api/asset-search", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ question }),
+      }).then((x) => x.json());
+      ex.textContent = `${r.explain || "검색 결과"}, ${r.hits.length}건${r.intent ? ` (${r.intent})` : ""}`;
+      renderAssets(r.hits);
+    } catch (err) {
+      ex.textContent = "검색 실패: " + err.message;
+    }
+  }
+
+  document.getElementById("qchips").innerHTML = SAMPLE_QUERIES.map((q) => `<button>${q}</button>`).join("");
+  document.getElementById("qchips").onclick = (e) => {
+    const b = e.target.closest("button"); if (!b) return;
+    document.getElementById("q").value = b.textContent;
+    runQuery(b.textContent);
+  };
+  document.getElementById("btnQ").onclick = () => {
+    const q = document.getElementById("q").value.trim();
+    if (q) runQuery(q); else loadAssets();
+  };
+  document.getElementById("q").addEventListener("keydown", (e) => {
+    if (e.key === "Enter") document.getElementById("btnQ").click();
+  });
+
+  document.getElementById("tabs").onclick = (e) => {
+    const b = e.target.closest("button"); if (!b) return;
+    [...document.querySelectorAll("#tabs button")].forEach((x) => x.classList.toggle("on", x === b));
+    const asset = b.dataset.tab === "asset";
+    document.getElementById("tabWork").style.display = asset ? "none" : "";
+    document.getElementById("tabAsset").style.display = asset ? "" : "none";
+    if (asset) loadAssets();
+  };
+
+  loadAssets();
+  if (new URLSearchParams(location.search).get("tab") === "asset") {
+    document.querySelector('#tabs button[data-tab="asset"]').click();
+  }
+</script>
+
+</body>
+</html>
