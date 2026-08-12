@@ -14,7 +14,7 @@
    node tools/refine-specs.mjs [id ...] [--dry]
 */
 import { readFile, writeFile } from "node:fs/promises";
-import { positionsFromGlb, meshBounds, refineFromMesh } from "../js/mesh-loft.js";
+import { positionsFromGlb, refineFromMesh } from "../js/mesh-loft.js";
 
 const args = process.argv.slice(2);
 const DRY = args.includes("--dry");
@@ -32,36 +32,13 @@ for (const id of Object.keys(index)) {
   const mesh = positionsFromGlb(await readFile(new URL(index[id].file, MESHES)));
   if (!mesh) { console.log(`${id} … 메시를 읽지 못했습니다`); continue; }
 
-  /* The mesh arrives unitless at roughly 1.0 across, so it is scaled to the
-     longest dimension the specification declares — the same rule the viewer
-     uses when it shows the stage-1 mesh, so the two agree. */
-  const b = meshBounds(mesh);
-  const meshLong = Math.max(...b.size);
-  let specLong = 0;
-  for (const p of spec.parts || []) {
-    const s = p.geometry?.size_mm, c = p.geometry?.center_mm;
-    if (!s || !c) continue;
-    const r = p.geometry?.repeat?.radius_mm || 0;
-    for (const [dim, at] of [[s.w, c.x], [s.h, c.y], [s.d, c.z]]) {
-      specLong = Math.max(specLong, (Math.abs(at || 0) + (dim || 0) / 2 + r) * 2);
-    }
-  }
-  if (!(specLong > 0) || !(meshLong > 0)) { console.log(`${id} … 축척을 정할 수 없습니다`); continue; }
-  const meshToMm = specLong / meshLong;
-
-  /* Both are centred on their own bounds horizontally and sit on the floor,
-     which is how the viewer places the stage-1 mesh. */
-  const origin = [
-    (b.lo[0] + b.hi[0]) / 2,
-    b.lo[1],
-    (b.lo[2] + b.hi[2]) / 2,
-  ];
-
-  const { touched, skipped } = refineFromMesh(spec, mesh, meshToMm, origin);
+  const r = refineFromMesh(spec, mesh);
+  const touched = r.measured, skipped = r.internal;
   if (touched.length && !DRY) await writeFile(specUrl, JSON.stringify(spec, null, 2));
-  console.log(`${id.padEnd(14)} 축척 ${meshToMm.toFixed(0)}mm/unit · `
-    + (touched.length ? `로프트 ${touched.join(", ")}` : "변경 없음")
-    + (skipped.length ? ` · 건너뜀 ${skipped.join(", ")}` : ""));
+  const total = touched.length + skipped.length;
+  console.log(`${id.padEnd(14)} 측정 ${touched.length}/${total}`
+    + (touched.length ? ` · ${touched.join(", ")}` : "")
+    + (skipped.length ? ` · 내부(메시 없음) ${skipped.join(", ")}` : ""));
 }
 
 if (DRY) console.log("\n--dry 모드: 파일을 쓰지 않았습니다.");

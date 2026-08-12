@@ -10,7 +10,7 @@
    which came from reading the image.
    ========================================================================== */
 import * as THREE from "three";
-import { loftAxis } from "./mesh-loft.js?v=8bd1f030";
+import { loftAxis } from "./mesh-loft.js?v=c22d4622";
 
 const n = (v, d = 2) => Number(Number(v || 0).toFixed(d));
 

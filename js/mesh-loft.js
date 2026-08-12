@@ -153,52 +153,177 @@ export function sectionsVary(sections, threshold = 0.12) {
   return Math.max(rel(ws), rel(hs)) >= threshold;
 }
 
-/**
- * Rewrite a specification's shell parts as lofts measured from the mesh.
- * Mutates and returns the spec; reports what it touched.
- *
- * @param spec        drone specification
- * @param mesh        {positions, count} — the stage-1 mesh
- * @param meshToMm    scale factor taking mesh units to millimetres
- * @param meshOrigin  [x,y,z] mesh-unit point that maps to the spec origin
- */
-export function refineFromMesh(spec, mesh, meshToMm, meshOrigin = [0, 0, 0]) {
-  const touched = [], skipped = [];
-  for (const p of spec.parts || []) {
-    const g = p.geometry;
-    const name = `${p.name || ""} ${p.display_name_ko || ""}`;
-    if (!g?.size_mm || !g.center_mm || g.repeat?.count > 1) continue;
-    if (!isShellPart(name)) continue;
-
-    // the part's box, expressed back in mesh units
-    const c = g.center_mm, s = g.size_mm;
-    const toMesh = (mm, i) => mm / meshToMm + meshOrigin[i];
-    const box = {
-      min: [toMesh(c.x - s.w / 2, 0), toMesh(c.y - s.h / 2, 1), toMesh(c.z - s.d / 2, 2)],
-      max: [toMesh(c.x + s.w / 2, 0), toMesh(c.y + s.h / 2, 1), toMesh(c.z + s.d / 2, 2)],
-    };
-    const raw = measureSections(mesh, box, g.size_mm, 8);
-    if (!raw) { skipped.push(`${p.display_name_ko || p.part_id}(측정 실패)`); continue; }
-    if (!sectionsVary(raw)) { skipped.push(`${p.display_name_ko || p.part_id}(단면 균일)`); continue; }
-
-    g.builder = "LOFT";
-    g.loft_sections = raw.map((x) => ({
-      at_pct: x.at_pct,
-      w_mm: Math.round(x.w * meshToMm),
-      h_mm: Math.round(x.h * meshToMm),
-      fill: Math.round(x.fill * 100) / 100,
-    }));
-    /* The declared box has to agree with what the sections describe, or the
-       viewer and every check downstream disagree about how big the part is. */
-    const ax = loftAxis(g.size_mm);
-    const maxW = Math.max(...g.loft_sections.map((x) => x.w_mm));
-    const maxH = Math.max(...g.loft_sections.map((x) => x.h_mm));
-    const keys = ["w", "h", "d"], cross = keys.filter((_, i) => i !== ax);
-    g.size_mm[cross[0]] = maxW; g.size_mm[cross[1]] = maxH;
-    touched.push(`${p.display_name_ko || p.part_id}(${g.loft_sections.length}단면)`);
+/* Where every instance of a repeated part sits, in spec millimetres. Only the
+   first is measured — a ring of six arms is one arm six times — but the box has
+   to be the right one or the sample lands in empty air. */
+function firstInstanceCenter(g) {
+  const c = g.center_mm || {};
+  const rep = g.repeat;
+  if (!rep || !(rep.count > 1)) return [c.x || 0, c.y || 0, c.z || 0];
+  if (rep.pattern === "CIRCULAR") {
+    const rad = Number(rep.radius_mm) || Math.hypot(c.x || 0, c.z || 0) || 10;
+    const a0 = ((Number(rep.start_angle_deg) || 0) * Math.PI) / 180;
+    const phi = Math.PI / 2 - a0;
+    return [Math.cos(phi) * rad, c.y || 0, Math.sin(phi) * rad];
   }
-  return { spec, touched, skipped };
+  if (rep.pattern === "MIRROR_PAIR") {
+    const off = rep.spacing_mm ? rep.spacing_mm / 2 : Math.abs(c.x || 0);
+    return [off, c.y || 0, c.z || 0];
+  }
+  return [c.x || 0, c.y || 0, c.z || 0];
 }
+
+/* The specification's overall extent, so the mesh can be fitted to it. */
+function specBounds(spec) {
+  const lo = [Infinity, Infinity, Infinity], hi = [-Infinity, -Infinity, -Infinity];
+  for (const part of spec.parts || []) {
+    const g = part.geometry, sz = g && g.size_mm;
+    if (!sz) continue;
+    const half = [sz.w / 2, sz.h / 2, sz.d / 2];
+    const rep = g.repeat;
+    const spots = [];
+    if (rep && rep.count > 1 && rep.pattern === "CIRCULAR") {
+      const rad = Number(rep.radius_mm) || 10;
+      const n = Math.min(rep.count, 32);
+      const a0 = ((Number(rep.start_angle_deg) || 0) * Math.PI) / 180;
+      for (let i = 0; i < n; i++) {
+        const phi = Math.PI / 2 - (a0 + (i / n) * Math.PI * 2);
+        spots.push([Math.cos(phi) * rad, g.center_mm.y || 0, Math.sin(phi) * rad]);
+      }
+    } else if (rep && rep.count > 1 && rep.pattern === "MIRROR_PAIR") {
+      const off = rep.spacing_mm ? rep.spacing_mm / 2 : Math.abs(g.center_mm.x || 0);
+      spots.push([off, g.center_mm.y || 0, g.center_mm.z || 0],
+        [-off, g.center_mm.y || 0, g.center_mm.z || 0]);
+    } else {
+      spots.push([g.center_mm.x || 0, g.center_mm.y || 0, g.center_mm.z || 0]);
+    }
+    for (const c of spots) {
+      for (let a = 0; a < 3; a++) {
+        lo[a] = Math.min(lo[a], c[a] - half[a]);
+        hi[a] = Math.max(hi[a], c[a] + half[a]);
+      }
+    }
+  }
+  return { lo, hi };
+}
+
+/**
+ * Measure every part that the mesh actually contains, and write what was
+ * measured back into the specification.
+ *
+ * The mesh is fitted to the specification per axis rather than by one uniform
+ * scale. A generated mesh is a reconstruction, not a measurement, so its
+ * proportions drift a few percent from what the specification declares; a
+ * single scale factor then leaves two of the three axes misaligned and every
+ * part box samples the wrong region. Fitting each axis independently is what
+ * turned "측정 실패" on most shells into a reading.
+ *
+ * Parts with no mesh inside them are left exactly as the author wrote them —
+ * a battery or a flight controller is inside the airframe and no reconstruction
+ * of the outside can see it. Those are reported, not silently counted as done.
+ */
+export function refineFromMesh(spec, mesh) {
+  const measured = [], internal = [];
+  const mb = meshBounds(mesh);
+  const sb = specBounds(spec);
+  const specSize = [sb.hi[0] - sb.lo[0], sb.hi[1] - sb.lo[1], sb.hi[2] - sb.lo[2]];
+  if (!(Math.min(...specSize) > 0) || !(Math.min(...mb.size) > 0)) {
+    return { spec, measured, internal, scale: null };
+  }
+  // spec mm → mesh units, per axis
+  const toMesh = (mm, a) => ((mm - sb.lo[a]) / specSize[a]) * mb.size[a] + mb.lo[a];
+  const perMm = [0, 1, 2].map((a) => mb.size[a] / specSize[a]);
+
+  for (const part of spec.parts || []) {
+    const g = part.geometry;
+    const label = part.display_name_ko || part.part_id;
+    if (!g || !g.size_mm || !g.center_mm) continue;
+    const sz = g.size_mm;
+    const ctr = firstInstanceCenter(g);
+
+    /* A little slack around the declared box: the author's placement is an
+       estimate, and a box that is a few millimetres off would otherwise miss
+       the very surface it is meant to describe. */
+    const dims = [sz.w, sz.h, sz.d];
+    let box = null, n = 0, lo = null, hi = null;
+    /* Widen the net until the part is found. A thin tail surface or a rotor
+       disc is only a few millimetres through, so a placement that is off by
+       even a little leaves the tight box empty and the part gets written off
+       as internal — which is how the survey wing's tailplanes and propeller
+       were being missed. Growing the slack finds them; the ratio guard below
+       is what stops a wide net from swallowing a neighbour. */
+    for (const pad of [0.12, 0.4, 0.9]) {
+      box = { min: [0, 0, 0], max: [0, 0, 0] };
+      for (let a = 0; a < 3; a++) {
+        // thin axes need absolute slack, not proportional: 8% of 4mm is nothing
+        const half = (dims[a] / 2) * (1 + pad) + Math.max(...dims) * pad * 0.06;
+        box.min[a] = toMesh(ctr[a] - half, a);
+        box.max[a] = toMesh(ctr[a] + half, a);
+      }
+      n = 0; lo = [Infinity, Infinity, Infinity]; hi = [-Infinity, -Infinity, -Infinity];
+      for (let i = 0; i < mesh.count; i++) {
+        const x = mesh.positions[i * 3], y = mesh.positions[i * 3 + 1], z = mesh.positions[i * 3 + 2];
+        if (x < box.min[0] || x > box.max[0] || y < box.min[1] || y > box.max[1]
+          || z < box.min[2] || z > box.max[2]) continue;
+        if (x < lo[0]) lo[0] = x; if (x > hi[0]) hi[0] = x;
+        if (y < lo[1]) lo[1] = y; if (y > hi[1]) hi[1] = y;
+        if (z < lo[2]) lo[2] = z; if (z > hi[2]) hi[2] = z;
+        n++;
+      }
+      if (n >= 24) break;
+    }
+    if (n < 24) { internal.push(label); continue; }
+
+    /* Snap the declared box onto what the mesh occupies. Only the extent is
+       taken, never a wholesale move: the author placed the part for reasons the
+       mesh cannot see (a battery bay's clearance, an arm's ring radius), and the
+       measurement is here to sharpen that placement, not overrule it. */
+    const meas = [0, 1, 2].map((a) => (hi[a] - lo[a]) / perMm[a]);
+    const keys = ["w", "h", "d"];
+    for (let a = 0; a < 3; a++) {
+      const before = dims[a];
+      if (!(meas[a] > 0.5)) continue;
+      const ratio = meas[a] / before;
+      // a reading wildly unlike the declaration means the box caught a neighbour
+      if (ratio < 0.4 || ratio > 2.5) continue;
+      sz[keys[a]] = Math.round(meas[a]);
+    }
+    if (!g.repeat || !(g.repeat.count > 1)) {
+      // singletons can also have their centre corrected along each axis
+      for (let a = 0; a < 3; a++) {
+        if (!(meas[a] > 0.5)) continue;
+        const mid = ((lo[a] + hi[a]) / 2 - mb.lo[a]) / mb.size[a] * specSize[a] + sb.lo[a];
+        const key = ["x", "y", "z"][a];
+        if (Math.abs(mid - ctr[a]) <= dims[a] * 0.5) g.center_mm[key] = Math.round(mid);
+      }
+    }
+
+    /* And the shape along the axis, which is the part no box can carry. */
+    const raw = measureSections(mesh, box, g.size_mm, 8);
+    let mode = "치수";
+    if (raw && sectionsVary(raw) && !NEVER_LOFT.test(label)) {
+      g.builder = "LOFT";
+      g.loft_sections = raw.map((x) => ({
+        at_pct: x.at_pct,
+        w_mm: Math.max(1, Math.round(x.w / perMm[[0, 1, 2].filter((a) => a !== loftAxis(g.size_mm))[0]])),
+        h_mm: Math.max(1, Math.round(x.h / perMm[[0, 1, 2].filter((a) => a !== loftAxis(g.size_mm))[1]])),
+        fill: Math.round(x.fill * 100) / 100,
+      }));
+      const ax = loftAxis(g.size_mm);
+      const cross = keys.filter((_, i) => i !== ax);
+      sz[cross[0]] = Math.max(...g.loft_sections.map((x) => x.w_mm));
+      sz[cross[1]] = Math.max(...g.loft_sections.map((x) => x.h_mm));
+      mode = g.loft_sections.length + "단면";
+    }
+    measured.push(label + "(" + mode + ")");
+  }
+  return { spec, measured, internal, scale: perMm };
+}
+
+/* Turning these into lofts would fight a builder that already says the shape
+   exactly: a rotor is a disc the compiler draws as blades, and a flat plate is
+   flat by definition. Their extents are still measured. */
+const NEVER_LOFT = /로터|프로펠러|rotor|prop|분리선|panel\s*line|가드|guard/i;
 
 /** Collect world-space positions from a loaded Three.js object. */
 export function positionsFromObject3D(root) {

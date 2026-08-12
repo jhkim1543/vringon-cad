@@ -79,9 +79,9 @@
         "builder": "EXTRUDE_2D",
         "plane": "TOP",
         "size_mm": {
-          "w": 350,
-          "h": 150,
-          "d": 350
+          "w": 397,
+          "h": 173,
+          "d": 397
         },
         "center_mm": {
           "x": 0,
@@ -383,9 +383,9 @@
         "builder": "BOX",
         "plane": "TOP",
         "size_mm": {
-          "w": 300,
-          "h": 50,
-          "d": 300
+          "w": 340,
+          "h": 60,
+          "d": 340
         },
         "center_mm": {
           "x": 0,
@@ -419,9 +419,9 @@
         "builder": "TUBE",
         "plane": "FRONT",
         "size_mm": {
-          "w": 35,
-          "h": 35,
-          "d": 700
+          "w": 49,
+          "h": 48,
+          "d": 294
         },
         "center_mm": {
           "x": 0,
@@ -511,9 +511,9 @@
         "builder": "CYLINDER",
         "plane": "TOP",
         "size_mm": {
-          "w": 550,
-          "h": 10,
-          "d": 550
+          "w": 455,
+          "h": 19,
+          "d": 350
         },
         "center_mm": {
           "x": 0,
@@ -558,12 +558,12 @@
       "editable": true,
       "locked_characteristics": [],
       "geometry": {
-        "builder": "TUBE",
+        "builder": "LOFT",
         "plane": "TOP",
         "size_mm": {
-          "w": 25,
-          "h": 500,
-          "d": 25
+          "w": 31,
+          "h": 368,
+          "d": 34
         },
         "center_mm": {
           "x": 0,
@@ -579,7 +579,45 @@
           "radius_mm": null,
           "spacing_mm": 400,
           "start_angle_deg": null
-        }
+        },
+        "loft_sections": [
+          {
+            "at_pct": 31,
+            "w_mm": 31,
+            "h_mm": 8,
+            "fill": 0.7
+          },
+          {
+            "at_pct": 44,
+            "w_mm": 26,
+            "h_mm": 15,
+            "fill": 0.7
+          },
+          {
+            "at_pct": 56,
+            "w_mm": 17,
+            "h_mm": 27,
+            "fill": 0.72
+          },
+          {
+            "at_pct": 69,
+            "w_mm": 13,
+            "h_mm": 34,
+            "fill": 0.81
+          },
+          {
+            "at_pct": 81,
+            "w_mm": 18,
+            "h_mm": 33,
+            "fill": 0.84
+          },
+          {
+            "at_pct": 94,
+            "w_mm": 29,
+            "h_mm": 32,
+            "fill": 0.82
+          }
+        ]
       },
       "dimensions": [],
       "features": [],
@@ -598,12 +636,12 @@
       "editable": true,
       "locked_characteristics": [],
       "geometry": {
-        "builder": "TUBE",
+        "builder": "LOFT",
         "plane": "FRONT",
         "size_mm": {
-          "w": 25,
-          "h": 25,
-          "d": 600
+          "w": 36,
+          "h": 27,
+          "d": 638
         },
         "center_mm": {
           "x": 0,
@@ -619,7 +657,27 @@
           "radius_mm": null,
           "spacing_mm": 400,
           "start_angle_deg": null
-        }
+        },
+        "loft_sections": [
+          {
+            "at_pct": 6,
+            "w_mm": 35,
+            "h_mm": 27,
+            "fill": 0.84
+          },
+          {
+            "at_pct": 19,
+            "w_mm": 36,
+            "h_mm": 24,
+            "fill": 0.77
+          },
+          {
+            "at_pct": 94,
+            "w_mm": 36,
+            "h_mm": 26,
+            "fill": 0.81
+          }
+        ]
       },
       "dimensions": [],
       "features": [],
@@ -643,13 +701,13 @@
         "builder": "LOFT",
         "plane": "FRONT",
         "size_mm": {
-          "w": 380,
-          "h": 302,
-          "d": 384
+          "w": 419,
+          "h": 281,
+          "d": 433
         },
         "center_mm": {
           "x": 0,
-          "y": 269,
+          "y": 300,
           "z": 0
         },
         "outer_profile": [
@@ -882,34 +940,46 @@
         "repeat": null,
         "loft_sections": [
           {
+            "at_pct": 19,
+            "w_mm": 328,
+            "h_mm": 360,
+            "fill": 0.63
+          },
+          {
+            "at_pct": 31,
+            "w_mm": 388,
+            "h_mm": 383,
+            "fill": 0.82
+          },
+          {
             "at_pct": 44,
-            "w_mm": 216,
-            "h_mm": 144,
-            "fill": 0.8
+            "w_mm": 407,
+            "h_mm": 419,
+            "fill": 0.91
           },
           {
             "at_pct": 56,
-            "w_mm": 315,
-            "h_mm": 275,
-            "fill": 0.81
+            "w_mm": 407,
+            "h_mm": 433,
+            "fill": 0.84
           },
           {
             "at_pct": 69,
-            "w_mm": 346,
-            "h_mm": 348,
-            "fill": 0.92
+            "w_mm": 418,
+            "h_mm": 425,
+            "fill": 0.81
           },
           {
             "at_pct": 81,
-            "w_mm": 353,
-            "h_mm": 365,
-            "fill": 0.9
+            "w_mm": 419,
+            "h_mm": 414,
+            "fill": 0.87
           },
           {
             "at_pct": 94,
-            "w_mm": 380,
-            "h_mm": 384,
-            "fill": 0.73
+            "w_mm": 413,
+            "h_mm": 405,
+            "fill": 0.94
           }
         ]
       },
@@ -1210,7 +1280,7 @@
         "center_mm": {
           "x": 0,
           "y": 78,
-          "z": 0
+          "z": 22
         },
         "outer_profile": null,
         "inner_profile": null,
@@ -1237,13 +1307,13 @@
         "builder": "BOX",
         "plane": "TOP",
         "size_mm": {
-          "w": 50,
-          "h": 30,
+          "w": 70,
+          "h": 42,
           "d": 50
         },
         "center_mm": {
-          "x": 0,
-          "y": 500,
+          "x": -1,
+          "y": 499,
           "z": 0
         },
         "outer_profile": null,
@@ -1268,22 +1338,72 @@
       "editable": true,
       "locked_characteristics": [],
       "geometry": {
-        "builder": "BOX",
+        "builder": "LOFT",
         "plane": "TOP",
         "size_mm": {
-          "w": 200,
-          "h": 20,
-          "d": 200
+          "w": 223,
+          "h": 25,
+          "d": 202
         },
         "center_mm": {
           "x": 0,
           "y": 480,
-          "z": 0
+          "z": -9
         },
         "outer_profile": null,
         "inner_profile": null,
         "corner_radius_mm": null,
-        "repeat": null
+        "repeat": null,
+        "loft_sections": [
+          {
+            "at_pct": 6,
+            "w_mm": 167,
+            "h_mm": 123,
+            "fill": 0.85
+          },
+          {
+            "at_pct": 19,
+            "w_mm": 166,
+            "h_mm": 126,
+            "fill": 0.82
+          },
+          {
+            "at_pct": 31,
+            "w_mm": 168,
+            "h_mm": 129,
+            "fill": 0.84
+          },
+          {
+            "at_pct": 44,
+            "w_mm": 177,
+            "h_mm": 148,
+            "fill": 0.81
+          },
+          {
+            "at_pct": 56,
+            "w_mm": 191,
+            "h_mm": 184,
+            "fill": 0.73
+          },
+          {
+            "at_pct": 69,
+            "w_mm": 206,
+            "h_mm": 202,
+            "fill": 0.71
+          },
+          {
+            "at_pct": 81,
+            "w_mm": 219,
+            "h_mm": 184,
+            "fill": 0.74
+          },
+          {
+            "at_pct": 94,
+            "w_mm": 223,
+            "h_mm": 148,
+            "fill": 0.79
+          }
+        ]
       },
       "dimensions": [],
       "features": [],
@@ -1305,14 +1425,14 @@
         "builder": "CYLINDER",
         "plane": "TOP",
         "size_mm": {
-          "w": 60,
+          "w": 67,
           "h": 100,
-          "d": 60
+          "d": 67
         },
         "center_mm": {
-          "x": 0,
-          "y": 650,
-          "z": 0
+          "x": 1,
+          "y": 670,
+          "z": -1
         },
         "outer_profile": null,
         "inner_profile": null,
@@ -1336,22 +1456,42 @@
       "editable": true,
       "locked_characteristics": [],
       "geometry": {
-        "builder": "BOX",
+        "builder": "LOFT",
         "plane": "TOP",
         "size_mm": {
-          "w": 250,
+          "w": 278,
           "h": 100,
-          "d": 200
+          "d": 210
         },
         "center_mm": {
           "x": 0,
-          "y": 675,
+          "y": 667,
           "z": 0
         },
         "outer_profile": null,
         "inner_profile": null,
         "corner_radius_mm": null,
-        "repeat": null
+        "repeat": null,
+        "loft_sections": [
+          {
+            "at_pct": 31,
+            "w_mm": 278,
+            "h_mm": 63,
+            "fill": 0.64
+          },
+          {
+            "at_pct": 44,
+            "w_mm": 263,
+            "h_mm": 164,
+            "fill": 0.84
+          },
+          {
+            "at_pct": 56,
+            "w_mm": 228,
+            "h_mm": 210,
+            "fill": 0.95
+          }
+        ]
       },
       "dimensions": [],
       "features": [],
@@ -1404,12 +1544,12 @@
       "editable": true,
       "locked_characteristics": [],
       "geometry": {
-        "builder": "CYLINDER",
+        "builder": "LOFT",
         "plane": "TOP",
         "size_mm": {
           "w": 50,
-          "h": 60,
-          "d": 50
+          "h": 37,
+          "d": 51
         },
         "center_mm": {
           "x": 0,
@@ -1425,7 +1565,27 @@
           "radius_mm": 150,
           "spacing_mm": null,
           "start_angle_deg": 30
-        }
+        },
+        "loft_sections": [
+          {
+            "at_pct": 56,
+            "w_mm": 13,
+            "h_mm": 23,
+            "fill": 0.56
+          },
+          {
+            "at_pct": 81,
+            "w_mm": 34,
+            "h_mm": 37,
+            "fill": 0.63
+          },
+          {
+            "at_pct": 94,
+            "w_mm": 50,
+            "h_mm": 51,
+            "fill": 0.73
+          }
+        ]
       },
       "dimensions": [],
       "features": [],
@@ -1447,9 +1607,9 @@
         "builder": "CYLINDER",
         "plane": "FRONT",
         "size_mm": {
-          "w": 40,
-          "h": 35,
-          "d": 40
+          "w": 21,
+          "h": 33,
+          "d": 49
         },
         "center_mm": {
           "x": 0,

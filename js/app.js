@@ -1216,23 +1216,15 @@ async function pipeStep2() {
     if (state.pipeMesh) {
       try {
         const mesh = positionsFromObject3D(state.pipeMesh);
-        const mb = new THREE.Box3().setFromObject(state.pipeMesh);
-        const msz = mb.getSize(new THREE.Vector3());
-        let specLong = 0;
-        for (const p of s.spec.parts || []) {
-          const g = p.geometry, q = g && g.size_mm, c = g && g.center_mm;
-          if (!q || !c) continue;
-          const rr = (g.repeat && g.repeat.radius_mm) || 0;
-          specLong = Math.max(specLong,
-            (Math.abs(c.x || 0) + q.w / 2 + rr) * 2,
-            (Math.abs(c.y || 0) + q.h / 2 + rr) * 2,
-            (Math.abs(c.z || 0) + q.d / 2 + rr) * 2);
-        }
-        const meshLong = Math.max(msz.x, msz.y, msz.z);
-        if (mesh && specLong > 0 && meshLong > 0) {
-          const done = refineFromMesh(s.spec, mesh, specLong / meshLong,
-            [(mb.min.x + mb.max.x) / 2, mb.min.y, (mb.min.z + mb.max.z) / 2]);
-          if (done.touched.length) toast(`메시에서 단면 측정 — ${done.touched.join(', ')}`, true);
+        /* The fit is worked out inside refineFromMesh, per axis, from the two
+           bounding boxes — nothing to line up here. */
+        if (mesh) {
+          const done = refineFromMesh(s.spec, mesh);
+          const total = done.measured.length + done.internal.length;
+          if (done.measured.length) {
+            toast(`메시에서 좌표 측정 ${done.measured.length}/${total}파트`
+              + (done.internal.length ? ` · 내부 ${done.internal.length}개는 사양서 값 유지` : ""), true);
+          }
         }
       } catch (e) { console.warn('loft refine failed', e); }
     }
