@@ -640,12 +640,12 @@
         "volume"
       ],
       "geometry": {
-        "builder": "REVOLVE",
+        "builder": "LOFT",
         "plane": "FRONT",
         "size_mm": {
-          "w": 400,
+          "w": 380,
           "h": 302,
-          "d": 400
+          "d": 384
         },
         "center_mm": {
           "x": 0,
@@ -879,7 +879,39 @@
           }
         ],
         "corner_radius_mm": null,
-        "repeat": null
+        "repeat": null,
+        "loft_sections": [
+          {
+            "at_pct": 44,
+            "w_mm": 216,
+            "h_mm": 144,
+            "fill": 0.8
+          },
+          {
+            "at_pct": 56,
+            "w_mm": 315,
+            "h_mm": 275,
+            "fill": 0.81
+          },
+          {
+            "at_pct": 69,
+            "w_mm": 346,
+            "h_mm": 348,
+            "fill": 0.92
+          },
+          {
+            "at_pct": 81,
+            "w_mm": 353,
+            "h_mm": 365,
+            "fill": 0.9
+          },
+          {
+            "at_pct": 94,
+            "w_mm": 380,
+            "h_mm": 384,
+            "fill": 0.73
+          }
+        ]
       },
       "dimensions": [
         {

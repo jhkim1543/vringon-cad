@@ -10,6 +10,7 @@
    which came from reading the image.
    ========================================================================== */
 import * as THREE from "three";
+import { loftAxis } from "./mesh-loft.js?v=8bd1f030";
 
 const n = (v, d = 2) => Number(Number(v || 0).toFixed(d));
 
@@ -214,6 +215,21 @@ function buildGeometry(r) {
   }
   if (b === "SPHERE") return new THREE.SphereGeometry(Math.max(w, h, d) / 2, 40, 26);
   if (b === "TORUS") return new THREE.TorusGeometry(Math.max(w, d) / 2, Math.max(0.2, h / 2), 20, 48);
+  if (b === "LOFT" && r.loftSections?.length >= 2) {
+    /* Skin the measured stations. Each section is a superellipse whose
+       exponent comes from how full the measurement said it was: 2 is an
+       ellipse, larger tends toward a rectangle. This is the one builder that
+       carries a changing cross-section, which is what an extrusion cannot do
+       and what makes a fuselage a fuselage rather than a plank. */
+    /* Sections stack along the part's longest dimension, derived by the same
+       rule the measurement used, so the two never disagree. `plane` is about
+       where an extrusion's section is drawn and says nothing useful here. */
+    const dims = [w, h, d], la = loftAxis({ w, h, d });
+    const g = loftGeometry(r.loftSections, dims[la]);
+    if (la === 2) g.rotateX(Math.PI / 2);        // stack front-to-back
+    else if (la === 0) g.rotateZ(Math.PI / 2);   // stack left-to-right
+    return g;                                    // la === 1 is already vertical
+  }
   if (b === "TUBE") {
     /* Same box convention as CYLINDER: the plane's normal is the tube's axis,
        so that dimension is the length and the other two give the bore. Reading
@@ -245,6 +261,68 @@ function buildGeometry(r) {
     v.sub(c).normalize().multiplyScalar(cr).add(c);
     pos.setXYZ(i, v.x, v.y, v.z);
   }
+  g.computeVertexNormals();
+  return g;
+}
+
+/* Superellipse |x/a|^n + |y/b|^n = 1. The exponent is chosen so the ring's
+   area matches the fill ratio measured off the mesh: 0.785 is an ellipse,
+   1.0 a rectangle. A short table beats solving the gamma-function relation
+   and is accurate enough for a section a few millimetres across. */
+function fillToExponent(fill) {
+  const T = [[0.79, 2], [0.85, 2.6], [0.90, 3.5], [0.94, 5], [1.0, 8]];
+  for (const [f, n] of T) if (fill <= f) return n;
+  return 8;
+}
+
+function ringPoints(w, h, fill, segs = 32) {
+  const n = fillToExponent(fill), a = w / 2, b = h / 2, pts = [];
+  for (let i = 0; i < segs; i++) {
+    const t = (i / segs) * Math.PI * 2;
+    const ct = Math.cos(t), st = Math.sin(t);
+    pts.push([
+      Math.sign(ct) * a * Math.pow(Math.abs(ct), 2 / n),
+      Math.sign(st) * b * Math.pow(Math.abs(st), 2 / n),
+    ]);
+  }
+  return pts;
+}
+
+/** Skin a stack of measured sections into a closed solid, axis along +y.
+ *  `span` is the part's length along that axis, in the same units. */
+export function loftGeometry(sections, span, segs = 32) {
+  const S = [...sections].sort((p, q) => p.at_pct - q.at_pct);
+  /* Stations sit at their measured percentage of the span, stretched so the
+     outermost pair lands on the ends of the part's own box. */
+  const lo = S[0].at_pct, hi = S[S.length - 1].at_pct;
+  const spread = Math.max(1, hi - lo);
+  const rings = S.map((s) => ({
+    y: ((s.at_pct - lo) / spread - 0.5) * span,
+    pts: ringPoints(s.w_mm ?? s.w, s.h_mm ?? s.h, s.fill ?? 0.85, segs),
+  }));
+
+  const pos = [], idx = [];
+  for (const r of rings) for (const [x, z] of r.pts) pos.push(x, r.y, z);
+  for (let k = 0; k < rings.length - 1; k++) {
+    const A = k * segs, B = (k + 1) * segs;
+    for (let i = 0; i < segs; i++) {
+      const j = (i + 1) % segs;
+      idx.push(A + i, B + i, B + j, A + i, B + j, A + j);
+    }
+  }
+  // caps: a fan to the centre of the first and last ring
+  const capStart = pos.length / 3;
+  pos.push(0, rings[0].y, 0);
+  pos.push(0, rings[rings.length - 1].y, 0);
+  const last = (rings.length - 1) * segs;
+  for (let i = 0; i < segs; i++) {
+    const j = (i + 1) % segs;
+    idx.push(capStart, j, i);
+    idx.push(capStart + 1, last + i, last + j);
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
+  g.setIndex(idx);
   g.computeVertexNormals();
   return g;
 }

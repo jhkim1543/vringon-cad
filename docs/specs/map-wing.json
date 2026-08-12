@@ -76,11 +76,11 @@
         "outer_silhouette"
       ],
       "geometry": {
-        "builder": "EXTRUDE_2D",
+        "builder": "LOFT",
         "plane": "SIDE",
         "size_mm": {
-          "w": 140,
-          "h": 120,
+          "w": 126,
+          "h": 97,
           "d": 760
         },
         "center_mm": {
@@ -224,7 +224,51 @@
         ],
         "inner_profile": null,
         "corner_radius_mm": 40,
-        "repeat": null
+        "repeat": null,
+        "loft_sections": [
+          {
+            "at_pct": 19,
+            "w_mm": 43,
+            "h_mm": 9,
+            "fill": 0.66
+          },
+          {
+            "at_pct": 31,
+            "w_mm": 74,
+            "h_mm": 36,
+            "fill": 0.75
+          },
+          {
+            "at_pct": 44,
+            "w_mm": 115,
+            "h_mm": 80,
+            "fill": 0.75
+          },
+          {
+            "at_pct": 56,
+            "w_mm": 126,
+            "h_mm": 97,
+            "fill": 0.69
+          },
+          {
+            "at_pct": 69,
+            "w_mm": 101,
+            "h_mm": 72,
+            "fill": 0.69
+          },
+          {
+            "at_pct": 81,
+            "w_mm": 62,
+            "h_mm": 31,
+            "fill": 0.69
+          },
+          {
+            "at_pct": 94,
+            "w_mm": 31,
+            "h_mm": 7,
+            "fill": 0.6
+          }
+        ]
       },
       "dimensions": [
         {
@@ -355,12 +399,12 @@
       "editable": true,
       "locked_characteristics": [],
       "geometry": {
-        "builder": "EXTRUDE_2D",
+        "builder": "LOFT",
         "plane": "SIDE",
         "size_mm": {
-          "w": 120,
+          "w": 112,
           "h": 30,
-          "d": 220
+          "d": 208
         },
         "center_mm": {
           "x": 0,
@@ -461,7 +505,57 @@
         ],
         "inner_profile": null,
         "corner_radius_mm": 15,
-        "repeat": null
+        "repeat": null,
+        "loft_sections": [
+          {
+            "at_pct": 6,
+            "w_mm": 112,
+            "h_mm": 61,
+            "fill": 0.55
+          },
+          {
+            "at_pct": 19,
+            "w_mm": 108,
+            "h_mm": 78,
+            "fill": 0.55
+          },
+          {
+            "at_pct": 31,
+            "w_mm": 105,
+            "h_mm": 101,
+            "fill": 0.55
+          },
+          {
+            "at_pct": 44,
+            "w_mm": 101,
+            "h_mm": 122,
+            "fill": 0.55
+          },
+          {
+            "at_pct": 56,
+            "w_mm": 95,
+            "h_mm": 144,
+            "fill": 0.55
+          },
+          {
+            "at_pct": 69,
+            "w_mm": 86,
+            "h_mm": 166,
+            "fill": 0.55
+          },
+          {
+            "at_pct": 81,
+            "w_mm": 75,
+            "h_mm": 190,
+            "fill": 0.57
+          },
+          {
+            "at_pct": 94,
+            "w_mm": 69,
+            "h_mm": 208,
+            "fill": 0.62
+          }
+        ]
       },
       "dimensions": [
         {

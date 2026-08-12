@@ -25,6 +25,7 @@ import { buildStructuredSpec, structuredSpecText, rebuildEligibility, MODE, ORIG
 import { applyModifiers, runOperation, captureBaseline } from "./modifier.js";
 import { buildFromSpec, specThreeCode, specSummaryText } from "./spec-cad.js";
 import { createDroneSim } from "./drone-sim.js";
+import { positionsFromObject3D, refineFromMesh } from "./mesh-loft.js";
 import { applyParameter, partFields, applyPartField } from "./drone-params.js";
 import { COMPONENT_CATALOG, CATALOG_GROUPS, fitTargets, applyComponent, addComponentAsPart } from "./drone-catalog.js";
 import { PRINTERS, MATERIALS as PRINT_MATERIALS, estimatePrint } from "./print-estimate.js";
@@ -1206,6 +1207,35 @@ async function pipeStep2() {
       }),
     }).then((x) => x.json());
     if (!s.ok || !s.spec) throw new Error(s.error || "사양서 생성 실패");
+
+    /* The specification writer cannot see how a section changes along a body,
+       so it writes an extrusion and the fuselage comes out a plank. The stage-1
+       mesh can be measured: slice each shell part inside its own declared box
+       and write the stations back. Deterministic, free, and it runs before the
+       sheet is shown so the JSON the user reads is the one that compiles. */
+    if (state.pipeMesh) {
+      try {
+        const mesh = positionsFromObject3D(state.pipeMesh);
+        const mb = new THREE.Box3().setFromObject(state.pipeMesh);
+        const msz = mb.getSize(new THREE.Vector3());
+        let specLong = 0;
+        for (const p of s.spec.parts || []) {
+          const g = p.geometry, q = g && g.size_mm, c = g && g.center_mm;
+          if (!q || !c) continue;
+          const rr = (g.repeat && g.repeat.radius_mm) || 0;
+          specLong = Math.max(specLong,
+            (Math.abs(c.x || 0) + q.w / 2 + rr) * 2,
+            (Math.abs(c.y || 0) + q.h / 2 + rr) * 2,
+            (Math.abs(c.z || 0) + q.d / 2 + rr) * 2);
+        }
+        const meshLong = Math.max(msz.x, msz.y, msz.z);
+        if (mesh && specLong > 0 && meshLong > 0) {
+          const done = refineFromMesh(s.spec, mesh, specLong / meshLong,
+            [(mb.min.x + mb.max.x) / 2, mb.min.y, (mb.min.z + mb.max.z) / 2]);
+          if (done.touched.length) toast(`메시에서 단면 측정 — ${done.touched.join(', ')}`, true);
+        }
+      } catch (e) { console.warn('loft refine failed', e); }
+    }
 
     setPipeSpec(s.spec, s.validationErrors || []);
     $("specSheet").classList.add("show");   // the sheet is the point of this step

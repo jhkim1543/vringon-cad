@@ -8,7 +8,7 @@
    surface with a primitive.
    ========================================================================== */
 import * as THREE from "three";
-import { tessellate, revolveVolume, buildFromAnalysis, generateThreeCode } from "./spec-to-code.js?v=dbabf08a";
+import { tessellate, revolveVolume, buildFromAnalysis, generateThreeCode } from "./spec-to-code.js?v=8bd1f030";
 
 const num = (v, d = 0) => (Number.isFinite(v) ? v : d);
 const dist = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1]);
@@ -183,6 +183,7 @@ export function specToAnalysis(spec) {
       innerProfile: inner || undefined,
       codeHint: p.representation_reason || "",
       material: materialOf(spec, p.material_id),
+      loftSections: (g.loft_sections || []).length >= 2 ? g.loft_sections : undefined,
       __sourceMesh: g.builder === "SOURCE_MESH",
       __partId: p.part_id,
     };

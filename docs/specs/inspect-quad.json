@@ -76,12 +76,12 @@
         "outer_silhouette"
       ],
       "geometry": {
-        "builder": "EXTRUDE_2D",
+        "builder": "LOFT",
         "plane": "TOP",
         "size_mm": {
-          "w": 120,
+          "w": 70,
           "h": 45,
-          "d": 220
+          "d": 71
         },
         "center_mm": {
           "x": 0,
@@ -333,7 +333,33 @@
           }
         ],
         "corner_radius_mm": 2,
-        "repeat": null
+        "repeat": null,
+        "loft_sections": [
+          {
+            "at_pct": 56,
+            "w_mm": 36,
+            "h_mm": 31,
+            "fill": 0.85
+          },
+          {
+            "at_pct": 69,
+            "w_mm": 51,
+            "h_mm": 47,
+            "fill": 0.85
+          },
+          {
+            "at_pct": 81,
+            "w_mm": 64,
+            "h_mm": 63,
+            "fill": 0.85
+          },
+          {
+            "at_pct": 94,
+            "w_mm": 70,
+            "h_mm": 71,
+            "fill": 0.86
+          }
+        ]
       },
       "dimensions": [
         {
@@ -519,12 +545,12 @@
         "outer_silhouette"
       ],
       "geometry": {
-        "builder": "EXTRUDE_2D",
+        "builder": "LOFT",
         "plane": "TOP",
         "size_mm": {
-          "w": 110,
+          "w": 87,
           "h": 45,
-          "d": 210
+          "d": 87
         },
         "center_mm": {
           "x": 0,
@@ -655,7 +681,57 @@
         ],
         "inner_profile": null,
         "corner_radius_mm": 5,
-        "repeat": null
+        "repeat": null,
+        "loft_sections": [
+          {
+            "at_pct": 6,
+            "w_mm": 74,
+            "h_mm": 80,
+            "fill": 0.77
+          },
+          {
+            "at_pct": 19,
+            "w_mm": 77,
+            "h_mm": 82,
+            "fill": 0.79
+          },
+          {
+            "at_pct": 31,
+            "w_mm": 80,
+            "h_mm": 84,
+            "fill": 0.76
+          },
+          {
+            "at_pct": 44,
+            "w_mm": 84,
+            "h_mm": 85,
+            "fill": 0.74
+          },
+          {
+            "at_pct": 56,
+            "w_mm": 86,
+            "h_mm": 86,
+            "fill": 0.74
+          },
+          {
+            "at_pct": 69,
+            "w_mm": 87,
+            "h_mm": 87,
+            "fill": 0.76
+          },
+          {
+            "at_pct": 81,
+            "w_mm": 87,
+            "h_mm": 78,
+            "fill": 0.83
+          },
+          {
+            "at_pct": 94,
+            "w_mm": 85,
+            "h_mm": 58,
+            "fill": 0.92
+          }
+        ]
       },
       "dimensions": [],
       "features": [],

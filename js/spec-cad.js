@@ -183,6 +183,7 @@ export function specToAnalysis(spec) {
       innerProfile: inner || undefined,
       codeHint: p.representation_reason || "",
       material: materialOf(spec, p.material_id),
+      loftSections: (g.loft_sections || []).length >= 2 ? g.loft_sections : undefined,
       __sourceMesh: g.builder === "SOURCE_MESH",
       __partId: p.part_id,
     };

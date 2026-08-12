@@ -1755,13 +1755,13 @@ const PROFILE_SEGMENT_SCHEMA = {
    kept trying. It is not discarded either: it stays in the scene under 원본 메시
    and its bounding box is the scale reference. Step 4's job is the CAD, and the
    two artefacts sit side by side rather than one standing in for the other. */
-const BUILDER_VALUES = ["REVOLVE", "EXTRUDE_2D", "BOX", "ROUNDED_BOX", "CYLINDER", "TUBE",
+const BUILDER_VALUES = ["REVOLVE", "EXTRUDE_2D", "LOFT", "BOX", "ROUNDED_BOX", "CYLINDER", "TUBE",
   "CONE", "SPHERE", "TORUS", "FREEFORM"];
 
 const GEOMETRY_SCHEMA = {
   type: "object", additionalProperties: false,
   required: ["builder", "plane", "size_mm", "center_mm", "outer_profile", "inner_profile",
-    "corner_radius_mm", "repeat"],
+    "corner_radius_mm", "repeat", "loft_sections"],
   description: "이 파트를 실제로 만드는 방법. 4단계 CAD가 이 필드만 읽는다.",
   properties: {
     builder: {
@@ -1779,6 +1779,25 @@ const GEOMETRY_SCHEMA = {
       type: "object", additionalProperties: false, required: ["w", "h", "d"],
       description: "파트 바운딩 박스. REVOLVE라도 프로파일과 일치하게 채운다.",
       properties: { w: { type: "number" }, h: { type: "number" }, d: { type: "number" } },
+    },
+    /* Loft stations. Left null by the author: the server measures them off the
+       stage-1 mesh, because a changing cross-section is exactly the thing a
+       model guessing coordinates gets wrong and a slice through real geometry
+       gets right. */
+    loft_sections: {
+      type: ["array", "null"], maxItems: 12,
+      description: "LOFT 전용. 축 방향 단면 목록. 작성자는 null로 두면 되고, "
+        + "1단계 메시가 있으면 서버가 측정해 채운다.",
+      items: {
+        type: "object", additionalProperties: false,
+        required: ["at_pct", "w_mm", "h_mm", "fill"],
+        properties: {
+          at_pct: { type: "number" },
+          w_mm: { type: "number" },
+          h_mm: { type: "number" },
+          fill: { type: "number" },
+        },
+      },
     },
     center_mm: {
       type: "object", additionalProperties: false, required: ["x", "y", "z"],
@@ -2571,6 +2590,10 @@ ${SPEC_SYSTEM.split("<geometry_authoring>")[1] ? "<geometry_authoring>" + SPEC_S
      FRONT로 적으면 옆으로 눕는다.
    - 허브 캡·스피너는 로터가 아니다 — 이름에 "로터/프로펠러"만 단독으로 쓰지 말고
      "프로펠러 허브 캡"처럼 캡·허브를 명시해야 회전체로 오인되지 않는다.
+2-2. **LOFT** — 축 방향으로 단면이 변하는 몸체(동체·나셀·카울·탱크·캐노피)는 LOFT를 쓴다.
+   loft_sections는 null로 두어라. 1단계 메시가 있으면 서버가 실제 단면을 측정해 채운다.
+   plane의 법선이 단면이 쌓이는 축이다(동체는 보통 FRONT = 앞뒤로 쌓임).
+   메시가 없으면 서버가 EXTRUDE_2D로 되돌리므로 outer_profile도 함께 채워라.
 3. 고정익: 동체는 REVOLVE 유선형(축이 Y로 서므로 길이 방향 주의 — 동체는
    REVOLVE 대신 plane FRONT의 EXTRUDE_2D 유선형 측면 단면도 좋다).
    주익·수평미익은 반드시 plane TOP의 EXTRUDE_2D: outer_profile이 위에서 본
