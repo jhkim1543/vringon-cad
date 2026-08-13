@@ -368,8 +368,9 @@ export function meshYaw(spec, mesh) {
  *
  * Returns { measured, internal, authored }: parts read off the mesh, parts the
  * mesh cannot see, and parts whose specification already states the shape more
- * precisely than a bounding box can (rotation_deg, airfoil) and which are
- * therefore left alone. All three are reported; none is a failure.
+ * precisely than a bounding box can (rotation_deg, airfoil, or a catalogue
+ * component the user chose) and which are therefore left alone. All three are
+ * reported; none is a failure.
  */
 export function refineFromMesh(spec, mesh) {
   const measured = [], internal = [], authored = [];
@@ -412,6 +413,32 @@ export function refineFromMesh(spec, mesh) {
       ? "회전" : (g.airfoil && g.airfoil.thickness_pct > 0) ? "에어포일" : null;
     if (owns) { authored.push(`${label}(${owns})`); continue; }
 
+    /* A part the user picked out of the component catalogue is not a guess to
+       be improved on. The entry carries the real dimensions of a real part and
+       a form of its own, and those are precisely the three fields this function
+       writes: size_mm, builder, loft_sections. Measuring afterwards would snap
+       a 140×48×42 pack onto whatever the reconstruction happens to show around
+       it and overwrite the catalogue form with sections read off the shell — so
+       the part the user chose would quietly stop being that part while still
+       carrying its name. Between an explicit choice and an inference, the
+       choice wins; where the part sits was decided by the author and is not
+       something the catalogue disputes, so that is left alone too. */
+    if (part.component_ref?.catalog_id) { authored.push(`${label}(부품)`); continue; }
+
+    /* The specification already says which parts the outside cannot show, and
+       a reconstruction of the outside is all this function has. A battery, a
+       flight controller, an ESC board — none of them is in the mesh, so every
+       point their box collects belongs to the airframe around them.
+
+       That was the whole of the damage. The box was widened until it found
+       something, it always found the shell overhead, and the reading was
+       written back as the part's own size; the next run widened around that
+       reading and took in more. The inspection quad's battery went from a
+       declared 60×30×100 to 12×35×232 — a strip of the fuselage with a
+       battery's name on it. Nothing measured can improve on a declaration for
+       a part that is not there to measure. */
+    if (part.visibility === "OCCLUDED") { internal.push(`${label}(가려짐)`); continue; }
+
     const sz = g.size_mm;
     const ctr = firstInstanceCenter(g);
 
@@ -424,9 +451,11 @@ export function refineFromMesh(spec, mesh) {
        disc is only a few millimetres through, so a placement that is off by
        even a little leaves the tight box empty and the part gets written off
        as internal — which is how the survey wing's tailplanes and propeller
-       were being missed. Growing the slack finds them; the ratio guard below
-       is what stops a wide net from swallowing a neighbour. */
-    for (const pad of [0.12, 0.4, 0.9]) {
+       were being missed. Growing the slack finds them; the agreement test at
+       the bottom of the loop is what stops a wide net from swallowing a
+       neighbour, and the ratio guards further down decide what may be written. */
+    for (let pi = 0; pi < PADS.length; pi++) {
+      const pad = PADS[pi];
       box = { min: [0, 0, 0], max: [0, 0, 0] };
       for (let a = 0; a < 3; a++) {
         // thin axes need absolute slack, not proportional: 8% of 4mm is nothing
@@ -444,7 +473,26 @@ export function refineFromMesh(spec, mesh) {
         if (z < lo[2]) lo[2] = z; if (z > hi[2]) hi[2] = z;
         n++;
       }
-      if (n >= 24) break;
+      if (n < 24) continue;
+      /* Widening the net says the part may sit a little off where it was
+         declared. It does not say that whatever turns up nearby is the part,
+         and every step out makes "this is the neighbour" the likelier reading —
+         so past the first step the catch has to be tighter than the net that
+         caught it. A capture that merely fills the widened box scores exactly
+         1/(1+pad) against the declared box, so that value is the floor: at or
+         below it the box is measuring itself.
+
+         This is what an internal part hits. A battery or a flight controller
+         sits under a surface the reconstruction models as one closed shell, so
+         its widened box is never empty — it holds the shell passing overhead.
+         Read as the part, that shell became the part, and because the next run
+         widens the net around the reading it had just written, each pass took
+         in more of the airframe: 60×30×100 declared, 145 long after one run,
+         232 after the next. */
+      if (pi > 0 && boxAgreement(lo, hi, ctr, dims, mb, sb, specSize) <= 1 / (1 + pad)) {
+        n = 0; continue;
+      }
+      break;
     }
     if (n < 24) { internal.push(label); continue; }
 
@@ -457,9 +505,8 @@ export function refineFromMesh(spec, mesh) {
     for (let a = 0; a < 3; a++) {
       const before = dims[a];
       if (!(meas[a] > 0.5)) continue;
-      const ratio = meas[a] / before;
       // a reading wildly unlike the declaration means the box caught a neighbour
-      if (ratio < 0.4 || ratio > 2.5) continue;
+      if (!inRatio(meas[a], before)) continue;
       sz[keys[a]] = Math.round(meas[a]);
     }
     if (!g.repeat || !(g.repeat.count > 1)) {
@@ -484,16 +531,28 @@ export function refineFromMesh(spec, mesh) {
     const raw = measureSections(mesh, box, g.size_mm, 8, ax);
     let mode = "치수";
     if (raw && sectionsVary(raw) && !NEVER_LOFT.test(label)) {
-      g.builder = "LOFT";
-      g.loft_sections = raw.map((x) => ({
+      const sections = raw.map((x) => ({
         at_pct: x.at_pct,
         w_mm: Math.max(1, Math.round(x.w / perMm[cross[0]])),
         h_mm: Math.max(1, Math.round(x.h / perMm[cross[1]])),
         fill: Math.round(x.fill * 100) / 100,
       }));
-      sz[keys[cross[0]]] = Math.max(...g.loft_sections.map((x) => x.w_mm));
-      sz[keys[cross[1]]] = Math.max(...g.loft_sections.map((x) => x.h_mm));
-      mode = g.loft_sections.length + "단면";
+      const wide = Math.max(...sections.map((x) => x.w_mm));
+      const tall = Math.max(...sections.map((x) => x.h_mm));
+      /* The extents above are ratio-guarded; these two lines write the same two
+         fields and used to write them unconditionally, which made this the way
+         in for everything that guard turns away. sectionsVary only asks whether
+         the section changes along the axis — a box drifted onto the airframe
+         gives a section that changes beautifully. The declared box is the
+         reference, not the extent measured a few lines up: comparing a reading
+         against a reading is how 100mm of battery became 145 and then 232. */
+      if (inRatio(wide, dims[cross[0]]) && inRatio(tall, dims[cross[1]])) {
+        g.builder = "LOFT";
+        g.loft_sections = sections;
+        sz[keys[cross[0]]] = wide;
+        sz[keys[cross[1]]] = tall;
+        mode = sections.length + "단면";
+      } else mode = "치수(단면 기각)";
     }
     measured.push(label + "(" + mode + ")");
   }
@@ -504,6 +563,35 @@ export function refineFromMesh(spec, mesh) {
    exactly: a rotor is a disc the compiler draws as blades, and a flat plate is
    flat by definition. Their extents are still measured. */
 const NEVER_LOFT = /로터|프로펠러|rotor|prop|분리선|panel\s*line|가드|guard/i;
+
+/* A reading may only replace a declaration while the two are recognisably the
+   same object. Outside this window the box has caught a neighbour rather than
+   the part, and the declaration — written by someone who knew what the part
+   was — is the better number. Applied to the extents AND to the loft sections:
+   they write the same three fields, so a guard on only one of them is no guard
+   at all. */
+const RATIO_MIN = 0.4, RATIO_MAX = 2.5;
+const inRatio = (got, want) => want > 0 && got / want >= RATIO_MIN && got / want <= RATIO_MAX;
+
+/* How far each net is cast around the declared box, and what agreement each
+   step out has to show for itself. */
+const PADS = [0.12, 0.4, 0.9];
+
+/* Overlap of the capture with the declared box, axis by axis, as intersection
+   over union of the two intervals; the worst axis is the score. It answers one
+   question — is what came back shaped and placed like what was asked for. */
+function boxAgreement(lo, hi, ctr, dims, mb, sb, specSize) {
+  let worst = 1;
+  for (let a = 0; a < 3; a++) {
+    const toMm = (v) => ((v - mb.lo[a]) / mb.size[a]) * specSize[a] + sb.lo[a];
+    const cl = toMm(lo[a]), ch = toMm(hi[a]);
+    const dl = ctr[a] - dims[a] / 2, dh = ctr[a] + dims[a] / 2;
+    const uni = Math.max(ch, dh) - Math.min(cl, dl);
+    const v = uni > 0 ? Math.max(0, Math.min(ch, dh) - Math.max(cl, dl)) / uni : 0;
+    if (v < worst) worst = v;
+  }
+  return worst;
+}
 
 /* Both readers below also return `indices`, a flat triangle list over
    `positions`. Section measuring only ever needed the point cloud, but a

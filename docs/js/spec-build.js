@@ -11,8 +11,8 @@
    parts means they drift apart the first time one is edited.
    ========================================================================== */
 import * as THREE from "three";
-import { planRepresentation } from "./threespec.js?v=d31ce2f9";
-import { preciseProfile } from "./measure.js?v=d31ce2f9";
+import { planRepresentation } from "./threespec.js?v=8c817597";
+import { preciseProfile } from "./measure.js?v=8c817597";
 
 const num = (v, d = 1) => Number(Number(v).toFixed(d));
 

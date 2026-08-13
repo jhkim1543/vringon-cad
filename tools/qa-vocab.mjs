@@ -23,6 +23,7 @@ import { readFileSync } from "node:fs";
 import { buildFromSpec, specToAnalysis, specThreeCode } from "../js/spec-cad.js";
 import { airfoilPoints, airfoilDepth } from "../js/spec-to-code.js";
 import { positionsFromGlb, refineFromMesh } from "../js/mesh-loft.js";
+import { COMPONENT_CATALOG, applyComponent } from "../js/drone-catalog.js";
 
 const SPECS = new URL("../docs/specs/", import.meta.url);
 const MESHES = new URL("../docs/assets/meshes/", import.meta.url);
@@ -223,6 +224,24 @@ section("좌표 측정은 이 두 필드를 덮어쓰지 않는다");
   const spec3 = load(id);
   spec3.parts.find((p) => p.part_id === target.part_id).geometry.rotation_deg = { x: 0, y: 0, z: 0 };
   ok(refineFromMesh(spec3, mesh).authored.length === 0, "0도 회전은 측정을 막지 않는다");
+
+  /* The catalogue and the measurement both write size_mm, builder and
+     loft_sections, so whichever runs last decides what the part is. A user who
+     picked a component off the catalogue has said what the part is; the
+     measurement is only inferring it. The choice has to survive the inference,
+     otherwise a swap made before a re-measure silently comes undone. */
+  const spec4 = load(id);
+  const swap = spec4.parts.find((p) => p.part_id === target.part_id);
+  const item = COMPONENT_CATALOG.find((c) => c.id === "bat_6s_5000");
+  applyComponent(spec4, swap.part_id, item);
+  const chosen = JSON.stringify(swap.geometry.size_mm);
+  const form = JSON.stringify(swap.geometry.loft_sections);
+  const r4 = refineFromMesh(spec4, mesh);
+  ok(JSON.stringify(swap.geometry.size_mm) === chosen,
+    `고른 부품의 치수 불변 (${item.dims_mm.join("×")}mm) — 측정이 덮지 않는다`);
+  ok(JSON.stringify(swap.geometry.loft_sections) === form && swap.geometry.builder === "LOFT",
+    "고른 부품의 형상 불변 — 측정 단면으로 바뀌지 않는다");
+  ok(r4.authored.some((s) => s.includes("부품")), `건너뛴 사실이 보고된다: ${r4.authored.join(", ")}`);
 }
 
 /* ------------------------------ 7. specs without the fields are untouched */

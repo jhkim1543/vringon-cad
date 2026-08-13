@@ -11,7 +11,7 @@
    left for the language side.
    ========================================================================== */
 import * as THREE from "three";
-import { worldTris, surfaceSamples, massProperties, eigenSym3 } from "./robot.js?v=d31ce2f9";
+import { worldTris, surfaceSamples, massProperties, eigenSym3 } from "./robot.js?v=8c817597";
 
 /* ---------------------------------------------------------------- profile
    Slice along an axis and record, per slice, the p90 radius and the half

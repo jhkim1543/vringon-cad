@@ -16,8 +16,8 @@
    keeps its original geometry.
    ========================================================================== */
 import * as THREE from "three";
-import { worldTris, surfaceSamples } from "./robot.js?v=d31ce2f9";
-import { preciseProfile } from "./measure.js?v=d31ce2f9";
+import { worldTris, surfaceSamples } from "./robot.js?v=8c817597";
+import { preciseProfile } from "./measure.js?v=8c817597";
 
 /* ------------------------------------------------------------- fit testing
    How well does a primitive describe this part? Measured as the residual

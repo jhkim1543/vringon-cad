@@ -282,14 +282,14 @@
         "builder": "BOX",
         "plane": "FRONT",
         "size_mm": {
-          "w": 89,
-          "h": 24,
-          "d": 120
+          "w": 48,
+          "h": 42,
+          "d": 140
         },
         "center_mm": {
           "x": 0,
-          "y": 25.2,
-          "z": 57.2
+          "y": 30,
+          "z": 50
         },
         "outer_profile": null,
         "inner_profile": null,
@@ -316,14 +316,14 @@
         "builder": "BOX",
         "plane": "FRONT",
         "size_mm": {
-          "w": 84.2,
-          "h": 17,
-          "d": 40
+          "w": 37,
+          "h": 16,
+          "d": 37
         },
         "center_mm": {
-          "x": 1,
+          "x": 0,
           "y": 30,
-          "z": -4.7
+          "z": 0
         },
         "outer_profile": null,
         "inner_profile": null,
@@ -350,13 +350,13 @@
         "builder": "BOX",
         "plane": "FRONT",
         "size_mm": {
-          "w": 34,
+          "w": 30,
           "h": 15,
-          "d": 43
+          "d": 50
         },
         "center_mm": {
           "x": 0,
-          "y": 33.4,
+          "y": 30,
           "z": -60
         },
         "outer_profile": null,

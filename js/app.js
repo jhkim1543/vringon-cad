@@ -1228,7 +1228,7 @@ async function pipeStep2() {
               /* Saying which parts were skipped and why: a wing whose section
                  the measurement would have flattened back into a plank is the
                  one place a user would otherwise think the tool did nothing. */
-              + (authored.length ? ` · 회전·에어포일 ${authored.length}개는 사양서가 형상을 정함` : ""), true);
+              + (authored.length ? ` · ${authored.length}개는 사양서·부품이 형상을 정함` : ""), true);
           }
         }
       } catch (e) { console.warn('loft refine failed', e); }

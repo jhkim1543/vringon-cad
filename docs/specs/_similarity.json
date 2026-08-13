@@ -4,18 +4,18 @@
     "samples": {
       "inspect-quad": {
         "iou": {
-          "front": 0.5647,
-          "left": 0.5234,
-          "rear": 0.5647,
-          "right": 0.5234,
-          "mean": 0.544
+          "front": 0.5661,
+          "left": 0.4828,
+          "rear": 0.5661,
+          "right": 0.4828,
+          "mean": 0.5244
         },
         "chamfer": {
-          "front": 0.0345,
-          "left": 0.0382,
-          "rear": 0.0345,
-          "right": 0.0382,
-          "mean": 0.0364
+          "front": 0.0352,
+          "left": 0.0366,
+          "rear": 0.0352,
+          "right": 0.0366,
+          "mean": 0.0359
         },
         "aspect_error": 0.3426,
         "axis_error": {
@@ -44,18 +44,18 @@
       },
       "agri-hexa": {
         "iou": {
-          "front": 0.5289,
-          "left": 0.6325,
-          "rear": 0.5289,
-          "right": 0.6325,
-          "mean": 0.5807
+          "front": 0.5236,
+          "left": 0.6234,
+          "rear": 0.5236,
+          "right": 0.6234,
+          "mean": 0.5735
         },
         "chamfer": {
-          "front": 0.0252,
-          "left": 0.0174,
-          "rear": 0.0252,
-          "right": 0.0174,
-          "mean": 0.0213
+          "front": 0.0249,
+          "left": 0.0179,
+          "rear": 0.0249,
+          "right": 0.0179,
+          "mean": 0.0214
         },
         "aspect_error": 0.0603,
         "axis_error": {
@@ -78,24 +78,24 @@
         "yaw_deg": 90,
         "size_mm": [
           1649.9,
-          758.3,
+          761.1,
           1429.4
         ]
       },
       "map-wing": {
         "iou": {
-          "front": 0.5519,
+          "front": 0.5474,
           "left": 0.8247,
-          "rear": 0.5519,
+          "rear": 0.5474,
           "right": 0.8247,
-          "mean": 0.6883
+          "mean": 0.6861
         },
         "chamfer": {
-          "front": 0.0102,
+          "front": 0.0103,
           "left": 0.0073,
-          "rear": 0.0102,
+          "rear": 0.0103,
           "right": 0.0073,
-          "mean": 0.0087
+          "mean": 0.0088
         },
         "aspect_error": 0.0909,
         "axis_error": {

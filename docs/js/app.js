@@ -8,27 +8,27 @@ import { OBJLoader } from "three/addons/loaders/OBJLoader.js";
 import { STLLoader } from "three/addons/loaders/STLLoader.js";
 import { SimplifyModifier } from "three/addons/modifiers/SimplifyModifier.js";
 import { mergeVertices } from "three/addons/utils/BufferGeometryUtils.js";
-import { requireAuth, logout } from "./auth.js?v=d31ce2f9";
-import { CATALOG, clampParams, MATERIAL_KEYS, RECOMMENDED_MATERIALS } from "./catalog.js?v=d31ce2f9";
-import { buildModel, defaultParams, matchArchetype, matchArchetypeScored, ARCHETYPE_BY_ID, SIMS } from "./archetypes.js?v=d31ce2f9";
-import { buildProgramModel, validateProgram, clampProgramParams, defaultProgramParams, programSims } from "./program.js?v=d31ce2f9";
-import { MATERIALS, makeMaterial, setQuality, surfaceMaps } from "./geometry.js?v=d31ce2f9";
-import { exportSTEP, exportDXF, exportOBJ, exportGLB, exportSTL, downloadBlob, collectPartTriangles } from "./exporters.js?v=d31ce2f9";
-import { compileAsset, validateAsset, readinessScore, computeInertial } from "./robot.js?v=d31ce2f9";
-import { exportURDF, exportUSDA, exportMJCF, exportBundle, stripCIR, verifyExports as verifyRobotExports } from "./robot-export.js?v=d31ce2f9";
-import { buildAssetRecord, ASSET_CATEGORIES } from "./asset-record.js?v=d31ce2f9";
-import { measureForm, measurementText, formAgreement, orientUpright, silhouettes } from "./measure.js?v=d31ce2f9";
-import { planRepresentation, buildSpecification, specText } from "./threespec.js?v=d31ce2f9";
-import { specSummary, applyPatch } from "./spec-build.js?v=d31ce2f9";
-import { compileSpec, partsAffectedBy } from "./spec-compile.js?v=d31ce2f9";
-import { buildStructuredSpec, structuredSpecText, rebuildEligibility, MODE, ORIGIN } from "./model-spec.js?v=d31ce2f9";
-import { applyModifiers, runOperation, captureBaseline } from "./modifier.js?v=d31ce2f9";
-import { buildFromSpec, specThreeCode, specSummaryText } from "./spec-cad.js?v=d31ce2f9";
-import { createDroneSim } from "./drone-sim.js?v=d31ce2f9";
-import { positionsFromObject3D, refineFromMesh } from "./mesh-loft.js?v=d31ce2f9";
-import { applyParameter, partFields, applyPartField } from "./drone-params.js?v=d31ce2f9";
-import { COMPONENT_CATALOG, CATALOG_GROUPS, fitTargets, applyComponent, addComponentAsPart } from "./drone-catalog.js?v=d31ce2f9";
-import { PRINTERS, MATERIALS as PRINT_MATERIALS, estimatePrint } from "./print-estimate.js?v=d31ce2f9";
+import { requireAuth, logout } from "./auth.js?v=8c817597";
+import { CATALOG, clampParams, MATERIAL_KEYS, RECOMMENDED_MATERIALS } from "./catalog.js?v=8c817597";
+import { buildModel, defaultParams, matchArchetype, matchArchetypeScored, ARCHETYPE_BY_ID, SIMS } from "./archetypes.js?v=8c817597";
+import { buildProgramModel, validateProgram, clampProgramParams, defaultProgramParams, programSims } from "./program.js?v=8c817597";
+import { MATERIALS, makeMaterial, setQuality, surfaceMaps } from "./geometry.js?v=8c817597";
+import { exportSTEP, exportDXF, exportOBJ, exportGLB, exportSTL, downloadBlob, collectPartTriangles } from "./exporters.js?v=8c817597";
+import { compileAsset, validateAsset, readinessScore, computeInertial } from "./robot.js?v=8c817597";
+import { exportURDF, exportUSDA, exportMJCF, exportBundle, stripCIR, verifyExports as verifyRobotExports } from "./robot-export.js?v=8c817597";
+import { buildAssetRecord, ASSET_CATEGORIES } from "./asset-record.js?v=8c817597";
+import { measureForm, measurementText, formAgreement, orientUpright, silhouettes } from "./measure.js?v=8c817597";
+import { planRepresentation, buildSpecification, specText } from "./threespec.js?v=8c817597";
+import { specSummary, applyPatch } from "./spec-build.js?v=8c817597";
+import { compileSpec, partsAffectedBy } from "./spec-compile.js?v=8c817597";
+import { buildStructuredSpec, structuredSpecText, rebuildEligibility, MODE, ORIGIN } from "./model-spec.js?v=8c817597";
+import { applyModifiers, runOperation, captureBaseline } from "./modifier.js?v=8c817597";
+import { buildFromSpec, specThreeCode, specSummaryText } from "./spec-cad.js?v=8c817597";
+import { createDroneSim } from "./drone-sim.js?v=8c817597";
+import { positionsFromObject3D, refineFromMesh } from "./mesh-loft.js?v=8c817597";
+import { applyParameter, partFields, applyPartField } from "./drone-params.js?v=8c817597";
+import { COMPONENT_CATALOG, CATALOG_GROUPS, fitTargets, applyComponent, addComponentAsPart } from "./drone-catalog.js?v=8c817597";
+import { PRINTERS, MATERIALS as PRINT_MATERIALS, estimatePrint } from "./print-estimate.js?v=8c817597";
 
 const $ = (id) => document.getElementById(id);
 const user = requireAuth();
@@ -1228,7 +1228,7 @@ async function pipeStep2() {
               /* Saying which parts were skipped and why: a wing whose section
                  the measurement would have flattened back into a plank is the
                  one place a user would otherwise think the tool did nothing. */
-              + (authored.length ? ` · 회전·에어포일 ${authored.length}개는 사양서가 형상을 정함` : ""), true);
+              + (authored.length ? ` · ${authored.length}개는 사양서·부품이 형상을 정함` : ""), true);
           }
         }
       } catch (e) { console.warn('loft refine failed', e); }

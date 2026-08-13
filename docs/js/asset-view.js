@@ -11,7 +11,7 @@ import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
-import { requireAuth, logout } from "./auth.js?v=d31ce2f9";
+import { requireAuth, logout } from "./auth.js?v=8c817597";
 
 const $ = (id) => document.getElementById(id);
 const user = requireAuth();

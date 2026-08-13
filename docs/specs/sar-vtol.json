@@ -1639,48 +1639,22 @@
       "editable": false,
       "locked_characteristics": [],
       "geometry": {
-        "builder": "LOFT",
+        "builder": "BOX",
         "plane": "FRONT",
         "size_mm": {
-          "w": 137,
-          "h": 92,
-          "d": 88
+          "w": 120,
+          "h": 80,
+          "d": 250
         },
         "center_mm": {
           "x": 0,
           "y": 320,
-          "z": 86
+          "z": 0
         },
         "outer_profile": null,
         "inner_profile": null,
         "corner_radius_mm": null,
-        "repeat": null,
-        "loft_sections": [
-          {
-            "at_pct": 31,
-            "w_mm": 92,
-            "h_mm": 75,
-            "fill": 0.55
-          },
-          {
-            "at_pct": 44,
-            "w_mm": 92,
-            "h_mm": 81,
-            "fill": 0.55
-          },
-          {
-            "at_pct": 56,
-            "w_mm": 92,
-            "h_mm": 87,
-            "fill": 0.55
-          },
-          {
-            "at_pct": 81,
-            "w_mm": 92,
-            "h_mm": 88,
-            "fill": 0.55
-          }
-        ]
+        "repeat": null
       },
       "dimensions": [],
       "features": [],
@@ -1702,14 +1676,14 @@
         "builder": "BOX",
         "plane": "FRONT",
         "size_mm": {
-          "w": 53,
-          "h": 21,
-          "d": 29
+          "w": 50,
+          "h": 30,
+          "d": 50
         },
         "center_mm": {
-          "x": -1,
-          "y": 384,
-          "z": 63
+          "x": 0,
+          "y": 380,
+          "z": 50
         },
         "outer_profile": null,
         "inner_profile": null,
@@ -1733,66 +1707,22 @@
       "editable": false,
       "locked_characteristics": [],
       "geometry": {
-        "builder": "LOFT",
+        "builder": "BOX",
         "plane": "FRONT",
         "size_mm": {
-          "w": 110,
-          "h": 46,
-          "d": 41
+          "w": 100,
+          "h": 40,
+          "d": 150
         },
         "center_mm": {
-          "x": -2,
+          "x": 0,
           "y": 350,
-          "z": -205
+          "z": -150
         },
         "outer_profile": null,
         "inner_profile": null,
         "corner_radius_mm": null,
-        "repeat": null,
-        "loft_sections": [
-          {
-            "at_pct": 6,
-            "w_mm": 44,
-            "h_mm": 33,
-            "fill": 0.56
-          },
-          {
-            "at_pct": 19,
-            "w_mm": 44,
-            "h_mm": 35,
-            "fill": 0.58
-          },
-          {
-            "at_pct": 31,
-            "w_mm": 45,
-            "h_mm": 41,
-            "fill": 0.58
-          },
-          {
-            "at_pct": 44,
-            "w_mm": 45,
-            "h_mm": 41,
-            "fill": 0.57
-          },
-          {
-            "at_pct": 56,
-            "w_mm": 45,
-            "h_mm": 36,
-            "fill": 0.61
-          },
-          {
-            "at_pct": 69,
-            "w_mm": 46,
-            "h_mm": 31,
-            "fill": 0.63
-          },
-          {
-            "at_pct": 81,
-            "w_mm": 46,
-            "h_mm": 28,
-            "fill": 0.61
-          }
-        ]
+        "repeat": null
       },
       "dimensions": [],
       "features": [],
