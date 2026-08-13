@@ -10,7 +10,7 @@
    which came from reading the image.
    ========================================================================== */
 import * as THREE from "three";
-import { loftAxis } from "./mesh-loft.js?v=d78ba17d";
+import { loftAxis } from "./mesh-loft.js?v=d31ce2f9";
 
 const n = (v, d = 2) => Number(Number(v || 0).toFixed(d));
 const YAXIS = new THREE.Vector3(0, 1, 0);
@@ -77,7 +77,30 @@ export function revolveVolume(pts) {
 }
 
 /* ------------------------------------------------------------- geometry
-   One builder per shape kind the spec is allowed to name. */
+
+   Which two of a round part's three box dimensions form its cross-section.
+
+   Every lathed builder here — CYLINDER, CONE, TUBE — is generated about local
+   Y and then turned so local Y lands on the plane's normal: TOP leaves it
+   upright, FRONT sends it to +z, SIDE to x. So the section is always local X
+   and Z, and which world dimensions those become follows from that one turn.
+   Defined once because the runtime builder and the code generator have to
+   agree; when they each carried their own copy the emitted file and the
+   preview were the same shape only by coincidence.
+
+   Returned in local order [X, Z], and the axis length is the remaining one. */
+export function sectionOf(r, s) {
+  return r.plane === "FRONT" ? [s.w, s.h] : r.plane === "SIDE" ? [s.h, s.d] : [s.w, s.d];
+}
+
+/* The emitted counterpart of the runtime `oval()`. Skipped when the section is
+   genuinely round, so a plain cylinder still reads as one line of code. */
+function ovalLine(L, v, cross, dia, n = (x) => Number(x.toFixed(4))) {
+  if (!(dia > 0) || cross[0] === cross[1]) return;
+  L.push(`  ${v}Geo.scale(${n(cross[0] / dia)}, 1, ${n(cross[1] / dia)});   // size_mm 박스에 맞춘 타원 단면`);
+}
+
+/* One builder per shape kind the spec is allowed to name. */
 function buildGeometry(r) {
   const s = r.size || { w: 10, h: 10, d: 10 };
   const w = Math.max(0.1, s.w), h = Math.max(0.1, s.h), d = Math.max(0.1, s.d);
@@ -213,6 +236,22 @@ function buildGeometry(r) {
     else if (r.plane === "SIDE") g2.rotateZ(Math.PI / 2);
     return g2;
   };
+  /* Clamped copy, so a zero-thickness declaration cannot divide by nothing. */
+  const crossOf = () => sectionOf(r, { w, h, d });
+  /* Build the section round at the larger of the two, then squeeze the other
+     back to the number the box declares.
+
+     size_mm is the world bounding box, so a guard whose box reads 281 × 233 is
+     an oval hoop and a searchlight reading 63 × 15 is a slot. Taking max() for
+     both diameters — which is what this did — rounded every such section up to
+     its larger side: the guard grew 21% in depth, the searchlight 323% in
+     height, and a 20mm crossbar declared 20 × 20 × 500 came out as a 500mm
+     disc 20mm thick, because SIDE reads max(h, d) as the diameter. The parts
+     then painted silhouette the aircraft does not have. */
+  const oval = (g2, cross, dia) => {
+    if (dia > 0) g2.scale(cross[0] / dia, 1, cross[1] / dia);
+    return g2;
+  };
   if (b === "CYLINDER" || b === "CONE") {
     /* A rotor's diameter is real data — disk loading, clearance and hover
        power all come from it — but a plain disc is a stand-in for how the
@@ -226,12 +265,24 @@ function buildGeometry(r) {
        and the other two are the diameter. Reading h as the length regardless
        of plane turned a carbon-tube arm declared w40·h40·d650 (a 650mm rod
        running forward) into a standing disc 650 across. */
-    const dia2 = r.plane === "FRONT" ? Math.max(w, h) : r.plane === "SIDE" ? Math.max(h, d) : Math.max(w, d);
+    const cross = crossOf();
+    const dia2 = Math.max(...cross);
     const len = r.plane === "FRONT" ? d : r.plane === "SIDE" ? w : h;
-    if (b === "CONE") return axis(new THREE.ConeGeometry(dia2 / 2, len, 44));
-    return axis(new THREE.CylinderGeometry(dia2 / 2, dia2 / 2, len, 48));
+    if (b === "CONE") return axis(oval(new THREE.ConeGeometry(dia2 / 2, len, 44), cross, dia2));
+    return axis(oval(new THREE.CylinderGeometry(dia2 / 2, dia2 / 2, len, 48), cross, dia2));
   }
-  if (b === "SPHERE") return new THREE.SphereGeometry(Math.max(w, h, d) / 2, 40, 26);
+  if (b === "SPHERE") {
+    /* A gimbal ball declared 191 × 120 × 120 is a squashed dome, not a 191
+       sphere; the same box rule applies with all three axes free. */
+    const dia4 = Math.max(w, h, d);
+    const g = new THREE.SphereGeometry(dia4 / 2, 40, 26);
+    if (dia4 > 0) g.scale(w / dia4, h / dia4, d / dia4);
+    return g;
+  }
+  /* TORUS is left round. Its ring is drawn in local XY, not XZ like every
+     other lathe here, so the box rule would need a different pair of axes —
+     and no sample exercises it, so there is nothing to check the change
+     against. Kept as it was rather than guessed at. */
   if (b === "TORUS") return new THREE.TorusGeometry(Math.max(w, d) / 2, Math.max(0.2, h / 2), 20, 48);
   if (b === "LOFT" && r.loftSections?.length >= 2) {
     /* Skin the measured stations. Each section is a superellipse whose
@@ -253,7 +304,8 @@ function buildGeometry(r) {
        so that dimension is the length and the other two give the bore. Reading
        max(w, d) as the diameter turned a 35mm carbon arm into a 700mm disc —
        38 litres of filament across six arms. */
-    const dia3 = r.plane === "FRONT" ? Math.max(w, h) : r.plane === "SIDE" ? Math.max(h, d) : Math.max(w, d);
+    const cross3 = crossOf();
+    const dia3 = Math.max(...cross3);
     const len3 = r.plane === "FRONT" ? d : r.plane === "SIDE" ? w : h;
     const ro = dia3 / 2, ri = ro * 0.72;
     const pts = [
@@ -262,7 +314,7 @@ function buildGeometry(r) {
     ];
     const g = new THREE.LatheGeometry(pts, 48);
     g.translate(0, -len3 / 2, 0);
-    return axis(g);
+    return axis(oval(g, cross3, dia3));
   }
   if (b === "BOX") return new THREE.BoxGeometry(w, h, d, 2, 2, 2);
 
@@ -916,26 +968,35 @@ export function generateThreeCode(analysis) {
       L.push(`  const ${v}Geo = new THREE.ExtrudeGeometry(${v}Shape, { depth: ${n(s.h)}, bevelEnabled: false, curveSegments: 24 });`);
       L.push(`  ${v}Geo.rotateX(-Math.PI / 2);`);
     } else if (r.builder === "CYLINDER") {
-      const cDia = r.plane === "FRONT" ? Math.max(s.w, s.h) : r.plane === "SIDE" ? Math.max(s.h, s.d) : Math.max(s.w, s.d);
+      const cCross = sectionOf(r, s), cDia = Math.max(...cCross);
       const cLen = r.plane === "FRONT" ? s.d : r.plane === "SIDE" ? s.w : s.h;
       if (isProp(r)) L.push(`  const ${v}Geo = propellerGeometry(${n(Math.max(s.w, s.h, s.d))}, ${n(Math.max(3, Math.min(s.w, s.h, s.d)))}, ${bladeCount(r)});`);
-      else L.push(`  const ${v}Geo = new THREE.CylinderGeometry(${n(cDia / 2)}, ${n(cDia / 2)}, ${n(cLen)}, 48);   // size_mm 박스의 축 방향이 길이`);
+      else {
+        L.push(`  const ${v}Geo = new THREE.CylinderGeometry(${n(cDia / 2)}, ${n(cDia / 2)}, ${n(cLen)}, 48);   // size_mm 박스의 축 방향이 길이`);
+        ovalLine(L, v, cCross, cDia);
+      }
       if (r.plane === "FRONT") L.push(`  ${v}Geo.rotateX(Math.PI / 2);   // 축이 전방(+z)을 향한다`);
       else if (r.plane === "SIDE") L.push(`  ${v}Geo.rotateZ(Math.PI / 2);   // 축이 좌우(x)를 향한다`);
     } else if (r.builder === "TUBE") {
-      const tDia = r.plane === "FRONT" ? Math.max(s.w, s.h) : r.plane === "SIDE" ? Math.max(s.h, s.d) : Math.max(s.w, s.d);
+      const tCross = sectionOf(r, s), tDia = Math.max(...tCross);
       const tLen = r.plane === "FRONT" ? s.d : r.plane === "SIDE" ? s.w : s.h;
       L.push(`  const ${v}Geo = new THREE.CylinderGeometry(${n(tDia / 2)}, ${n(tDia / 2)}, ${n(tLen)}, 48, 1, true);   // size_mm 박스의 축 방향이 길이`);
+      ovalLine(L, v, tCross, tDia);
       if (r.plane === "FRONT") L.push(`  ${v}Geo.rotateX(Math.PI / 2);`);
       else if (r.plane === "SIDE") L.push(`  ${v}Geo.rotateZ(Math.PI / 2);`);
     } else if (r.builder === "SPHERE") {
-      L.push(`  const ${v}Geo = new THREE.SphereGeometry(${n(Math.max(s.w, s.h, s.d) / 2)}, 40, 26);`);
+      const sDia = Math.max(s.w, s.h, s.d);
+      L.push(`  const ${v}Geo = new THREE.SphereGeometry(${n(sDia / 2)}, 40, 26);`);
+      if (sDia > 0 && (s.w !== sDia || s.h !== sDia || s.d !== sDia)) {
+        L.push(`  ${v}Geo.scale(${n(s.w / sDia, 4)}, ${n(s.h / sDia, 4)}, ${n(s.d / sDia, 4)});   // size_mm 박스에 맞춘 타원체`);
+      }
     } else if (r.builder === "TORUS") {
       L.push(`  const ${v}Geo = new THREE.TorusGeometry(${n(Math.max(s.w, s.d) / 2)}, ${n(s.h / 2)}, 20, 48);`);
     } else if (r.builder === "CONE") {
-      const kDia = r.plane === "FRONT" ? Math.max(s.w, s.h) : r.plane === "SIDE" ? Math.max(s.h, s.d) : Math.max(s.w, s.d);
+      const kCross = sectionOf(r, s), kDia = Math.max(...kCross);
       const kLen = r.plane === "FRONT" ? s.d : r.plane === "SIDE" ? s.w : s.h;
       L.push(`  const ${v}Geo = new THREE.ConeGeometry(${n(kDia / 2)}, ${n(kLen)}, 44);`);
+      ovalLine(L, v, kCross, kDia);
       if (r.plane === "FRONT") L.push(`  ${v}Geo.rotateX(Math.PI / 2);   // 축이 전방(+z)을 향한다`);
       else if (r.plane === "SIDE") L.push(`  ${v}Geo.rotateZ(Math.PI / 2);   // 축이 좌우(x)를 향한다`);
     } else {

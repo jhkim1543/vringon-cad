@@ -34,6 +34,13 @@ export function isShellPart(name) {
    that normal cuts the aircraft sideways and reports nonsense. A loft runs
    nose to tail, and the longest axis is what that means. The compiler derives
    the axis by this same rule, so no extra field has to travel in the JSON. */
+/* A cross-section counts as round or square while its two extents are within a
+   factor of two. Past that it is a plate, and a plate has no cross-section to
+   find — see below. The boundary is a statement about shape, not a fitted
+   constant, and the samples leave it plenty of room: every part that reads as a
+   solid of revolution sits at 0.48 or below, every plate at 0.54 or above. */
+const SQUARISH = 0.5;
+
 export function loftAxis(size) {
   const d = [size.w || 0, size.h || 0, size.d || 0];
   /* Taking the longest extent works for a fuselage but rolls an upright tank
@@ -45,7 +52,15 @@ export function loftAxis(size) {
     const diff = Math.abs(d[a] - d[b]) / Math.max(d[a], d[b], 1);
     if (!best || diff < best.diff) best = { diff, axis: c };
   }
-  return best.axis;
+  /* That rule assumes some pair really is the cross-section. A wing has no such
+     pair: 1200 × 25 × 220 is span, thickness, chord, and the closest match of
+     the three is span against chord — so the rule hands back the 25mm thickness
+     and the wing lofts across its own skin. Every measurement taken along that
+     axis is then of the wrong direction, and the span, being a cross extent,
+     gets overwritten by a section reading: 1200mm of wingspan became 164mm.
+     When nothing is square enough to be a cross-section the shape is a plate,
+     and a plate stacks its sections along its longest run. */
+  return best.diff <= SQUARISH ? best.axis : d.indexOf(Math.max(...d));
 }
 
 /* A section is described by width, height and how full it is: the fraction of
@@ -106,12 +121,14 @@ function sectionAt(pos, count, lo, hi, ax, u, v, uMin, uMax, vMin, vMax) {
  * Measure loft sections for one part.
  * @param mesh   {positions: Float64Array|Float32Array, count: number} in mesh units
  * @param box    part box in the SAME units: {min:[x,y,z], max:[x,y,z]}
- * @param size   the part's size_mm; its longest axis is the loft axis
+ * @param size   the part's size_mm, from which the loft axis is derived
  * @param steps  how many stations to cut
+ * @param axis   the loft axis, when the caller has already resolved it — the
+ *               one contract that must not be decided twice
  * @returns [{at_pct, w, h, fill}] in mesh units, or null when unmeasurable
  */
-export function measureSections(mesh, box, size, steps = 8) {
-  const ax = loftAxis(size);
+export function measureSections(mesh, box, size, steps = 8, axis = null) {
+  const ax = axis == null ? loftAxis(size) : axis;
   const [u, v] = [0, 1, 2].filter((a) => a !== ax);
   const lo = box.min[ax], hi = box.max[ax];
   const span = hi - lo;
@@ -173,38 +190,165 @@ function firstInstanceCenter(g) {
   return [c.x || 0, c.y || 0, c.z || 0];
 }
 
+/* Every place one part is drawn, with its half-extent, in spec millimetres.
+   specBounds needs it to size the whole assembly and the heading search needs
+   it to know where the specification thinks its mass is; deriving the ring
+   twice was how the two ended up disagreeing about start_angle_deg. */
+function partSpots(g) {
+  const sz = g && g.size_mm;
+  if (!sz) return null;
+  const c = g.center_mm || {};
+  const half = [sz.w / 2, sz.h / 2, sz.d / 2];
+  const rep = g.repeat;
+  const spots = [];
+  if (rep && rep.count > 1 && rep.pattern === "CIRCULAR") {
+    const rad = Number(rep.radius_mm) || 10;
+    const n = Math.min(rep.count, 32);
+    const a0 = ((Number(rep.start_angle_deg) || 0) * Math.PI) / 180;
+    for (let i = 0; i < n; i++) {
+      const phi = Math.PI / 2 - (a0 + (i / n) * Math.PI * 2);
+      spots.push([Math.cos(phi) * rad, c.y || 0, Math.sin(phi) * rad]);
+    }
+  } else if (rep && rep.count > 1 && rep.pattern === "MIRROR_PAIR") {
+    const off = rep.spacing_mm ? rep.spacing_mm / 2 : Math.abs(c.x || 0);
+    spots.push([off, c.y || 0, c.z || 0], [-off, c.y || 0, c.z || 0]);
+  } else {
+    spots.push([c.x || 0, c.y || 0, c.z || 0]);
+  }
+  return { half, spots };
+}
+
 /* The specification's overall extent, so the mesh can be fitted to it. */
 function specBounds(spec) {
   const lo = [Infinity, Infinity, Infinity], hi = [-Infinity, -Infinity, -Infinity];
   for (const part of spec.parts || []) {
-    const g = part.geometry, sz = g && g.size_mm;
-    if (!sz) continue;
-    const half = [sz.w / 2, sz.h / 2, sz.d / 2];
-    const rep = g.repeat;
-    const spots = [];
-    if (rep && rep.count > 1 && rep.pattern === "CIRCULAR") {
-      const rad = Number(rep.radius_mm) || 10;
-      const n = Math.min(rep.count, 32);
-      const a0 = ((Number(rep.start_angle_deg) || 0) * Math.PI) / 180;
-      for (let i = 0; i < n; i++) {
-        const phi = Math.PI / 2 - (a0 + (i / n) * Math.PI * 2);
-        spots.push([Math.cos(phi) * rad, g.center_mm.y || 0, Math.sin(phi) * rad]);
-      }
-    } else if (rep && rep.count > 1 && rep.pattern === "MIRROR_PAIR") {
-      const off = rep.spacing_mm ? rep.spacing_mm / 2 : Math.abs(g.center_mm.x || 0);
-      spots.push([off, g.center_mm.y || 0, g.center_mm.z || 0],
-        [-off, g.center_mm.y || 0, g.center_mm.z || 0]);
-    } else {
-      spots.push([g.center_mm.x || 0, g.center_mm.y || 0, g.center_mm.z || 0]);
-    }
-    for (const c of spots) {
+    const s = partSpots(part.geometry);
+    if (!s) continue;
+    for (const c of s.spots) {
       for (let a = 0; a < 3; a++) {
-        lo[a] = Math.min(lo[a], c[a] - half[a]);
-        hi[a] = Math.max(hi[a], c[a] + half[a]);
+        lo[a] = Math.min(lo[a], c[a] - s.half[a]);
+        hi[a] = Math.max(hi[a], c[a] + s.half[a]);
       }
     }
   }
   return { lo, hi };
+}
+
+/* ------------------------------------------------------------------ heading
+
+   A reconstruction has no idea which way is forward. The survey wing's span
+   runs along Z in its mesh and along X in the specification, and nothing in
+   either file says so — tools/similarity.mjs discovered it by trying all four
+   quarter turns, and it is why three of the four samples score against a
+   turned reference.
+
+   Everything downstream of here reads the mesh through boxes the specification
+   wrote. If the two headings disagree, a 1200mm box along spec X is sampled
+   along mesh X, where the mesh has a 700mm fuselage; the per-axis fit then
+   stretches that fuselage to fill the span and the "wing sections" that come
+   back are slices of the wrong part. The reading is not noisy, it is of
+   something else, and every consumer downstream — sizes, centres, the loft, and
+   the optimiser that fits against them — inherits it.
+
+   So the turn is found once, before anything is measured. Four candidates, no
+   arbitrary angles: a free rotation could register a wing onto a fuselage and
+   call it a fit. */
+
+const YAW_STEPS = [
+  (x, z) => [x, z],
+  (x, z) => [z, -x],
+  (x, z) => [-x, -z],
+  (x, z) => [-z, x],
+];
+
+/** Turn a mesh a quarter turn about the vertical axis, k times. */
+export function yawMesh(mesh, k) {
+  if (!(k % 4)) return mesh;
+  const f = YAW_STEPS[((k % 4) + 4) % 4];
+  const positions = new Float64Array(mesh.count * 3);
+  for (let i = 0; i < mesh.count; i++) {
+    const [x, z] = f(mesh.positions[i * 3], mesh.positions[i * 3 + 2]);
+    positions[i * 3] = x;
+    positions[i * 3 + 1] = mesh.positions[i * 3 + 1];
+    positions[i * 3 + 2] = z;
+  }
+  return { positions, count: mesh.count, indices: mesh.indices };
+}
+
+const OCC = 20;                       // occupancy grid per axis
+
+/* Voxels the specification's part boxes fill, in its own coordinates. */
+function specOccupancy(spec, sb, size) {
+  const grid = new Uint8Array(OCC * OCC * OCC);
+  const cell = (v, a) => Math.max(0, Math.min(OCC - 1,
+    Math.floor(((v - sb.lo[a]) / size[a]) * OCC)));
+  for (const part of spec.parts || []) {
+    const s = partSpots(part.geometry);
+    if (!s) continue;
+    for (const c of s.spots) {
+      const lo = [0, 1, 2].map((a) => cell(c[a] - s.half[a], a));
+      const hi = [0, 1, 2].map((a) => cell(c[a] + s.half[a], a));
+      for (let i = lo[0]; i <= hi[0]; i++) for (let j = lo[1]; j <= hi[1]; j++) {
+        for (let k = lo[2]; k <= hi[2]; k++) grid[(i * OCC + j) * OCC + k] = 1;
+      }
+    }
+  }
+  return grid;
+}
+
+/* Voxels the mesh fills, brought into the same frame. Uniform scale on
+   purpose: the per-axis fit the measurement uses would squeeze a turned mesh
+   into the specification's box and throw away the proportion mismatch that is
+   the whole signal here. Centred rather than corner-aligned so a nose sticking
+   out one end does not shift everything. */
+function meshOccupancy(mesh, mb, sb, size) {
+  const grid = new Uint8Array(OCC * OCC * OCC);
+  const scale = Math.max(...size) / Math.max(...mb.size);
+  const mc = [0, 1, 2].map((a) => mb.lo[a] + mb.size[a] / 2);
+  const sc = [0, 1, 2].map((a) => sb.lo[a] + size[a] / 2);
+  for (let i = 0; i < mesh.count; i++) {
+    let out = false;
+    const c = [0, 0, 0];
+    for (let a = 0; a < 3 && !out; a++) {
+      const v = (mesh.positions[i * 3 + a] - mc[a]) * scale + sc[a];
+      const k = Math.floor(((v - sb.lo[a]) / size[a]) * OCC);
+      if (k < 0 || k >= OCC) out = true; else c[a] = k;
+    }
+    if (!out) grid[(c[0] * OCC + c[1]) * OCC + c[2]] = 1;
+  }
+  return grid;
+}
+
+/* Turning a symmetric airframe is a no-op that the fourth decimal place can
+   still prefer, and a measurement that flips heading between runs would move
+   every committed number with it. */
+const YAW_MARGIN = 0.02;
+
+/**
+ * Which quarter turn about the vertical axis brings the mesh onto the
+ * specification's heading? Returns {k, iou}; k is quarter turns, so the caller
+ * measures `yawMesh(mesh, k)`.
+ */
+export function meshYaw(spec, mesh) {
+  const sb = specBounds(spec);
+  const size = [0, 1, 2].map((a) => sb.hi[a] - sb.lo[a]);
+  if (!(Math.min(...size) > 0)) return { k: 0, iou: 0 };
+  const want = specOccupancy(spec, sb, size);
+  let best = { k: 0, iou: -1 };
+  for (let k = 0; k < 4; k++) {
+    const turned = yawMesh(mesh, k);
+    const mb = meshBounds(turned);
+    if (!(Math.min(...mb.size) > 0)) continue;
+    const got = meshOccupancy(turned, mb, sb, size);
+    let inter = 0, uni = 0;
+    for (let i = 0; i < want.length; i++) {
+      if (want[i] | got[i]) uni++;
+      if (want[i] & got[i]) inter++;
+    }
+    const iou = uni ? inter / uni : 0;
+    if (k === 0 ? iou > best.iou : iou > best.iou + YAW_MARGIN) best = { k, iou };
+  }
+  return best;
 }
 
 /**
@@ -229,12 +373,19 @@ function specBounds(spec) {
  */
 export function refineFromMesh(spec, mesh) {
   const measured = [], internal = [], authored = [];
-  const mb = meshBounds(mesh);
+  /* Heading first: every box below is written in the specification's frame, so
+     a mesh that faces another way has to be turned before it is read, not
+     after. See the heading section above for what measuring through the wrong
+     quarter turn actually produces. */
+  const yaw = meshYaw(spec, mesh);
+  const turned = yawMesh(mesh, yaw.k);
+  const mb = meshBounds(turned);
   const sb = specBounds(spec);
   const specSize = [sb.hi[0] - sb.lo[0], sb.hi[1] - sb.lo[1], sb.hi[2] - sb.lo[2]];
   if (!(Math.min(...specSize) > 0) || !(Math.min(...mb.size) > 0)) {
-    return { spec, measured, internal, authored, scale: null };
+    return { spec, measured, internal, authored, scale: null, yaw_deg: 0 };
   }
+  mesh = turned;
   // spec mm → mesh units, per axis
   const toMesh = (mm, a) => ((mm - sb.lo[a]) / specSize[a]) * mb.size[a] + mb.lo[a];
   const perMm = [0, 1, 2].map((a) => mb.size[a] / specSize[a]);
@@ -321,26 +472,32 @@ export function refineFromMesh(spec, mesh) {
       }
     }
 
-    /* And the shape along the axis, which is the part no box can carry. */
-    const raw = measureSections(mesh, box, g.size_mm, 8);
+    /* And the shape along the axis, which is the part no box can carry.
+
+       The axis is read once, here, and every line below uses that one value.
+       It used to be recomputed three times from g.size_mm — which the loop
+       above has just rewritten — so the direction the sections were measured
+       along and the direction they were written back along could be different
+       axes of the same part. */
+    const ax = loftAxis(g.size_mm);
+    const cross = [0, 1, 2].filter((a) => a !== ax);
+    const raw = measureSections(mesh, box, g.size_mm, 8, ax);
     let mode = "치수";
     if (raw && sectionsVary(raw) && !NEVER_LOFT.test(label)) {
       g.builder = "LOFT";
       g.loft_sections = raw.map((x) => ({
         at_pct: x.at_pct,
-        w_mm: Math.max(1, Math.round(x.w / perMm[[0, 1, 2].filter((a) => a !== loftAxis(g.size_mm))[0]])),
-        h_mm: Math.max(1, Math.round(x.h / perMm[[0, 1, 2].filter((a) => a !== loftAxis(g.size_mm))[1]])),
+        w_mm: Math.max(1, Math.round(x.w / perMm[cross[0]])),
+        h_mm: Math.max(1, Math.round(x.h / perMm[cross[1]])),
         fill: Math.round(x.fill * 100) / 100,
       }));
-      const ax = loftAxis(g.size_mm);
-      const cross = keys.filter((_, i) => i !== ax);
-      sz[cross[0]] = Math.max(...g.loft_sections.map((x) => x.w_mm));
-      sz[cross[1]] = Math.max(...g.loft_sections.map((x) => x.h_mm));
+      sz[keys[cross[0]]] = Math.max(...g.loft_sections.map((x) => x.w_mm));
+      sz[keys[cross[1]]] = Math.max(...g.loft_sections.map((x) => x.h_mm));
       mode = g.loft_sections.length + "단면";
     }
     measured.push(label + "(" + mode + ")");
   }
-  return { spec, measured, internal, authored, scale: perMm };
+  return { spec, measured, internal, authored, scale: perMm, yaw_deg: yaw.k * 90 };
 }
 
 /* Turning these into lofts would fight a builder that already says the shape

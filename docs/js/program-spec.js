@@ -1,6 +1,6 @@
 // The geometry-DSL contract, shared verbatim by the browser interpreter and
 // the on-prem planner server (which cannot import three.js). Dependency-free.
-import { MATERIAL_KEYS } from "./catalog.js?v=d78ba17d";
+import { MATERIAL_KEYS } from "./catalog.js?v=d31ce2f9";
 
 export const PROGRAM_SPEC = `기하 DSL 명세 (모든 치수 mm, 모든 수치는 숫자 또는 파라미터 수식 문자열):
 - 수식: 파라미터명, 숫자, + - * / % ( ), 함수 min max abs round floor ceil sqrt pow sin cos tan(도 단위), 상수 pi

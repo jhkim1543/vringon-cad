@@ -10,13 +10,13 @@
 import * as THREE from "three";
 import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
 import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
-import { requireAuth } from "./auth.js?v=d78ba17d";
-import { compileAsset, validateAsset, readinessScore } from "./robot.js?v=d78ba17d";
-import { verifyExports as verifyRobotExports, exportURDF, exportUSDA, exportMJCF, stripCIR } from "./robot-export.js?v=d78ba17d";
-import { buildAssetRecord, shapeSignature } from "./asset-record.js?v=d78ba17d";
-import { exportGLB, exportSTEP } from "./exporters.js?v=d78ba17d";
-import { DATASETS as BASE, MAT_COLOR, withVariants } from "./seed-datasets.js?v=d78ba17d";
-import { PRECISION_PARTS } from "./seed-precision.js?v=d78ba17d";
+import { requireAuth } from "./auth.js?v=d31ce2f9";
+import { compileAsset, validateAsset, readinessScore } from "./robot.js?v=d31ce2f9";
+import { verifyExports as verifyRobotExports, exportURDF, exportUSDA, exportMJCF, stripCIR } from "./robot-export.js?v=d31ce2f9";
+import { buildAssetRecord, shapeSignature } from "./asset-record.js?v=d31ce2f9";
+import { exportGLB, exportSTEP } from "./exporters.js?v=d31ce2f9";
+import { DATASETS as BASE, MAT_COLOR, withVariants } from "./seed-datasets.js?v=d31ce2f9";
+import { PRECISION_PARTS } from "./seed-precision.js?v=d31ce2f9";
 
 /* Precision parts first, and no variants of them: each one is a distinct
    machined family, not a size class of the same product. Registering them

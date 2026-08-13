@@ -13,6 +13,46 @@ import { createDroneSim } from "../js/drone-sim.js";
 import { applyParameter, partFields, applyPartField } from "../js/drone-params.js";
 import { COMPONENT_CATALOG, fitTargets, applyComponent, addComponentAsPart } from "../js/drone-catalog.js";
 import { PRINTERS, MATERIALS, estimatePrint } from "../js/print-estimate.js";
+import { isProp } from "../js/spec-to-code.js";
+
+/* Builders that turn a box into a solid of revolution. size_mm is the world
+   bounding box, so whatever they produce has to fit inside the box that
+   declared it — the check exists because these four kept reading the larger of
+   the two section dimensions as a diameter and quietly inflating the smaller
+   one, which put a 500mm disc where a 20mm crossbar was specified and made
+   every guard, motor and lamp wider than its own declaration.
+
+   Propellers are exempt by design: their box is the disc the blades sweep, and
+   a two-blade stand-in is meant to leave most of that disc empty. */
+const ROUND = new Set(["CYLINDER", "CONE", "TUBE", "SPHERE"]);
+const BOX_TOL = 0.02;
+
+function roundBoxIssues(built) {
+  const seen = new Map();
+  built.root.traverse((o) => {
+    if (!o.isMesh || !o.geometry) return;
+    const key = o.userData?.regionId;
+    if (!key || seen.has(key)) return;
+    o.geometry.computeBoundingBox();
+    const b = o.geometry.boundingBox;
+    seen.set(key, [b.max.x - b.min.x, b.max.y - b.min.y, b.max.z - b.min.z]);
+  });
+  const bad = [];
+  for (const r of built.analysis.regions || []) {
+    if (!ROUND.has(r.builder) || isProp(r)) continue;
+    const got = seen.get(r.regionId), s = r.size;
+    if (!got || !s) continue;
+    const want = [s.w, s.h, s.d];
+    /* Only overflow is a violation: a lathe that does not reach its box is a
+       shape statement, one that spills out of it is a broken contract. */
+    const over = [0, 1, 2]
+      .map((a) => (want[a] > 0 ? got[a] / want[a] - 1 : 0))
+      .map((v, a) => (v > BOX_TOL ? `${"whd"[a]} +${(v * 100).toFixed(0)}%` : null))
+      .filter(Boolean);
+    if (over.length) bad.push(`${r.regionId}(${r.builder} ${over.join(" ")})`);
+  }
+  return bad;
+}
 
 const dir = new URL("../docs/specs/", import.meta.url);
 /* index.json is the catalogue and a leading underscore marks derived output
@@ -39,6 +79,11 @@ for (const f of files) {
   const bb = new THREE.Box3().setFromObject(root);
   if (!isFinite(bb.min.y) || Math.abs(bb.min.y) > 1) issues.push(`바닥 ${bb.min.y.toFixed(1)}`);
   if (root.children.length < 5) issues.push(`파트 ${root.children.length}`);
+  /* Checked on the freshly compiled assembly: steps 3 to 5 below edit the spec
+     on purpose, and a box measured after those edits would not be the one the
+     sample ships with. */
+  const over = roundBoxIssues(built);
+  if (over.length) issues.push(`박스 초과 ${over.join(", ")}`);
 
   // 2. simulate
   const sim = createDroneSim({ root, spec });

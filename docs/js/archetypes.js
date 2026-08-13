@@ -5,8 +5,8 @@
 
 import * as THREE from "three";
 import { plate, roundedBox, lathe, chamferCyl, loft, gear, bolt, rib, meshOf, makeMaterial,
-  gemGeometry, GEM_SHAPES, GEM_CUTS } from "./geometry.js?v=d78ba17d";
-import { CATALOG, clampParams } from "./catalog.js?v=d78ba17d";
+  gemGeometry, GEM_SHAPES, GEM_CUTS } from "./geometry.js?v=d31ce2f9";
+import { CATALOG, clampParams } from "./catalog.js?v=d31ce2f9";
 
 /* ---------------------------------------------------------------- gearbox */
 const gearbox = {
