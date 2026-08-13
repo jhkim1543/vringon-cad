@@ -1,0 +1,63 @@
+{
+  "id": "agri-hexa",
+  "source": "photo",
+  "generator": "1차 이미지 모델",
+  "generated": "2026-08-12T23:44:50.760Z",
+  "photo": "docs/assets/samples/drones/agri-hexa.jpg",
+  "mesh": null,
+  "attempt": 1,
+  "layout": "1x4",
+  "mask_px": 796,
+  "views": {
+    "front": {
+      "w": 750,
+      "h": 354,
+      "area": 94448
+    },
+    "left": {
+      "w": 741,
+      "h": 354,
+      "area": 82344
+    },
+    "rear": {
+      "w": 751,
+      "h": 354,
+      "area": 94203
+    },
+    "right": {
+      "w": 743,
+      "h": 354,
+      "area": 82774
+    }
+  },
+  "consistency": {
+    "height_spread": 0,
+    "solidity": [
+      0.6665,
+      0.6241,
+      0.6699,
+      0.617
+    ],
+    "mirror_iou": {
+      "front_rear": 0.8846,
+      "left_right": 0.9395
+    },
+    "mirror_wrong_order": 0.4522,
+    "pair_width_error": {
+      "front_rear": 0.0013,
+      "left_right": 0.0027
+    },
+    "pair_area_error": {
+      "front_rear": 0.0026,
+      "left_right": 0.0052
+    },
+    "pass": true,
+    "fail": []
+  },
+  "rejected": [],
+  "mesh_cross_check": {
+    "yaw_deg": 270,
+    "iou_mean": 0.5199,
+    "chamfer_mean": 0.0159
+  }
+}

@@ -24,6 +24,11 @@ for (const dir of ["js/", "docs/specs/"]) {
   const d = new URL(dir, ROOT);
   for (const f of (await readdir(d)).sort()) {
     if (!/\.(js|json)$/.test(f)) continue;
+    /* Files starting with an underscore are measurements of the sources, not
+       sources: _similarity.json is derived from the specs and never fetched by
+       the page, so hashing it would move the build stamp every time the metric
+       was re-run without a single shipped byte having changed. */
+    if (f.startsWith("_")) continue;
     hash.update(f);
     hash.update(await readFile(new URL(f, d)));
   }

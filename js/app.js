@@ -1220,10 +1220,15 @@ async function pipeStep2() {
            bounding boxes — nothing to line up here. */
         if (mesh) {
           const done = refineFromMesh(s.spec, mesh);
-          const total = done.measured.length + done.internal.length;
+          const authored = done.authored || [];
+          const total = done.measured.length + done.internal.length + authored.length;
           if (done.measured.length) {
             toast(`메시에서 좌표 측정 ${done.measured.length}/${total}파트`
-              + (done.internal.length ? ` · 내부 ${done.internal.length}개는 사양서 값 유지` : ""), true);
+              + (done.internal.length ? ` · 내부 ${done.internal.length}개는 사양서 값 유지` : "")
+              /* Saying which parts were skipped and why: a wing whose section
+                 the measurement would have flattened back into a plank is the
+                 one place a user would otherwise think the tool did nothing. */
+              + (authored.length ? ` · 회전·에어포일 ${authored.length}개는 사양서가 형상을 정함` : ""), true);
           }
         }
       } catch (e) { console.warn('loft refine failed', e); }

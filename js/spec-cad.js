@@ -8,10 +8,13 @@
    surface with a primitive.
    ========================================================================== */
 import * as THREE from "three";
-import { tessellate, revolveVolume, buildFromAnalysis, generateThreeCode } from "./spec-to-code.js";
+import { tessellate, revolveVolume, buildFromAnalysis, generateThreeCode,
+  airfoilDepth, maxChord } from "./spec-to-code.js";
 
 const num = (v, d = 0) => (Number.isFinite(v) ? v : d);
 const dist = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1]);
+const rad = (deg) => (num(deg) * Math.PI) / 180;
+const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 
 /* Segments arrive with sweep "NONE" for lines; spec-to-code reads "CW". */
 function normSegments(list) {
@@ -187,6 +190,48 @@ export function specToAnalysis(spec) {
       __sourceMesh: g.builder === "SOURCE_MESH",
       __partId: p.part_id,
     };
+
+    /* Part rotation. Degrees in the JSON because that is what a designer says
+       out loud ("상반각 5도"), radians from here on because that is what the
+       builder needs. Absent or all-zero stays absent, so a part that does not
+       rotate takes exactly the path it took before the field existed.
+
+       Note what this does to size_mm: it stays the part's OWN box, measured
+       before the rotation. The world box of a tilted part is larger, and the
+       measurement pass knows to leave rotated parts alone for that reason. */
+    const rot = g.rotation_deg;
+    if (rot && (num(rot.x) || num(rot.y) || num(rot.z))) {
+      r.rotation = { x: rad(rot.x), y: rad(rot.y), z: rad(rot.z) };
+    }
+
+    /* Aerofoil section. Only a planform can carry one — a top view is what
+       "spanwise station" means — so anywhere else it is reported and dropped
+       rather than applied to the wrong axis in silence. */
+    const af = g.airfoil;
+    if (af && num(af.thickness_pct) > 0) {
+      const label = p.display_name_ko || p.name;
+      if (builder === "EXTRUDE_2D" && (g.plane || "FRONT") === "TOP") {
+        r.airfoil = {
+          thickness: clamp(num(af.thickness_pct, 12), 2, 40) / 100,
+          camber: clamp(num(af.camber_pct), 0, 9.5) / 100,
+          twist: rad(clamp(num(af.twist_deg), -20, 20)),
+        };
+        /* The section decides the thickness — chord × thickness_pct — the way
+           a revolve's profile decides its height. Saying so is the difference
+           between a user thinking the h slider is broken and knowing which
+           number to reach for. */
+        const chord = outer ? maxChord(tessellate(outer, 0.4)) : num(size.d, 0);
+        const real = chord * airfoilDepth(r.airfoil.thickness, r.airfoil.camber);
+        if (real > 0 && Math.abs(real - h) > Math.max(0.5, h * 0.15)) {
+          notes.push(`${label}: 에어포일 실제 두께 ${real.toFixed(1)}mm가 size_mm.h ${h}mm와 `
+            + `다릅니다. 두께는 최대 코드 ${chord.toFixed(0)}mm × thickness_pct로 정해지므로 `
+            + `두껍게 하려면 airfoil.thickness_pct를 올리십시오`);
+        }
+      } else {
+        notes.push(`${label}: airfoil은 plane TOP의 EXTRUDE_2D에만 적용됩니다 `
+          + `(지금은 ${builder}/${g.plane || "FRONT"}) — 단면을 무시하고 그대로 만들었습니다`);
+      }
+    }
     if (g.repeat && g.repeat.count > 1) {
       r.__planeForRepeat = g.plane;
       r.repeat = {

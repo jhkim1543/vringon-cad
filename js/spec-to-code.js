@@ -13,6 +13,7 @@ import * as THREE from "three";
 import { loftAxis } from "./mesh-loft.js";
 
 const n = (v, d = 2) => Number(Number(v || 0).toFixed(d));
+const YAXIS = new THREE.Vector3(0, 1, 0);
 
 /* ------------------------------------------------------- profile segments
    Arcs and Beziers, tessellated. A profile written as bare points loses the
@@ -115,6 +116,23 @@ function buildGeometry(r) {
        follows from the plane: FRONT extrudes through d, TOP (a planform)
        through h, SIDE (a fin) through w. */
     const depth = r.plane === "TOP" ? h : r.plane === "SIDE" ? w : d;
+    /* A section turns the planform into a wing. TOP only: a planform is a top
+       view by definition, and running this on a fin's SIDE section would loft
+       the aerofoil across the span it was meant to run along. The planform is
+       recentred exactly as the extrusion below recentres it, so a wing that
+       gains a section does not also move. */
+    if (r.airfoil && r.plane === "TOP") {
+      const pts = r.outerProfile?.length ? tessellate(r.outerProfile)
+        : [[-w / 2, -d / 2], [w / 2, -d / 2], [w / 2, d / 2], [-w / 2, d / 2]]
+          .map(([x, y]) => new THREE.Vector2(x, y));
+      if (pts.length >= 3) {
+        const xs = pts.map((p) => p.x), ys = pts.map((p) => p.y);
+        const cx = (Math.min(...xs) + Math.max(...xs)) / 2;
+        const cy = (Math.min(...ys) + Math.max(...ys)) / 2;
+        const g = wingGeometry(pts.map((p) => new THREE.Vector2(p.x - cx, p.y - cy)), r.airfoil);
+        if (g) return g;
+      }
+    }
     if (r.outerProfile?.length) {
       const pts = tessellate(r.outerProfile);
       if (pts.length >= 3) {
@@ -288,6 +306,48 @@ function ringPoints(w, h, fill, segs = 32) {
   return pts;
 }
 
+/* Stitch a stack of equal-length rings into one closed solid, ring order being
+   the axis. Both skinned builders here — the measured loft and the generated
+   wing — are rings along an axis, and two copies of the winding would be two
+   chances to get the normals inside out.
+
+   `cap0`/`cap1` are the fan centres for the two ends. The loft's rings are
+   symmetric about their own axis so it passes the axis point exactly; the
+   wing's sections are not, so it passes their centroid. */
+function skinRings(rings, cap0, cap1) {
+  const segs = rings[0].length;
+  const pos = [], idx = [];
+  for (const r of rings) for (const p of r) pos.push(p[0], p[1], p[2]);
+  for (let k = 0; k < rings.length - 1; k++) {
+    const A = k * segs, B = (k + 1) * segs;
+    for (let i = 0; i < segs; i++) {
+      const j = (i + 1) % segs;
+      idx.push(A + i, B + i, B + j, A + i, B + j, A + j);
+    }
+  }
+  // caps: a fan to the centre of the first and last ring
+  const capStart = pos.length / 3;
+  pos.push(...cap0, ...cap1);
+  const last = (rings.length - 1) * segs;
+  for (let i = 0; i < segs; i++) {
+    const j = (i + 1) % segs;
+    idx.push(capStart, j, i);
+    idx.push(capStart + 1, last + i, last + j);
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
+  g.setIndex(idx);
+  g.computeVertexNormals();
+  return g;
+}
+
+/** mean of a ring's points, as the fan centre for an end cap */
+function ringCentre(ring) {
+  const c = [0, 0, 0];
+  for (const p of ring) { c[0] += p[0]; c[1] += p[1]; c[2] += p[2]; }
+  return c.map((v) => v / ring.length);
+}
+
 /** Skin a stack of measured sections into a closed solid, axis along +y.
  *  `span` is the part's length along that axis, in the same units. */
 export function loftGeometry(sections, span, segs = 32) {
@@ -300,31 +360,132 @@ export function loftGeometry(sections, span, segs = 32) {
     y: ((s.at_pct - lo) / spread - 0.5) * span,
     pts: ringPoints(s.w_mm ?? s.w, s.h_mm ?? s.h, s.fill ?? 0.85, segs),
   }));
+  return skinRings(
+    rings.map((r) => r.pts.map(([x, z]) => [x, r.y, z])),
+    [0, rings[0].y, 0], [0, rings[rings.length - 1].y, 0],
+  );
+}
 
-  const pos = [], idx = [];
-  for (const r of rings) for (const [x, z] of r.pts) pos.push(x, r.y, z);
-  for (let k = 0; k < rings.length - 1; k++) {
-    const A = k * segs, B = (k + 1) * segs;
-    for (let i = 0; i < segs; i++) {
-      const j = (i + 1) % segs;
-      idx.push(A + i, B + i, B + j, A + i, B + j, A + j);
-    }
+/* ------------------------------------------------------------------ airfoil
+   A wing drawn as a planform pushed through a constant thickness is a plank
+   with a good outline: no leading-edge radius, no thickness distribution, and
+   no way for the specification to say what section it meant. The planform is
+   the one thing a specification writes well — it is a silhouette, traced off
+   the top view — so the section is generated rather than authored, from a
+   NACA four-digit family that needs exactly the numbers the field carries.
+
+   The second digit, the chordwise position of maximum camber, is fixed at
+   0.4. The sections in this class sit there almost without exception (2412,
+   4412, 2415), and a fourth number the specification writer would have to
+   guess costs more in wrong guesses than it buys in range. */
+const CAMBER_POS = 0.4;
+
+/** NACA four-digit half-thickness at chord fraction x; t is thickness/chord */
+function nacaHalfThickness(x, t) {
+  /* Last coefficient −0.1036, not the textbook −0.1015: that variant closes
+     the trailing edge exactly at x=1. An open trailing edge leaves a slot the
+     skinning cannot close, and a wing with a gap down its back is not a
+     solid — it prints as two shells. */
+  return 5 * t * (0.2969 * Math.sqrt(x) - 0.1260 * x - 0.3516 * x * x
+    + 0.2843 * x * x * x - 0.1036 * x * x * x * x);
+}
+
+/** mean camber line and its slope at chord fraction x; m is camber/chord */
+function nacaCamber(x, m) {
+  if (!(m > 0)) return [0, 0];
+  const p = CAMBER_POS;
+  if (x < p) return [(m / (p * p)) * (2 * p * x - x * x), ((2 * m) / (p * p)) * (p - x)];
+  const q = 1 - p;
+  return [(m / (q * q)) * ((1 - 2 * p) + 2 * p * x - x * x), ((2 * m) / (q * q)) * (p - x)];
+}
+
+/** One closed section outline in chord fractions, [[x from LE, y], …] */
+export function airfoilPoints(t, m, K = 20) {
+  const up = [], lo = [];
+  for (let i = 0; i <= K; i++) {
+    /* Cosine spacing. The leading edge is where all the curvature is and
+       where evenly spaced stations describe a section worst. */
+    const x = 0.5 * (1 - Math.cos((Math.PI * i) / K));
+    const yt = nacaHalfThickness(x, t);
+    const [yc, dy] = nacaCamber(x, m);
+    const th = Math.atan(dy);
+    up.push([x - yt * Math.sin(th), yc + yt * Math.cos(th)]);
+    lo.push([x + yt * Math.sin(th), yc - yt * Math.cos(th)]);
   }
-  // caps: a fan to the centre of the first and last ring
-  const capStart = pos.length / 3;
-  pos.push(0, rings[0].y, 0);
-  pos.push(0, rings[rings.length - 1].y, 0);
-  const last = (rings.length - 1) * segs;
-  for (let i = 0; i < segs; i++) {
-    const j = (i + 1) % segs;
-    idx.push(capStart, j, i);
-    idx.push(capStart + 1, last + i, last + j);
+  /* Leading and trailing edge belong to both surfaces. Taking each once keeps
+     every ring free of the zero-area triangles a duplicated point makes. */
+  return up.concat(lo.slice(1, K).reverse());
+}
+
+/** how tall the generated section stands, in chord fractions */
+export function airfoilDepth(t, m) {
+  const ys = airfoilPoints(t, m, 12).map((p) => p[1]);
+  return Math.max(...ys) - Math.min(...ys);
+}
+
+/** chord interval [aft, forward] of a planform polygon at spanwise station x */
+function chordAt(pts, x) {
+  let lo = Infinity, hi = -Infinity;
+  for (let i = 0; i < pts.length; i++) {
+    const a = pts[i], b = pts[(i + 1) % pts.length];
+    if ((a.x <= x) === (b.x <= x)) continue;
+    const y = a.y + ((b.y - a.y) * (x - a.x)) / (b.x - a.x);
+    if (y < lo) lo = y;
+    if (y > hi) hi = y;
   }
-  const g = new THREE.BufferGeometry();
-  g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
-  g.setIndex(idx);
-  g.computeVertexNormals();
-  return g;
+  return hi > lo ? [lo, hi] : null;
+}
+
+/** largest chord anywhere on the planform — what thickness_pct multiplies */
+export function maxChord(pts, stations = 17) {
+  const xs = pts.map((p) => p.x);
+  const x0 = Math.min(...xs), x1 = Math.max(...xs);
+  const inset = (x1 - x0) * 0.004;
+  let best = 0;
+  for (let k = 0; k < stations; k++) {
+    const c = chordAt(pts, x0 + inset + ((x1 - x0 - 2 * inset) * k) / (stations - 1));
+    if (c) best = Math.max(best, c[1] - c[0]);
+  }
+  return best;
+}
+
+/**
+ * A wing: the authored planform skinned with the generated section.
+ * `pts` is the recentred planform in the TOP plane — x spans, y runs along the
+ * chord, and +y is forward because the compiler's TOP rotation maps the
+ * section's +y onto world +z. The leading edge is therefore the planform's
+ * own forward edge, and no extra field has to say which end is which.
+ */
+export function wingGeometry(pts, af, stations = 17) {
+  const xs = pts.map((p) => p.x);
+  const x0 = Math.min(...xs), x1 = Math.max(...xs);
+  const span = x1 - x0;
+  if (!(span > 0)) return null;
+  /* Twist grows from the centreline outward, so a through-wing washes out
+     symmetrically. A wing cut into a mirrored pair would measure it from the
+     part's own middle instead — which is one more reason the specification
+     asks for one part spanning −b/2 to +b/2. */
+  const halfSpan = Math.max(Math.abs(x0), Math.abs(x1), span / 2);
+  const inset = span * 0.004;   // a scanline exactly on the tip catches one point
+  const section = airfoilPoints(af.thickness, af.camber);
+  const rings = [];
+  for (let k = 0; k < stations; k++) {
+    const x = x0 + inset + ((span - 2 * inset) * k) / (stations - 1);
+    const ch = chordAt(pts, x);
+    if (!ch) continue;
+    const chord = ch[1] - ch[0];
+    if (!(chord > 0)) continue;
+    const zLE = ch[1];                       // forward edge of the planform
+    const zq = zLE - chord * 0.25;           // quarter chord: the twist hinge
+    const tw = af.twist * Math.min(1, Math.abs(x) / halfSpan);
+    const ct = Math.cos(tw), st = Math.sin(tw);
+    rings.push(section.map(([xc, y]) => {
+      const dz = zLE - xc * chord - zq, dy = y * chord;
+      return [x, dy * ct - dz * st, zq + dy * st + dz * ct];
+    }));
+  }
+  if (rings.length < 2) return null;
+  return skinRings(rings, ringCentre(rings[0]), ringCentre(rings[rings.length - 1]));
 }
 
 /* A propeller is recognised the same way the simulator recognises one: named
@@ -381,11 +542,13 @@ export function propellerGeometry(D, h, blades = 2) {
   return g;
 }
 
-/** placements for a repeated region */
+/** placements for a repeated region: [x, y, z, yaw, mirror, hingeOnX]
+ *  `mirror` is −1 on the reflected copy of a pair, `hingeOnX` marks the
+ *  placements whose own rotation swings about the assembly centreline. */
 function placements(r) {
   const c = r.center || { x: 0, y: 0, z: 0 };
   const rep = r.repeat;
-  if (!rep || !(rep.count > 1)) return [[c.x, c.y, c.z, 0]];
+  if (!rep || !(rep.count > 1)) return [[c.x, c.y, c.z, 0, 1, 0]];
   const out = [];
   const cnt = Math.min(rep.count, 32);
   if (rep.pattern === "CIRCULAR") {
@@ -404,12 +567,12 @@ function placements(r) {
          multicopter samples are unchanged. */
       const px = Math.abs(Math.sin(a0)) * rad, pz = Math.abs(Math.cos(a0)) * rad;
       for (const [sx, sz] of [[1, 1], [-1, 1], [-1, -1], [1, -1]]) {
-        out.push([sx * px, c.y, sz * pz, -Math.atan2(sz * pz, sx * px)]);
+        out.push([sx * px, c.y, sz * pz, -Math.atan2(sz * pz, sx * px), 1, 0]);
       }
     } else {
       for (let i = 0; i < cnt; i++) {
         const phi = Math.PI / 2 - (a0 + (i / cnt) * Math.PI * 2);
-        out.push([Math.cos(phi) * rad, c.y, Math.sin(phi) * rad, -phi]);
+        out.push([Math.cos(phi) * rad, c.y, Math.sin(phi) * rad, -phi, 1, 0]);
       }
     }
   } else if (rep.pattern === "MIRROR_PAIR") {
@@ -418,17 +581,48 @@ function placements(r) {
        with the offset in spacing_mm, so both booms and both landing skids
        compiled into the same spot inside the fuselage. */
     const off = rep.spacing ? rep.spacing / 2 : Math.abs(c.x);
-    out.push([off, c.y, c.z, 0], [-off, c.y, c.z, 0]);
+    out.push([off, c.y, c.z, 0, 1, 1], [-off, c.y, c.z, 0, -1, 1]);
   } else if (rep.pattern === "GRID") {
     const sp = rep.spacing || 20, k = Math.ceil(Math.sqrt(cnt));
     for (let i = 0; i < cnt; i++) {
-      out.push([c.x + ((i % k) - (k - 1) / 2) * sp, c.y, c.z + (Math.floor(i / k) - (k - 1) / 2) * sp, 0]);
+      out.push([c.x + ((i % k) - (k - 1) / 2) * sp, c.y, c.z + (Math.floor(i / k) - (k - 1) / 2) * sp, 0, 1, 0]);
     }
   } else {
     const sp = rep.spacing || 20;
-    for (let i = 0; i < cnt; i++) out.push([c.x + (i - (cnt - 1) / 2) * sp, c.y, c.z, 0]);
+    for (let i = 0; i < cnt; i++) out.push([c.x + (i - (cnt - 1) / 2) * sp, c.y, c.z, 0, 1, 0]);
   }
   return out;
+}
+
+/* ------------------------------------------------------- instance transform
+   Where one copy of a part ends up, position and orientation together.
+
+   Two rotations meet here and the order is the whole point. The part's own
+   rotation_deg is written in the part's frame — a rotor tilt, a canted leg, a
+   dihedral — so it has to happen BEFORE the placement yaw carries the part
+   around its ring. Composed the other way, six tilted arms all lean north
+   instead of all leaning outward. Quaternions rather than an Euler triple, so
+   the order is stated here instead of inherited from a default.
+
+   MIRROR_PAIR hinges on the mirror plane instead of the part's own centre:
+   two halves swung about the aircraft centreline is what a dihedral angle IS,
+   and rotating each half about its own middle would lift the tip while
+   dropping the root out of the fuselage. Reflecting a rotation across x=0
+   negates its y and z components and leaves x alone, which is why the pair
+   splays symmetrically rather than both leaning the same way. */
+function instanceXform(r, entry) {
+  const [x, y, z, yaw0, mirror, hinge] = entry;
+  const yaw = yaw0 + (r.quarterTurn ? Math.PI / 2 : 0);
+  const rot = r.rotation;
+  const rotated = !!rot && !!(rot.x || rot.y || rot.z);
+  const q = new THREE.Quaternion();
+  const pos = new THREE.Vector3(x, y, z);
+  if (rotated) {
+    q.setFromEuler(new THREE.Euler(rot.x, rot.y * mirror, rot.z * mirror, "XYZ"));
+    if (hinge) pos.set(x, 0, 0).applyQuaternion(q).add(new THREE.Vector3(0, y, z));
+  }
+  if (yaw) q.premultiply(new THREE.Quaternion().setFromAxisAngle(YAXIS, yaw));
+  return { pos, q, rotated, yaw };
 }
 
 /** Build the model the generated code describes. */
@@ -455,12 +649,14 @@ export function buildFromAnalysis(analysis) {
       opacity: m.transparent ? (m.opacity ?? 0.45) : 1,
       side: m.transparent ? THREE.DoubleSide : THREE.FrontSide,
     });
-    const quarter = r.quarterTurn ? Math.PI / 2 : 0;
-    for (const [x, y, z, rot] of placements(r)) {
-      const ry = rot + quarter;
-      const mesh = new THREE.Mesh(ry ? geo.clone() : geo, mat);
-      mesh.position.set(x, y, z);
-      if (ry) mesh.rotation.y = ry;
+    for (const entry of placements(r)) {
+      const t = instanceXform(r, entry);
+      const mesh = new THREE.Mesh(t.yaw || t.rotated ? geo.clone() : geo, mat);
+      mesh.position.copy(t.pos);
+      /* An unrotated part keeps the plain Euler assignment it always had, so
+         nothing about the existing samples changes shape or byte order. */
+      if (t.rotated) mesh.quaternion.copy(t.q);
+      else if (t.yaw) mesh.rotation.y = t.yaw;
       mesh.name = r.name || r.regionId;
       mesh.castShadow = mesh.receiveShadow = true;
       mesh.userData = {
@@ -516,6 +712,80 @@ export function generateThreeCode(analysis) {
     L.push("");
   }
 
+  /* Same contract as the propeller helper: a wing that the viewer builds from
+     a generated section has to be buildable from the copied source too, or
+     the panel is showing one thing and handing over another. */
+  if ((analysis.regions || []).some((r) => r.airfoil && r.plane === "TOP")) {
+    L.push(`// 평면형 위에 NACA 4자리 단면을 얹어 루트→팁으로 로프트한다`);
+    L.push(`// planform: 위에서 본 외곽선(x=스팬, +y=전방) · t·m은 %, twist는 팁 비틀림(도, +는 워시아웃)`);
+    L.push(`function wingGeometry(planform, tPct, mPct, twistDeg, stations = 17, K = 20) {`);
+    L.push(`  const t = tPct / 100, m = mPct / 100, p = 0.4;`);
+    L.push(`  const yt = (x) => 5 * t * (0.2969 * Math.sqrt(x) - 0.1260 * x - 0.3516 * x ** 2`);
+    L.push(`    + 0.2843 * x ** 3 - 0.1036 * x ** 4);   // -0.1036이라야 뒷전이 닫힌다`);
+    L.push(`  const camber = (x) => !(m > 0) ? [0, 0]`);
+    L.push(`    : x < p ? [(m / p ** 2) * (2 * p * x - x * x), (2 * m / p ** 2) * (p - x)]`);
+    L.push(`    : [(m / (1 - p) ** 2) * ((1 - 2 * p) + 2 * p * x - x * x), (2 * m / (1 - p) ** 2) * (p - x)];`);
+    L.push(`  const up = [], lo = [];`);
+    L.push(`  for (let i = 0; i <= K; i++) {`);
+    L.push(`    const x = 0.5 * (1 - Math.cos(Math.PI * i / K));   // 앞전에 점을 몰아준다`);
+    L.push(`    const [yc, dy] = camber(x), th = Math.atan(dy), h = yt(x);`);
+    L.push(`    up.push([x - h * Math.sin(th), yc + h * Math.cos(th)]);`);
+    L.push(`    lo.push([x + h * Math.sin(th), yc - h * Math.cos(th)]);`);
+    L.push(`  }`);
+    L.push(`  const section = up.concat(lo.slice(1, K).reverse());`);
+    L.push(`  const xs = planform.map((q) => q.x);`);
+    L.push(`  const x0 = Math.min(...xs), x1 = Math.max(...xs), span = x1 - x0;`);
+    L.push(`  const halfSpan = Math.max(Math.abs(x0), Math.abs(x1), span / 2), inset = span * 0.004;`);
+    L.push(`  const chordAt = (x) => {`);
+    L.push(`    let a = Infinity, b = -Infinity;`);
+    L.push(`    for (let i = 0; i < planform.length; i++) {`);
+    L.push(`      const s = planform[i], e = planform[(i + 1) % planform.length];`);
+    L.push(`      if ((s.x <= x) === (e.x <= x)) continue;`);
+    L.push(`      const y = s.y + (e.y - s.y) * (x - s.x) / (e.x - s.x);`);
+    L.push(`      a = Math.min(a, y); b = Math.max(b, y);`);
+    L.push(`    }`);
+    L.push(`    return b > a ? [a, b] : null;`);
+    L.push(`  };`);
+    L.push(`  const rings = [];`);
+    L.push(`  for (let k = 0; k < stations; k++) {`);
+    L.push(`    const x = x0 + inset + (span - 2 * inset) * k / (stations - 1);`);
+    L.push(`    const c = chordAt(x);`);
+    L.push(`    if (!c) continue;`);
+    L.push(`    const chord = c[1] - c[0], zLE = c[1], zq = zLE - chord * 0.25;   // 1/4 코드가 비틀림 힌지`);
+    L.push(`    const tw = twistDeg * Math.PI / 180 * Math.min(1, Math.abs(x) / halfSpan);`);
+    L.push(`    const ct = Math.cos(tw), st = Math.sin(tw);`);
+    L.push(`    rings.push(section.map(([xc, y]) => {`);
+    L.push(`      const dz = zLE - xc * chord - zq, dy = y * chord;`);
+    L.push(`      return [x, dy * ct - dz * st, zq + dy * st + dz * ct];`);
+    L.push(`    }));`);
+    L.push(`  }`);
+    L.push(`  const segs = rings[0].length, pos = [], idx = [];`);
+    L.push(`  for (const r of rings) for (const q of r) pos.push(q[0], q[1], q[2]);`);
+    L.push(`  for (let k = 0; k < rings.length - 1; k++) {`);
+    L.push(`    const A = k * segs, B = (k + 1) * segs;`);
+    L.push(`    for (let i = 0; i < segs; i++) {`);
+    L.push(`      const j = (i + 1) % segs;`);
+    L.push(`      idx.push(A + i, B + i, B + j, A + i, B + j, A + j);`);
+    L.push(`    }`);
+    L.push(`  }`);
+    L.push(`  const cap = pos.length / 3, last = (rings.length - 1) * segs;`);
+    L.push(`  for (const r of [rings[0], rings[rings.length - 1]]) {`);
+    L.push(`    const c = r.reduce((a, q) => [a[0] + q[0] / r.length, a[1] + q[1] / r.length, a[2] + q[2] / r.length], [0, 0, 0]);`);
+    L.push(`    pos.push(c[0], c[1], c[2]);   // 팁 마감은 단면 중심으로 부채꼴`);
+    L.push(`  }`);
+    L.push(`  for (let i = 0; i < segs; i++) {`);
+    L.push(`    const j = (i + 1) % segs;`);
+    L.push(`    idx.push(cap, j, i, cap + 1, last + i, last + j);`);
+    L.push(`  }`);
+    L.push(`  const g = new THREE.BufferGeometry();`);
+    L.push(`  g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));`);
+    L.push(`  g.setIndex(idx);`);
+    L.push(`  g.computeVertexNormals();`);
+    L.push(`  return g;`);
+    L.push(`}`);
+    L.push("");
+  }
+
   /* Korean names strip to almost nothing, so "V벨트 풀리" became buildV().
      Keep a readable identifier instead. */
   const suffix = name.replace(/[^A-Za-z0-9]/g, "").slice(0, 20);
@@ -551,7 +821,22 @@ export function generateThreeCode(analysis) {
       if (bits.length) L.push(`  // 곡률: ${bits.join(" · ")}`);
     }
 
-    if (r.builder === "EXTRUDE_2D" && r.outerProfile?.length) {
+    if (r.builder === "EXTRUDE_2D" && r.airfoil && r.plane === "TOP") {
+      const pts = r.outerProfile?.length ? tessellate(r.outerProfile)
+        : [[-s.w / 2, -s.d / 2], [s.w / 2, -s.d / 2], [s.w / 2, s.d / 2], [-s.w / 2, s.d / 2]]
+          .map(([x, y]) => new THREE.Vector2(x, y));
+      const xs = pts.map((p) => p.x), ys = pts.map((p) => p.y);
+      const cx = (Math.min(...xs) + Math.max(...xs)) / 2;
+      const cy2 = (Math.min(...ys) + Math.max(...ys)) / 2;
+      const af = r.airfoil;
+      L.push(`  // 평면형 ${pts.length}점 · NACA 단면 두께 ${n(af.thickness * 100, 1)}%`
+        + ` · 캠버 ${n(af.camber * 100, 1)}% · 팁 비틀림 ${n((af.twist * 180) / Math.PI, 1)}°`);
+      L.push(`  const ${v}Planform = [`);
+      for (const p of pts) L.push(`    new THREE.Vector2(${n(p.x - cx)}, ${n(p.y - cy2)}),`);
+      L.push(`  ];`);
+      L.push(`  const ${v}Geo = wingGeometry(${v}Planform, ${n(af.thickness * 100, 2)}, `
+        + `${n(af.camber * 100, 2)}, ${n((af.twist * 180) / Math.PI, 2)});`);
+    } else if (r.builder === "EXTRUDE_2D" && r.outerProfile?.length) {
       const pts = tessellate(r.outerProfile);
       const xs = pts.map((p) => p.x), ys = pts.map((p) => p.y);
       const cx = (Math.min(...xs) + Math.max(...xs)) / 2;
@@ -661,19 +946,43 @@ export function generateThreeCode(analysis) {
     L.push(`  const ${v}Mat = new THREE.MeshStandardMaterial({ color: "${m.color || "#9aa0aa"}", metalness: ${m.metalness ?? 0.75}, roughness: ${m.roughness ?? 0.35}`
       + (m.transparent ? `, transparent: true, opacity: ${m.opacity ?? 0.45}, side: THREE.DoubleSide` : "") + ` });`);
     const reps = placements(r);
+    /* The same composition the viewer uses, resolved to numbers. A rotated
+       part cannot be written as one yaw per instance, so those emit the full
+       Euler triple; everything else keeps the single line it always had. */
+    const xf = reps.map((e) => instanceXform(r, e));
+    const rotated = xf.some((t) => t.rotated);
+    const euler = (t) => {
+      const e = new THREE.Euler().setFromQuaternion(t.q, "XYZ");
+      return [n(e.x, 4), n(e.y, 4), n(e.z, 4)];
+    };
+    if (r.rotation) {
+      const deg = (v2) => n((v2 * 180) / Math.PI, 1);
+      L.push(`  // 파트 자체 회전 ${deg(r.rotation.x)}° / ${deg(r.rotation.y)}° / ${deg(r.rotation.z)}°`
+        + (reps.length > 1 && r.repeat?.pattern === "MIRROR_PAIR"
+          ? " — 대칭면을 힌지로 삼아 좌우가 반대로 기운다"
+          : reps.length > 1 ? " — 배치 요보다 먼저 적용된다" : ""));
+    }
     if (reps.length > 1) {
       const q = r.quarterTurn ? Math.PI / 2 : 0;
       L.push(`  // ${r.repeat.count}개 ${r.repeat.pattern} 배치`
         + (q ? " — 장축이 z라 바깥을 향하도록 90° 더 돌린다" : ""));
-      L.push(`  for (const [x, y, z, ry] of ${JSON.stringify(reps.map((p) => [...p.slice(0, 3).map((v2) => n(v2, 3)), n(p[3] + q, 4)]))}) {`);
-      L.push(`    const mesh = new THREE.Mesh(${v}Geo, ${v}Mat);`);
-      L.push(`    mesh.position.set(x, y, z); mesh.rotation.y = ry;`);
+      if (rotated) {
+        const rows = xf.map((t) => [n(t.pos.x, 3), n(t.pos.y, 3), n(t.pos.z, 3), ...euler(t)]);
+        L.push(`  for (const [x, y, z, rx, ry, rz] of ${JSON.stringify(rows)}) {`);
+        L.push(`    const mesh = new THREE.Mesh(${v}Geo, ${v}Mat);`);
+        L.push(`    mesh.position.set(x, y, z); mesh.rotation.set(rx, ry, rz);`);
+      } else {
+        L.push(`  for (const [x, y, z, ry] of ${JSON.stringify(reps.map((p) => [...p.slice(0, 3).map((v2) => n(v2, 3)), n(p[3] + q, 4)]))}) {`);
+        L.push(`    const mesh = new THREE.Mesh(${v}Geo, ${v}Mat);`);
+        L.push(`    mesh.position.set(x, y, z); mesh.rotation.y = ry;`);
+      }
       L.push(`    mesh.name = ${JSON.stringify(r.name)};`);
       L.push(`    root.add(mesh);`);
       L.push(`  }`);
     } else {
       L.push(`  const ${v}Mesh = new THREE.Mesh(${v}Geo, ${v}Mat);`);
       L.push(`  ${v}Mesh.position.set(${n(c.x)}, ${n(c.y)}, ${n(c.z)});`);
+      if (rotated) L.push(`  ${v}Mesh.rotation.set(${euler(xf[0]).join(", ")});`);
       L.push(`  ${v}Mesh.name = ${JSON.stringify(r.name)};`);
       L.push(`  root.add(${v}Mesh);`);
     }
@@ -772,6 +1081,14 @@ export function analysisSpecText(a) {
       + (r.mirrorOf ? `  (${r.mirrorOf} 대칭)` : "")
       + (r.repeat?.count > 1 ? `  ×${r.repeat.count} ${r.repeat.pattern}` : ""));
     L.push(`    빌더 ${r.builder} · 치수 ${n(s.w)} × ${n(s.h)} × ${n(s.d)} mm · 중심 ${n(c.x)}, ${n(c.y)}, ${n(c.z)}`);
+    if (r.rotation) {
+      const deg = (v) => n((v * 180) / Math.PI, 1);
+      L.push(`    회전 ${deg(r.rotation.x)}° / ${deg(r.rotation.y)}° / ${deg(r.rotation.z)}° (X/Y/Z)`);
+    }
+    if (r.airfoil) {
+      L.push(`    에어포일 두께 ${n(r.airfoil.thickness * 100, 1)}% · 캠버 ${n(r.airfoil.camber * 100, 1)}%`
+        + ` · 팁 비틀림 ${n((r.airfoil.twist * 180) / Math.PI, 1)}°`);
+    }
     if (r.builder === "REVOLVE" && r.profile) L.push(`    프로파일 ${r.profile.length}점 (반경, 높이)`);
     if (r.material) L.push(`    재질 ${r.material.color} · metalness ${r.material.metalness} · roughness ${r.material.roughness}`);
     if (r.codeHint) L.push(`    코드: ${r.codeHint}`);

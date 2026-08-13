@@ -1,0 +1,103 @@
+{
+  "id": "map-wing",
+  "source": "mesh",
+  "generator": "1단계 메시",
+  "generated": "2026-08-12T23:44:51.782Z",
+  "photo": null,
+  "mesh": "docs/assets/meshes/map-wing.glb",
+  "attempt": 1,
+  "layout": "512×512 래스터",
+  "mask_px": 512,
+  "views": {
+    "front": {
+      "w": 282,
+      "h": 92,
+      "area": 12096
+    },
+    "left": {
+      "w": 466,
+      "h": 92,
+      "area": 7661
+    },
+    "rear": {
+      "w": 282,
+      "h": 92,
+      "area": 12096
+    },
+    "right": {
+      "w": 466,
+      "h": 92,
+      "area": 7661
+    }
+  },
+  "consistency": {
+    "height_spread": 0,
+    "solidity": [
+      0.824,
+      0.6571,
+      0.824,
+      0.6571
+    ],
+    "mirror_iou": {
+      "front_rear": 1,
+      "left_right": 1
+    },
+    "mirror_wrong_order": 0.2852,
+    "pair_width_error": {
+      "front_rear": 0,
+      "left_right": 0
+    },
+    "pair_area_error": {
+      "front_rear": 0,
+      "left_right": 0
+    },
+    "pass": true,
+    "fail": []
+  },
+  "rejected": [
+    {
+      "attempt": 1,
+      "generator": "1차 이미지 모델",
+      "layout": "1x4",
+      "reason": [
+        "뷰마다 기체 높이가 다릅니다 (634/1043/497/1043px, 편차 68%)",
+        "마주 보는 두 뷰가 서로의 거울상이 아닙니다 (정면·후면 0.20, 좌·우 0.32)",
+        "네 뷰의 순서가 요청과 다릅니다 (요청 순서 0.26 · 다른 순서 0.25)",
+        "마주 보는 두 뷰의 면적이 다릅니다 (81%)"
+      ],
+      "consistency": {
+        "height_spread": 0.6789,
+        "mirror_iou": {
+          "front_rear": 0.2001,
+          "left_right": 0.3173
+        },
+        "mirror_wrong_order": 0.2485,
+        "pair_width_error": {
+          "front_rear": 0.0648,
+          "left_right": 0.0015
+        },
+        "pair_area_error": {
+          "front_rear": 0.8087,
+          "left_right": 0
+        },
+        "pass": false,
+        "fail": [
+          "뷰마다 기체 높이가 다릅니다 (634/1043/497/1043px, 편차 68%)",
+          "마주 보는 두 뷰가 서로의 거울상이 아닙니다 (정면·후면 0.20, 좌·우 0.32)",
+          "네 뷰의 순서가 요청과 다릅니다 (요청 순서 0.26 · 다른 순서 0.25)",
+          "마주 보는 두 뷰의 면적이 다릅니다 (81%)"
+        ]
+      }
+    },
+    {
+      "attempt": 2,
+      "generator": "1차 이미지 모델",
+      "layout": null,
+      "reason": [
+        "네 장으로 나뉘지 않았습니다 (2행 2+3장)"
+      ],
+      "consistency": null
+    }
+  ],
+  "photo_error": "2회 시도 모두 일관성 검사를 통과하지 못했습니다"
+}

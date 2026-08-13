@@ -1,0 +1,63 @@
+{
+  "id": "inspect-quad",
+  "source": "photo",
+  "generator": "1차 이미지 모델",
+  "generated": "2026-08-12T23:44:48.558Z",
+  "photo": "docs/assets/samples/drones/inspection-quad.jpg",
+  "mesh": null,
+  "attempt": 1,
+  "layout": "1x4 (2행 중 1행)",
+  "mask_px": 826,
+  "views": {
+    "front": {
+      "w": 779,
+      "h": 528,
+      "area": 123271
+    },
+    "left": {
+      "w": 700,
+      "h": 529,
+      "area": 143942
+    },
+    "rear": {
+      "w": 777,
+      "h": 527,
+      "area": 122873
+    },
+    "right": {
+      "w": 700,
+      "h": 529,
+      "area": 143904
+    }
+  },
+  "consistency": {
+    "height_spread": 0.0038,
+    "solidity": [
+      0.6307,
+      0.6651,
+      0.6347,
+      0.6653
+    ],
+    "mirror_iou": {
+      "front_rear": 0.865,
+      "left_right": 0.9839
+    },
+    "mirror_wrong_order": 0.4127,
+    "pair_width_error": {
+      "front_rear": 0.0026,
+      "left_right": 0
+    },
+    "pair_area_error": {
+      "front_rear": 0.0032,
+      "left_right": 0.0003
+    },
+    "pass": true,
+    "fail": []
+  },
+  "rejected": [],
+  "mesh_cross_check": {
+    "yaw_deg": 90,
+    "iou_mean": 0.616,
+    "chamfer_mean": 0.0175
+  }
+}

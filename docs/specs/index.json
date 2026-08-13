@@ -43,8 +43,8 @@
     "id": "isr-wing",
     "prompt": "방산 정찰용 고정익, 날개폭 1800mm, 하방 안정화 센서 터렛, 견고한 동체",
     "group": "방산",
-    "name": "견고한 동체",
+    "name": "중앙 동체 포드",
     "recipe": "FIXED_WING",
-    "parts": 10
+    "parts": 12
   }
 ]

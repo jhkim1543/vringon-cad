@@ -33,12 +33,16 @@ for (const id of Object.keys(index)) {
   if (!mesh) { console.log(`${id} … 메시를 읽지 못했습니다`); continue; }
 
   const r = refineFromMesh(spec, mesh);
-  const touched = r.measured, skipped = r.internal;
+  const touched = r.measured, skipped = r.internal, authored = r.authored || [];
   if (touched.length && !DRY) await writeFile(specUrl, JSON.stringify(spec, null, 2));
-  const total = touched.length + skipped.length;
+  const total = touched.length + skipped.length + authored.length;
   console.log(`${id.padEnd(14)} 측정 ${touched.length}/${total}`
     + (touched.length ? ` · ${touched.join(", ")}` : "")
-    + (skipped.length ? ` · 내부(메시 없음) ${skipped.join(", ")}` : ""));
+    + (skipped.length ? ` · 내부(메시 없음) ${skipped.join(", ")}` : "")
+    /* Printed rather than counted silently: this pass is run in bulk over the
+       committed samples, and a section quietly measured away would be found
+       later as a plank with nothing in the log to say when it happened. */
+    + (authored.length ? ` · 사양서 우선 ${authored.join(", ")}` : ""));
 }
 
 if (DRY) console.log("\n--dry 모드: 파일을 쓰지 않았습니다.");

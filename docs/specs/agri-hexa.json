@@ -79,25 +79,25 @@
         "builder": "EXTRUDE_2D",
         "plane": "TOP",
         "size_mm": {
-          "w": 397,
+          "w": 428.8,
           "h": 173,
-          "d": 397
+          "d": 378.8
         },
         "center_mm": {
           "x": 0,
-          "y": 500,
-          "z": 0
+          "y": 523.8,
+          "z": 18.5
         },
         "outer_profile": [
           {
             "type": "LINE",
             "start": [
-              150,
-              175
+              162,
+              167
             ],
             "end": [
-              -150,
-              175
+              -162,
+              167
             ],
             "radius": null,
             "sweep": "NONE",
@@ -107,14 +107,14 @@
           {
             "type": "ARC",
             "start": [
-              -150,
-              175
+              -162,
+              167
             ],
             "end": [
-              -175,
-              150
+              -189,
+              143.1
             ],
-            "radius": 25,
+            "radius": 27,
             "sweep": "CCW",
             "control1": null,
             "control2": null
@@ -122,12 +122,12 @@
           {
             "type": "LINE",
             "start": [
-              -175,
-              150
+              -189,
+              143.1
             ],
             "end": [
-              -175,
-              -150
+              -189,
+              -143.1
             ],
             "radius": null,
             "sweep": "NONE",
@@ -137,14 +137,14 @@
           {
             "type": "ARC",
             "start": [
-              -175,
-              -150
+              -189,
+              -143.1
             ],
             "end": [
-              -150,
-              -175
+              -162,
+              -167
             ],
-            "radius": 25,
+            "radius": 27,
             "sweep": "CCW",
             "control1": null,
             "control2": null
@@ -152,12 +152,12 @@
           {
             "type": "LINE",
             "start": [
-              -150,
-              -175
+              -162,
+              -167
             ],
             "end": [
-              150,
-              -175
+              162,
+              -167
             ],
             "radius": null,
             "sweep": "NONE",
@@ -167,14 +167,14 @@
           {
             "type": "ARC",
             "start": [
-              150,
-              -175
+              162,
+              -167
             ],
             "end": [
-              175,
-              -150
+              189,
+              -143.1
             ],
-            "radius": 25,
+            "radius": 27,
             "sweep": "CCW",
             "control1": null,
             "control2": null
@@ -182,12 +182,12 @@
           {
             "type": "LINE",
             "start": [
-              175,
-              -150
+              189,
+              -143.1
             ],
             "end": [
-              175,
-              150
+              189,
+              143.1
             ],
             "radius": null,
             "sweep": "NONE",
@@ -197,14 +197,14 @@
           {
             "type": "ARC",
             "start": [
-              175,
-              150
+              189,
+              143.1
             ],
             "end": [
-              150,
-              175
+              162,
+              167
             ],
-            "radius": 25,
+            "radius": 27,
             "sweep": "CCW",
             "control1": null,
             "control2": null
@@ -214,12 +214,12 @@
           {
             "type": "LINE",
             "start": [
-              145,
-              170
+              156.6,
+              162.2
             ],
             "end": [
-              -145,
-              170
+              -156.6,
+              162.2
             ],
             "radius": null,
             "sweep": "NONE",
@@ -229,14 +229,14 @@
           {
             "type": "ARC",
             "start": [
-              -145,
-              170
+              -156.6,
+              162.2
             ],
             "end": [
-              -170,
-              145
+              -183.6,
+              138.3
             ],
-            "radius": 25,
+            "radius": 27,
             "sweep": "CCW",
             "control1": null,
             "control2": null
@@ -244,12 +244,12 @@
           {
             "type": "LINE",
             "start": [
-              -170,
-              145
+              -183.6,
+              138.3
             ],
             "end": [
-              -170,
-              -145
+              -183.6,
+              -138.3
             ],
             "radius": null,
             "sweep": "NONE",
@@ -259,14 +259,14 @@
           {
             "type": "ARC",
             "start": [
-              -170,
-              -145
+              -183.6,
+              -138.3
             ],
             "end": [
-              -145,
-              -170
+              -156.6,
+              -162.2
             ],
-            "radius": 25,
+            "radius": 27,
             "sweep": "CCW",
             "control1": null,
             "control2": null
@@ -274,12 +274,12 @@
           {
             "type": "LINE",
             "start": [
-              -145,
-              -170
+              -156.6,
+              -162.2
             ],
             "end": [
-              145,
-              -170
+              156.6,
+              -162.2
             ],
             "radius": null,
             "sweep": "NONE",
@@ -289,14 +289,14 @@
           {
             "type": "ARC",
             "start": [
-              145,
-              -170
+              156.6,
+              -162.2
             ],
             "end": [
-              170,
-              -145
+              183.6,
+              -138.3
             ],
-            "radius": 25,
+            "radius": 27,
             "sweep": "CCW",
             "control1": null,
             "control2": null
@@ -304,12 +304,12 @@
           {
             "type": "LINE",
             "start": [
-              170,
-              -145
+              183.6,
+              -138.3
             ],
             "end": [
-              170,
-              145
+              183.6,
+              138.3
             ],
             "radius": null,
             "sweep": "NONE",
@@ -319,14 +319,14 @@
           {
             "type": "ARC",
             "start": [
-              170,
-              145
+              183.6,
+              138.3
             ],
             "end": [
-              145,
-              170
+              156.6,
+              162.2
             ],
-            "radius": 25,
+            "radius": 27,
             "sweep": "CCW",
             "control1": null,
             "control2": null
@@ -383,14 +383,14 @@
         "builder": "BOX",
         "plane": "TOP",
         "size_mm": {
-          "w": 340,
+          "w": 544,
           "h": 60,
-          "d": 340
+          "d": 544
         },
         "center_mm": {
           "x": 0,
-          "y": 600,
-          "z": 0
+          "y": 626.9,
+          "z": 26.9
         },
         "outer_profile": null,
         "inner_profile": null,
@@ -421,11 +421,11 @@
         "size_mm": {
           "w": 49,
           "h": 48,
-          "d": 294
+          "d": 464.7
         },
         "center_mm": {
           "x": 0,
-          "y": 500,
+          "y": 548.1,
           "z": 0
         },
         "outer_profile": null,
@@ -469,7 +469,7 @@
         "builder": "CYLINDER",
         "plane": "TOP",
         "size_mm": {
-          "w": 80,
+          "w": 89,
           "h": 90,
           "d": 80
         },
@@ -484,7 +484,7 @@
         "repeat": {
           "pattern": "CIRCULAR",
           "count": 6,
-          "radius_mm": 700,
+          "radius_mm": 655.2,
           "spacing_mm": null,
           "start_angle_deg": 30
         }
@@ -511,13 +511,13 @@
         "builder": "CYLINDER",
         "plane": "TOP",
         "size_mm": {
-          "w": 455,
+          "w": 342.9,
           "h": 19,
           "d": 350
         },
         "center_mm": {
           "x": 0,
-          "y": 545,
+          "y": 592,
           "z": 0
         },
         "outer_profile": null,
@@ -526,7 +526,7 @@
         "repeat": {
           "pattern": "CIRCULAR",
           "count": 6,
-          "radius_mm": 700,
+          "radius_mm": 655.2,
           "spacing_mm": null,
           "start_angle_deg": 30
         }
@@ -561,14 +561,14 @@
         "builder": "LOFT",
         "plane": "TOP",
         "size_mm": {
-          "w": 31,
-          "h": 368,
+          "w": 49.6,
+          "h": 444.5,
           "d": 34
         },
         "center_mm": {
           "x": 0,
-          "y": 250,
-          "z": 0
+          "y": 318.1,
+          "z": 22.1
         },
         "outer_profile": null,
         "inner_profile": null,
@@ -577,43 +577,43 @@
           "pattern": "MIRROR_PAIR",
           "count": 2,
           "radius_mm": null,
-          "spacing_mm": 400,
+          "spacing_mm": 490.4,
           "start_angle_deg": null
         },
         "loft_sections": [
           {
             "at_pct": 31,
-            "w_mm": 31,
+            "w_mm": 49.6,
             "h_mm": 8,
             "fill": 0.7
           },
           {
             "at_pct": 44,
-            "w_mm": 26,
+            "w_mm": 41.6,
             "h_mm": 15,
             "fill": 0.7
           },
           {
             "at_pct": 56,
-            "w_mm": 17,
+            "w_mm": 27.2,
             "h_mm": 27,
             "fill": 0.72
           },
           {
             "at_pct": 69,
-            "w_mm": 13,
+            "w_mm": 20.8,
             "h_mm": 34,
             "fill": 0.81
           },
           {
             "at_pct": 81,
-            "w_mm": 18,
+            "w_mm": 28.8,
             "h_mm": 33,
             "fill": 0.84
           },
           {
             "at_pct": 94,
-            "w_mm": 29,
+            "w_mm": 46.4,
             "h_mm": 32,
             "fill": 0.82
           }
@@ -639,14 +639,14 @@
         "builder": "LOFT",
         "plane": "FRONT",
         "size_mm": {
-          "w": 36,
-          "h": 27,
-          "d": 638
+          "w": 27.1,
+          "h": 28.1,
+          "d": 847.8
         },
         "center_mm": {
           "x": 0,
-          "y": 12.5,
-          "z": 0
+          "y": -22,
+          "z": 57.4
         },
         "outer_profile": null,
         "inner_profile": null,
@@ -655,26 +655,26 @@
           "pattern": "MIRROR_PAIR",
           "count": 2,
           "radius_mm": null,
-          "spacing_mm": 400,
+          "spacing_mm": 490.4,
           "start_angle_deg": null
         },
         "loft_sections": [
           {
             "at_pct": 6,
-            "w_mm": 35,
-            "h_mm": 27,
+            "w_mm": 26.4,
+            "h_mm": 28.1,
             "fill": 0.84
           },
           {
             "at_pct": 19,
-            "w_mm": 36,
-            "h_mm": 24,
+            "w_mm": 27.1,
+            "h_mm": 25,
             "fill": 0.77
           },
           {
             "at_pct": 94,
-            "w_mm": 36,
-            "h_mm": 26,
+            "w_mm": 27.1,
+            "h_mm": 27,
             "fill": 0.81
           }
         ]
@@ -707,8 +707,8 @@
         },
         "center_mm": {
           "x": 0,
-          "y": 300,
-          "z": 0
+          "y": 277.3,
+          "z": 46.8
         },
         "outer_profile": [
           {
@@ -1199,14 +1199,14 @@
         "builder": "TUBE",
         "plane": "SIDE",
         "size_mm": {
-          "w": 850,
+          "w": 600.9,
           "h": 20,
           "d": 20
         },
         "center_mm": {
           "x": 0,
-          "y": 80,
-          "z": 200
+          "y": 76.2,
+          "z": 221.4
         },
         "outer_profile": null,
         "inner_profile": null,
@@ -1233,14 +1233,14 @@
         "builder": "CONE",
         "plane": "TOP",
         "size_mm": {
-          "w": 40,
+          "w": 50.6,
           "h": 50,
           "d": 40
         },
         "center_mm": {
           "x": 0,
           "y": 55,
-          "z": 200
+          "z": 204.6
         },
         "outer_profile": null,
         "inner_profile": null,
@@ -1274,13 +1274,13 @@
         "plane": "TOP",
         "size_mm": {
           "w": 120,
-          "h": 80,
+          "h": 73.6,
           "d": 120
         },
         "center_mm": {
           "x": 0,
-          "y": 78,
-          "z": 22
+          "y": 144.6,
+          "z": 37.4
         },
         "outer_profile": null,
         "inner_profile": null,
@@ -1426,12 +1426,12 @@
         "plane": "TOP",
         "size_mm": {
           "w": 67,
-          "h": 100,
+          "h": 108,
           "d": 67
         },
         "center_mm": {
           "x": 1,
-          "y": 670,
+          "y": 666.4,
           "z": -1
         },
         "outer_profile": null,
@@ -1459,14 +1459,14 @@
         "builder": "LOFT",
         "plane": "TOP",
         "size_mm": {
-          "w": 278,
-          "h": 100,
-          "d": 210
+          "w": 444.8,
+          "h": 99.7,
+          "d": 336
         },
         "center_mm": {
           "x": 0,
-          "y": 667,
-          "z": 0
+          "y": 672.4,
+          "z": 16.7
         },
         "outer_profile": null,
         "inner_profile": null,
@@ -1475,20 +1475,20 @@
         "loft_sections": [
           {
             "at_pct": 31,
-            "w_mm": 278,
-            "h_mm": 63,
+            "w_mm": 444.8,
+            "h_mm": 100.8,
             "fill": 0.64
           },
           {
             "at_pct": 44,
-            "w_mm": 263,
-            "h_mm": 164,
+            "w_mm": 420.8,
+            "h_mm": 262.4,
             "fill": 0.84
           },
           {
             "at_pct": 56,
-            "w_mm": 228,
-            "h_mm": 210,
+            "w_mm": 364.8,
+            "h_mm": 336,
             "fill": 0.95
           }
         ]
@@ -1515,11 +1515,11 @@
         "size_mm": {
           "w": 15,
           "h": 15,
-          "d": 300
+          "d": 254
         },
         "center_mm": {
           "x": 0,
-          "y": 100,
+          "y": 118,
           "z": 100
         },
         "outer_profile": null,
@@ -1547,7 +1547,7 @@
         "builder": "LOFT",
         "plane": "TOP",
         "size_mm": {
-          "w": 50,
+          "w": 54,
           "h": 37,
           "d": 51
         },
@@ -1562,26 +1562,26 @@
         "repeat": {
           "pattern": "CIRCULAR",
           "count": 6,
-          "radius_mm": 150,
+          "radius_mm": 156,
           "spacing_mm": null,
           "start_angle_deg": 30
         },
         "loft_sections": [
           {
             "at_pct": 56,
-            "w_mm": 13,
+            "w_mm": 14,
             "h_mm": 23,
             "fill": 0.56
           },
           {
             "at_pct": 81,
-            "w_mm": 34,
+            "w_mm": 36.7,
             "h_mm": 37,
             "fill": 0.63
           },
           {
             "at_pct": 94,
-            "w_mm": 50,
+            "w_mm": 54,
             "h_mm": 51,
             "fill": 0.73
           }
@@ -1622,7 +1622,7 @@
         "repeat": {
           "pattern": "CIRCULAR",
           "count": 6,
-          "radius_mm": 150,
+          "radius_mm": 156,
           "spacing_mm": null,
           "start_angle_deg": 30
         }

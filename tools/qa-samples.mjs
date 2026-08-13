@@ -15,7 +15,11 @@ import { COMPONENT_CATALOG, fitTargets, applyComponent, addComponentAsPart } fro
 import { PRINTERS, MATERIALS, estimatePrint } from "../js/print-estimate.js";
 
 const dir = new URL("../docs/specs/", import.meta.url);
-const files = readdirSync(dir).filter((f) => f.endsWith(".json") && f !== "index.json");
+/* index.json is the catalogue and a leading underscore marks derived output
+   (tools/similarity.mjs writes _similarity.json here) — neither is a spec, and
+   feeding either to the compiler fails on the first missing field. */
+const files = readdirSync(dir)
+  .filter((f) => f.endsWith(".json") && f !== "index.json" && !f.startsWith("_"));
 const size = (root) => {
   const v = new THREE.Box3().setFromObject(root).getSize(new THREE.Vector3());
   return `${v.x.toFixed(0)}×${v.y.toFixed(0)}×${v.z.toFixed(0)}`;

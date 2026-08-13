@@ -221,14 +221,19 @@ function specBounds(spec) {
  * Parts with no mesh inside them are left exactly as the author wrote them —
  * a battery or a flight controller is inside the airframe and no reconstruction
  * of the outside can see it. Those are reported, not silently counted as done.
+ *
+ * Returns { measured, internal, authored }: parts read off the mesh, parts the
+ * mesh cannot see, and parts whose specification already states the shape more
+ * precisely than a bounding box can (rotation_deg, airfoil) and which are
+ * therefore left alone. All three are reported; none is a failure.
  */
 export function refineFromMesh(spec, mesh) {
-  const measured = [], internal = [];
+  const measured = [], internal = [], authored = [];
   const mb = meshBounds(mesh);
   const sb = specBounds(spec);
   const specSize = [sb.hi[0] - sb.lo[0], sb.hi[1] - sb.lo[1], sb.hi[2] - sb.lo[2]];
   if (!(Math.min(...specSize) > 0) || !(Math.min(...mb.size) > 0)) {
-    return { spec, measured, internal, scale: null };
+    return { spec, measured, internal, authored, scale: null };
   }
   // spec mm → mesh units, per axis
   const toMesh = (mm, a) => ((mm - sb.lo[a]) / specSize[a]) * mb.size[a] + mb.lo[a];
@@ -238,6 +243,24 @@ export function refineFromMesh(spec, mesh) {
     const g = part.geometry;
     const label = part.display_name_ko || part.part_id;
     if (!g || !g.size_mm || !g.center_mm) continue;
+
+    /* Two kinds of part own their own dimensions and must not be measured.
+       Everything this function writes — size_mm, and a switch to LOFT — is
+       exactly what they encode, so a measurement here is not a refinement but
+       a deletion.
+
+       A rotated part's size_mm is its box BEFORE the rotation, while the
+       reading below is a world-axis extent of a tilted solid, which is always
+       larger. Snapping one onto the other inflates the part every time the
+       measurement runs, and the tilt then multiplies the error.
+
+       An aerofoil's thickness is chord × thickness_pct, not size_mm.h, and
+       switching its builder to LOFT would replace the generated section with
+       eight measured boxes — the plank the section was added to get rid of. */
+    const owns = (g.rotation_deg && (g.rotation_deg.x || g.rotation_deg.y || g.rotation_deg.z))
+      ? "회전" : (g.airfoil && g.airfoil.thickness_pct > 0) ? "에어포일" : null;
+    if (owns) { authored.push(`${label}(${owns})`); continue; }
+
     const sz = g.size_mm;
     const ctr = firstInstanceCenter(g);
 
@@ -317,7 +340,7 @@ export function refineFromMesh(spec, mesh) {
     }
     measured.push(label + "(" + mode + ")");
   }
-  return { spec, measured, internal, scale: perMm };
+  return { spec, measured, internal, authored, scale: perMm };
 }
 
 /* Turning these into lofts would fight a builder that already says the shape
@@ -325,21 +348,31 @@ export function refineFromMesh(spec, mesh) {
    flat by definition. Their extents are still measured. */
 const NEVER_LOFT = /로터|프로펠러|rotor|prop|분리선|panel\s*line|가드|guard/i;
 
+/* Both readers below also return `indices`, a flat triangle list over
+   `positions`. Section measuring only ever needed the point cloud, but a
+   silhouette does not: vertices are samples of a surface, so a thin part
+   projects to a dotted outline with holes through it. Anything that has to
+   fill the surface — tools/similarity.mjs rasterises it — needs the faces, and
+   the face list belongs with the parser that already walked the buffers. */
+
 /** Collect world-space positions from a loaded Three.js object. */
 export function positionsFromObject3D(root) {
   const chunks = [];
-  let total = 0;
+  let total = 0, tris = 0;
   root.updateMatrixWorld(true);
   root.traverse((o) => {
     const a = o.isMesh && o.geometry?.attributes?.position;
     if (!a) return;
-    chunks.push({ a, m: o.matrixWorld });
+    const idx = o.geometry.index;
+    chunks.push({ a, idx, m: o.matrixWorld });
     total += a.count;
+    tris += (idx ? idx.count : a.count) / 3;
   });
   if (!total) return null;
   const positions = new Float64Array(total * 3);
-  let k = 0;
-  for (const { a, m } of chunks) {
+  const indices = new Uint32Array(Math.floor(tris) * 3);
+  let k = 0, t = 0, base = 0;
+  for (const { a, idx, m } of chunks) {
     const e = m.elements;
     for (let i = 0; i < a.count; i++) {
       const x = a.getX(i), y = a.getY(i), z = a.getZ(i);
@@ -347,28 +380,54 @@ export function positionsFromObject3D(root) {
       positions[k++] = e[1] * x + e[5] * y + e[9] * z + e[13];
       positions[k++] = e[2] * x + e[6] * y + e[10] * z + e[14];
     }
+    /* Each geometry indexes its own vertices, so every face has to be shifted
+       by where that geometry landed in the merged array. */
+    const n = idx ? idx.count : a.count;
+    for (let i = 0; i + 2 < n; i += 3) {
+      indices[t++] = base + (idx ? idx.getX(i) : i);
+      indices[t++] = base + (idx ? idx.getX(i + 1) : i + 1);
+      indices[t++] = base + (idx ? idx.getX(i + 2) : i + 2);
+    }
+    base += a.count;
   }
-  return { positions, count: total };
+  return { positions, count: total, indices: indices.subarray(0, t) };
 }
 
-/** Parse a .glb buffer into {positions, count} — largest primitive only. */
+/** Parse a .glb buffer into {positions, count, indices} — largest primitive only. */
 export function positionsFromGlb(buf) {
   const jsonLen = buf.readUInt32LE(12);
   const gltf = JSON.parse(buf.slice(20, 20 + jsonLen).toString("utf8"));
   const binStart = 20 + jsonLen + 8;
+  const at = (a) => binStart + (gltf.bufferViews[a.bufferView].byteOffset || 0) + (a.byteOffset || 0);
   let best = null;
   for (const m of gltf.meshes || []) {
     for (const pr of m.primitives || []) {
       const a = gltf.accessors[pr.attributes.POSITION];
       if (!a || (best && a.count <= best.count)) continue;
-      const bv = gltf.bufferViews[a.bufferView];
-      best = { acc: a, off: binStart + (bv.byteOffset || 0) + (a.byteOffset || 0), count: a.count };
+      /* mode defaults to 4 (TRIANGLES); strips and fans would need a different
+         walk, so their faces are dropped rather than read wrongly. */
+      const tri = (pr.mode ?? 4) === 4;
+      const ia = tri && pr.indices != null ? gltf.accessors[pr.indices] : null;
+      best = { off: at(a), count: a.count, tri, ia, ioff: ia ? at(ia) : 0 };
     }
   }
   if (!best) return null;
   const positions = new Float64Array(best.count * 3);
   for (let k = 0; k < best.count * 3; k++) positions[k] = buf.readFloatLE(best.off + k * 4);
-  return { positions, count: best.count };
+
+  let indices = null;
+  if (best.ia) {
+    // 5121 UNSIGNED_BYTE, 5123 UNSIGNED_SHORT, 5125 UNSIGNED_INT
+    const w = best.ia.componentType === 5121 ? 1 : best.ia.componentType === 5123 ? 2 : 4;
+    const read = w === 1 ? buf.readUInt8.bind(buf) : w === 2 ? buf.readUInt16LE.bind(buf) : buf.readUInt32LE.bind(buf);
+    indices = new Uint32Array(best.ia.count);
+    for (let k = 0; k < best.ia.count; k++) indices[k] = read(best.ioff + k * w);
+  } else if (best.tri) {
+    // an unindexed primitive is already three-vertices-per-face
+    indices = new Uint32Array(best.count - (best.count % 3));
+    for (let k = 0; k < indices.length; k++) indices[k] = k;
+  }
+  return { positions, count: best.count, indices };
 }
 
 /** Bounds helper shared by the callers that have to line the mesh up with mm. */

@@ -8,6 +8,7 @@ import { extname, join, normalize } from "node:path";
 import { fileURLToPath } from "node:url";
 import { CATALOG, MATERIAL_KEYS, clampParams } from "./js/catalog.js";
 import { makeAssetStore, assetSummary, searchAssets } from "./asset-store.mjs";
+import { REPRESENTATION, BUILDER_VALUES, validateSpec } from "./spec-validate.mjs";
 import { PROGRAM_SPEC, PROGRAM_EXAMPLE } from "./js/program-spec.js";
 import { BASE_RECIPES, FEATURE_RECIPES, recipeContract } from "./js/recipes.js";
 
@@ -789,6 +790,64 @@ function toPrimarySchema(s) {
   return out;
 }
 
+/* ------------------------------------------------- primary schema budget
+   The 1차 LLM caps how large a response schema may be, and past the cap it
+   rejects the whole request with a bare "invalid argument" that names no
+   field. The fallback then answers instead, so the symptom is not an error
+   but a quietly worse specification — which is exactly how this went unseen:
+   the drone schema had already been over the cap, and every sample since was
+   written by the fallback leg.
+
+   Enum members count toward the cap and are the cheapest thing to give up:
+   the allowed values move into the description, so the model is still told
+   what they are, and validateSpec re-checks the vocabulary server-side either
+   way (it always has — Structured Outputs constrains shape, not vocabulary).
+   Small schemas keep their hard enums, because only the big one is over.
+
+   Measured against the endpoint: the drone schema at 424 was rejected and at
+   196 accepted, with a flat schema accepted at 250 and rejected at 300. */
+const PRIMARY_SCHEMA_BUDGET = 250;
+
+function schemaCost(s) {
+  let n = 1;
+  if (s.enum) n += s.enum.length;
+  for (const v of Object.values(s.properties || {})) n += schemaCost(v);
+  if (s.items) n += schemaCost(s.items);
+  return n;
+}
+
+/* Enum values as prose. The constraint stops being enforced by the decoder
+   and starts being enforced by the validator, which is a real loss — so it is
+   spent only where the alternative is the request being refused outright. */
+function foldEnums(s) {
+  const out = { ...s };
+  if (out.enum) {
+    out.description = `${out.description ? out.description + " " : ""}`
+      + `다음 값 중 하나만 쓴다: ${out.enum.join(", ")}.`;
+    delete out.enum;
+  }
+  if (out.properties) {
+    out.properties = Object.fromEntries(Object.entries(out.properties).map(([k, v]) => [k, foldEnums(v)]));
+  }
+  if (out.items) out.items = foldEnums(out.items);
+  return out;
+}
+
+function primarySchemaFor(schema, label = "") {
+  let out = toPrimarySchema(schema);
+  const before = schemaCost(out);
+  if (before <= PRIMARY_SCHEMA_BUDGET) return out;
+  out = foldEnums(out);
+  const after = schemaCost(out);
+  /* Loud, because the next person to add a field needs to know how close the
+     schema is to the edge before their addition is blamed for the refusal. */
+  console.warn(`[llm] ${label || "스키마"}가 1차 LLM 한도를 넘어 enum을 설명으로 접었습니다 `
+    + `(${before} → ${after} / 한도 ${PRIMARY_SCHEMA_BUDGET}).`
+    + (after > PRIMARY_SCHEMA_BUDGET
+      ? ` 아직 한도 초과입니다 — 필드를 줄이지 않으면 1차 LLM이 요청을 거부하고 폴백이 대신 답합니다.` : ""));
+  return out;
+}
+
 // 폴백 LLM chat messages → 1차 LLM contents + systemInstruction
 function toPrimaryContents(messages) {
   const sys = messages.filter((m) => m.role === "system").map((m) => m.content).join("\n\n");
@@ -813,6 +872,9 @@ function toPrimaryContents(messages) {
 
 async function callPrimary(messages, schema, maxTokens, model, opts = {}) {
   const { sys, contents } = toPrimaryContents(messages);
+  /* Converted once, outside the key loop: the schema does not depend on which
+     key is used, and folding it per key would print the warning twice. */
+  const responseSchema = primarySchemaFor(schema, opts.label);
   let lastErr = null;
   for (const key of PRIMARY_KEYS) {
     try {
@@ -822,7 +884,7 @@ async function callPrimary(messages, schema, maxTokens, model, opts = {}) {
       const genCfg = {
         maxOutputTokens: Math.max(maxTokens, 2048),
         responseMimeType: "application/json",
-        responseSchema: toPrimarySchema(schema),
+        responseSchema,
       };
       if (opts.defaultTemperature !== true) genCfg.temperature = 0.7;
       // thinking_level is nested under thinkingConfig; at the top level the API
@@ -875,8 +937,9 @@ async function callLLM(messages, schemaName, schema, maxTokens = 800, tier = "te
       return await callPrimary(messages, schema,
         spec ? Math.max(maxTokens, 60000) : patch ? Math.max(maxTokens, 32000) : maxTokens,
         (spec || patch || tier === "plan") ? PRIMARY_PLAN_MODEL : PRIMARY_TEXT_MODEL,
-        spec ? { thinkingLevel: "high", defaultTemperature: true, timeoutMs: 240000 }
-          : patch ? { thinkingLevel: "low", defaultTemperature: true, timeoutMs: 90000 } : {});
+        spec ? { thinkingLevel: "high", defaultTemperature: true, timeoutMs: 240000, label: schemaName }
+          : patch ? { thinkingLevel: "low", defaultTemperature: true, timeoutMs: 90000, label: schemaName }
+            : { label: schemaName });
     } catch (e) {
       // a silent fallback hides which of the two brains actually failed
       console.error(`[llm] primary ${tier} failed:`, e.message);
@@ -1688,8 +1751,7 @@ JSON만 출력한다.`;
    ============================================================ */
 const PROVENANCE = ["USER_PROVIDED", "IMAGE_OBSERVED", "IMAGE_INFERRED",
   "CATEGORY_DEFAULT", "COMPUTED", "UNRESOLVED"];
-const REPRESENTATION = ["PRIMITIVE", "PROCEDURAL", "PROFILE_EXTRUDE",
-  "PROFILE_REVOLVE", "CURVE_SWEEP", "BOOLEAN_CSG", "HYBRID", "UNRESOLVED"];
+/* REPRESENTATION likewise — imported, not restated. */
 const VISIBILITY = ["VISIBLE", "PARTIALLY_VISIBLE", "OCCLUDED", "NOT_VISIBLE", "UNKNOWN"];
 
 const ROUTE_SCHEMA = {
@@ -1755,13 +1817,13 @@ const PROFILE_SEGMENT_SCHEMA = {
    kept trying. It is not discarded either: it stays in the scene under 원본 메시
    and its bounding box is the scale reference. Step 4's job is the CAD, and the
    two artefacts sit side by side rather than one standing in for the other. */
-const BUILDER_VALUES = ["REVOLVE", "EXTRUDE_2D", "LOFT", "BOX", "ROUNDED_BOX", "CYLINDER", "TUBE",
-  "CONE", "SPHERE", "TORUS", "FREEFORM"];
+/* BUILDER_VALUES is imported from spec-validate.mjs: the schema offers the
+   vocabulary and the validator enforces it, and they have to be one list. */
 
 const GEOMETRY_SCHEMA = {
   type: "object", additionalProperties: false,
   required: ["builder", "plane", "size_mm", "center_mm", "outer_profile", "inner_profile",
-    "corner_radius_mm", "repeat", "loft_sections"],
+    "corner_radius_mm", "repeat", "loft_sections", "rotation_deg", "airfoil"],
   description: "이 파트를 실제로 만드는 방법. 4단계 CAD가 이 필드만 읽는다.",
   properties: {
     builder: {
@@ -1803,6 +1865,32 @@ const GEOMETRY_SCHEMA = {
       type: "object", additionalProperties: false, required: ["x", "y", "z"],
       description: "조립 원점(바닥 중앙) 기준 파트 중심.",
       properties: { x: { type: "number" }, y: { type: "number" }, z: { type: "number" } },
+    },
+    /* Both fields below default to null and every existing specification omits
+       them. They are the vocabulary for the two shapes the builders could not
+       say at all — a part that is not axis-aligned, and a wing that is not a
+       plank — so the description leads with when NOT to use them. */
+    rotation_deg: {
+      type: ["object", "null"], additionalProperties: false, required: ["x", "y", "z"],
+      description: "파트 자체 기울기(도). 축에 나란한 파트는 null — 대부분 null이다. "
+        + "상반각·틸트로터·경사 랜딩기어처럼 파트가 기울어야만 쓴다. "
+        + "MIRROR_PAIR면 대칭면을 힌지로 좌우가 반대로 기운다(상반각). "
+        + "CIRCULAR면 배치 회전보다 먼저 적용돼 전부 바깥쪽으로 같은 각도만큼 기운다. "
+        + "size_mm은 기울기 전 파트 자체 박스로 그대로 둔다.",
+      properties: { x: { type: "number" }, y: { type: "number" }, z: { type: "number" } },
+    },
+    airfoil: {
+      type: ["object", "null"], additionalProperties: false,
+      required: ["thickness_pct", "camber_pct", "twist_deg"],
+      description: "날개 단면. plane TOP의 EXTRUDE_2D에만 쓰고 나머지는 전부 null. "
+        + "채우면 outer_profile 평면형 위에 NACA 4자리 단면을 루트→팁으로 로프트한다. "
+        + "두께는 최대 코드 × thickness_pct로 정해지므로 size_mm.h도 그 값에 맞춘다. "
+        + "주익·수평미익은 채우는 편이 좋다(일반 날개 thickness_pct 10~15, camber_pct 2~4).",
+      properties: {
+        thickness_pct: { type: "number", description: "최대 두께 / 코드, % (2~40). 보통 12." },
+        camber_pct: { type: "number", description: "최대 캠버 / 코드, % (0~9.5). 대칭익은 0." },
+        twist_deg: { type: "number", description: "팁 비틀림, 도 (-20~20). 워시아웃은 음수. 없으면 0." },
+      },
     },
     outer_profile: { type: ["array", "null"], maxItems: 24, items: PROFILE_SEGMENT_SCHEMA,
       description: "REVOLVE의 바깥 단면. 바닥 중심에서 시작해 위로 올라간다. 아니면 null." },
@@ -2603,10 +2691,22 @@ ${SPEC_SYSTEM.split("<geometry_authoring>")[1] ? "<geometry_authoring>" + SPEC_S
    한 파트로 그려라. 수직미익은 plane SIDE(size_mm w=두께, h=높이, d=코드).
    프로펠러는 얇은 CYLINDER(h ≤ 지름의 8%) — 이름에 엽수를 넣으면("2엽 프로펠러")
    컴파일러가 그 수의 블레이드를 만든다. 기수 프로펠러는 plane FRONT다.
+3-1. **날개 단면(airfoil)** — 주익·수평미익에는 airfoil을 채워라. 평면형만 있으면
+   두께가 일정한 판자가 되고, airfoil이 있으면 그 위에 NACA 4자리 단면이 얹힌다.
+   주익 { thickness_pct 12, camber_pct 2~4, twist_deg -2~-4 (팁 워시아웃) },
+   수평미익 { thickness_pct 10, camber_pct 0, twist_deg 0 } 이 무난하다.
+   size_mm.h를 코드 × thickness_pct와 같게 맞춰라(코드 260mm에 12%면 h=31).
+   날개가 아닌 파트는 airfoil을 null로 둔다.
+3-2. **상반각(rotation_deg)** — 날개가 위로 벌어지면 주익에 rotation_deg를 쓴다.
+   다만 관통 한 파트는 통째로 기울 뿐이므로, 상반각은 좌우를 MIRROR_PAIR로
+   나눈 날개·붐·랜딩기어에서만 의미가 있다(대칭면이 힌지라 좌우가 반대로 기운다).
+   기울 이유가 없는 파트는 rotation_deg를 null로 둔다.
 4. 하이브리드 VTOL: 고정익 구성에 리프트 붐 2개(EXTRUDE_2D, MIRROR_PAIR +
    spacing_mm)와 리프트 로터·모터 4개(CIRCULAR count 4 직사각 규약, 2-1 참조)를
    더한다. 로터의 (±r·sin각, ±r·cos각)이 붐 끝 좌표와 일치해야 한다.
    수평미익은 꼬리에 둔다 — center_mm.z가 주익과 같으면 주익 속에 묻힌다.
+   틸트로터라면 모터·로터에 rotation_deg를 준다. CIRCULAR 배치에서는
+   배치 회전보다 먼저 적용돼 네 개가 모두 바깥쪽으로 같은 각도만큼 기운다.
 5. 로터 디스크는 반드시 서로 겹치지 않아야 하고 바디·날개와도 겹치지 않아야 한다.
    rotor_diameter < (wheelbase × sin(180°/로터수)) 를 지켜라.
 6. 임무 탑재체를 반드시 넣는다. 점검이면 짐벌+카메라, 살포면 탱크+노즐 붐,
@@ -2680,285 +2780,7 @@ function groundProvenance(spec, hasImage) {
   return fixed;
 }
 
-function validateSpec(spec, { hasMesh = false } = {}) {
-  const errors = [];
-  const parts = spec.parts || [];
-  const ids = new Set(parts.map((p) => p.part_id));
-  const matIds = new Set((spec.materials || []).map((m) => m.material_id));
-
-  for (const p of parts) {
-    if (p.parent_part_id && !ids.has(p.parent_part_id)) {
-      errors.push({ field_path: `parts.${p.part_id}.parent_part_id`, error_code: "DANGLING_PARENT",
-        required_fix: `${p.parent_part_id}는 존재하지 않는 part_id입니다. null로 두거나 실제 ID를 쓰십시오.` });
-    }
-    if (p.material_id && !matIds.has(p.material_id)) {
-      errors.push({ field_path: `parts.${p.part_id}.material_id`, error_code: "DANGLING_MATERIAL",
-        required_fix: `${p.material_id}는 materials에 없습니다.` });
-    }
-    for (const d of p.dimensions || []) {
-      // the rule that stops a photo from becoming fake millimetres
-      if (d.value != null && spec.scale?.absolute_scale_status === "UNKNOWN"
-        && d.unit === "mm" && d.provenance !== "USER_PROVIDED" && d.provenance !== "COMPUTED") {
-        errors.push({ field_path: `parts.${p.part_id}.dimensions.${d.name}`,
-          error_code: "ABSOLUTE_DIMENSION_WITHOUT_SCALE",
-          required_fix: "절대 스케일 기준이 없습니다. value를 null, provenance를 UNRESOLVED로 하십시오." });
-      }
-      if (d.value == null && !d.requires_confirmation) {
-        errors.push({ field_path: `parts.${p.part_id}.dimensions.${d.name}`,
-          error_code: "NULL_WITHOUT_CONFIRMATION", required_fix: "value가 null이면 requires_confirmation은 true여야 합니다." });
-      }
-    }
-    /* geometry is the build instruction; a spec that cannot be built is a
-       report, and step 4 has nothing to compile from it */
-    const g = p.geometry || {};
-    const wants = { PROFILE_REVOLVE: "REVOLVE", PROFILE_EXTRUDE: "EXTRUDE_2D" };
-    if (wants[p.representation_strategy] && g.builder !== wants[p.representation_strategy]) {
-      errors.push({ field_path: `parts.${p.part_id}.geometry.builder`, error_code: "BUILDER_STRATEGY_MISMATCH",
-        required_fix: `representation_strategy가 ${p.representation_strategy}이면 builder는 ${wants[p.representation_strategy]}여야 합니다.` });
-    }
-    // Structured Outputs constrains the shape, not always the vocabulary
-    if (!REPRESENTATION.includes(p.representation_strategy)) {
-      errors.push({ field_path: `parts.${p.part_id}.representation_strategy`, error_code: "UNKNOWN_ENUM_VALUE",
-        required_fix: `허용값은 ${REPRESENTATION.join(", ")} 입니다.` });
-    }
-    if (g.builder && !BUILDER_VALUES.includes(g.builder)) {
-      errors.push({ field_path: `parts.${p.part_id}.geometry.builder`, error_code: "UNKNOWN_ENUM_VALUE",
-        required_fix: `허용값은 ${BUILDER_VALUES.join(", ")} 입니다.` });
-    }
-    if (g.builder === "REVOLVE" && !(g.outer_profile || []).length) {
-      errors.push({ field_path: `parts.${p.part_id}.geometry.outer_profile`, error_code: "REVOLVE_WITHOUT_PROFILE",
-        required_fix: "REVOLVE는 outer_profile 없이 만들 수 없습니다. [반경, 높이] 세그먼트를 채우십시오." });
-    }
-    if (!g.size_mm || !(g.size_mm.w > 0 && g.size_mm.h > 0 && g.size_mm.d > 0)) {
-      errors.push({ field_path: `parts.${p.part_id}.geometry.size_mm`, error_code: "EMPTY_SIZE",
-        required_fix: "size_mm의 w·h·d는 모두 0보다 커야 합니다." });
-    }
-    for (const f of p.features || []) {
-      if (f.visibility === "NOT_VISIBLE" && f.provenance === "IMAGE_OBSERVED") {
-        errors.push({ field_path: `parts.${p.part_id}.features.${f.feature_id}`,
-          error_code: "OBSERVED_BUT_NOT_VISIBLE", required_fix: "보이지 않는 피처를 IMAGE_OBSERVED로 기록할 수 없습니다." });
-      }
-    }
-  }
-  for (const r of spec.relationships || []) {
-    if (!ids.has(r.source_part_id) || !ids.has(r.target_part_id)) {
-      errors.push({ field_path: `relationships.${r.relationship_id}`, error_code: "DANGLING_RELATIONSHIP",
-        required_fix: "source_part_id와 target_part_id는 실제 part_id여야 합니다." });
-    }
-  }
-  const sc = spec.scale || {};
-  if (sc.absolute_scale_status === "KNOWN"
-    && !(sc.bounding_box_mm?.x > 0 && sc.bounding_box_mm?.y > 0 && sc.bounding_box_mm?.z > 0)) {
-    errors.push({ field_path: "scale.bounding_box_mm", error_code: "KNOWN_SCALE_WITHOUT_BBOX",
-      required_fix: "절대 스케일이 KNOWN이면 bounding_box_mm 세 값을 채워야 합니다." });
-  }
-  /* A revolved section that starts or ends off the axis leaves the solid open,
-     and one whose cavity meets the apex is a sealed lump with a wall thickness
-     written beside it. */
-  for (const p of parts) {
-    const g = p.geometry || {};
-    if (!(g.outer_profile || []).length) continue;
-    /* An ARC without a radius silently degrades to a straight line, which is
-       how a shoulder curve becomes a corner without anyone being told. */
-    for (const [key, segs] of [["outer_profile", g.outer_profile], ["inner_profile", g.inner_profile]]) {
-      for (const s of segs || []) {
-        if (s.type !== "ARC") continue;
-        const chord = Math.hypot((s.end?.[0] ?? 0) - (s.start?.[0] ?? 0), (s.end?.[1] ?? 0) - (s.start?.[1] ?? 0));
-        if (!(s.radius > 0)) {
-          errors.push({ field_path: `parts.${p.part_id}.geometry.${key}`, error_code: "ARC_WITHOUT_RADIUS",
-            required_fix: "ARC에는 radius가 필요합니다. 곡률이 없으면 type을 LINE으로 바꾸십시오." });
-        } else if (s.radius < chord / 2 - 1e-6) {
-          errors.push({ field_path: `parts.${p.part_id}.geometry.${key}`, error_code: "ARC_RADIUS_TOO_SMALL",
-            required_fix: `radius ${s.radius}는 두 점 사이 거리 ${chord.toFixed(1)}의 절반보다 작아 호가 성립하지 않습니다.` });
-        }
-        if (s.sweep !== "CW" && s.sweep !== "CCW") {
-          errors.push({ field_path: `parts.${p.part_id}.geometry.${key}`, error_code: "ARC_WITHOUT_SWEEP",
-            required_fix: "ARC의 sweep은 CW 또는 CCW여야 합니다." });
-        }
-      }
-    }
-    /* Coordinate density is the whole difference between a product and a
-       stack of cans. A section drawn with four straight lines has a sharp
-       90-degree edge everywhere the direction changes, which no moulded or
-       machined part actually has, and no amount of material work hides it. */
-    const outer = g.outer_profile || [];
-    const inner = g.inner_profile || [];
-    const curved = [...outer, ...inner].filter((s) => s.type === "ARC" || s.type === "BEZIER").length;
-    const body = p.semantic_role === "STRUCTURAL_BODY" || p.semantic_role === "PANEL";
-    const floor = body ? 8 : 5;
-    if (outer.length < floor) {
-      errors.push({ field_path: `parts.${p.part_id}.geometry.outer_profile`, error_code: "PROFILE_TOO_COARSE",
-        required_fix: `세그먼트가 ${outer.length}개뿐입니다. ${body ? "본체" : "이 파트"}는 최소 ${floor}개가 필요합니다. `
-          + `바닥 모서리·측벽 전환·어깨·림 모따기처럼 방향이 바뀌는 지점의 반경을 빠뜨렸습니다.` });
-    }
-    if (curved === 0) {
-      errors.push({ field_path: `parts.${p.part_id}.geometry`, error_code: "PROFILE_ALL_STRAIGHT",
-        required_fix: "단면이 전부 직선이라 모든 모서리가 90도로 각집니다. "
-          + "방향이 바뀌는 지점마다 ARC(radius, sweep)나 BEZIER(control1, control2)를 넣으십시오." });
-    }
-
-    /* size_mm is what the reader believes; the profile is what gets built. When
-       they disagree the model is a different size from its own datasheet, and
-       neither number tells you which one lied. */
-    const pts = [];
-    for (const s of [...(g.outer_profile || []), ...(g.inner_profile || [])]) {
-      if (Array.isArray(s.start)) pts.push(s.start);
-      if (Array.isArray(s.end)) pts.push(s.end);
-    }
-    if (pts.length >= 2) {
-      const xs = pts.map((p) => p[0]), ys = pts.map((p) => p[1]);
-      // a revolve's profile is a radius, so its width is twice the extent
-      const w = (Math.max(...xs) - Math.min(...xs)) * (g.builder === "REVOLVE" ? 2 : 1);
-      const h = Math.max(...ys) - Math.min(...ys);
-      const off = (a, b) => (b > 0 ? Math.abs(a - b) / b : 1);
-      /* The profile's [x, y] land on different world axes depending on the
-         extrusion plane, and the declared size must be read the same way. */
-      const sm = g.size_mm || {};
-      let declaredW = sm.w || 0, declaredH = sm.h || 0, axesLabel = "w × h";
-      if (g.builder === "REVOLVE") declaredW = Math.max(sm.w || 0, sm.d || 0);
-      else if (g.plane === "TOP") { declaredH = sm.d || 0; axesLabel = "w × d"; }
-      else if (g.plane === "SIDE") { declaredW = sm.d || 0; axesLabel = "d × h"; }
-      if (off(w, declaredW) > 0.05 || off(h, declaredH) > 0.05) {
-        errors.push({ field_path: `parts.${p.part_id}.geometry`, error_code: "PROFILE_SIZE_MISMATCH",
-          required_fix: `프로파일이 만드는 크기는 ${w.toFixed(1)} × ${h.toFixed(1)} mm인데 `
-            + `size_mm(${axesLabel})은 ${declaredW} × ${declaredH}입니다. 형상은 프로파일이 정하므로 `
-            + `프로파일 좌표를 의도한 치수에 맞추고 size_mm도 같게 하십시오.` });
-      }
-    }
-
-    /* An extruded outline is a closed loop in its own plane and answers to
-       none of the axis rules below. */
-    if (g.builder !== "REVOLVE") continue;
-    const first = g.outer_profile[0];
-    if (Math.abs(first.start?.[0] ?? 9) > 0.5) {
-      errors.push({ field_path: `parts.${p.part_id}.geometry.outer_profile[0].start`,
-        error_code: "PROFILE_NOT_ON_AXIS",
-        required_fix: "회전 단면은 반경 0인 축 위의 바닥점에서 시작해야 바닥이 막힙니다." });
-    }
-    if (inner.length) {
-      const ends = [inner[0].start?.[0] ?? 9, inner[inner.length - 1].end?.[0] ?? 9];
-      if (!ends.some((r) => Math.abs(r) < 0.5)) {
-        errors.push({ field_path: `parts.${p.part_id}.geometry.inner_profile`,
-          error_code: "CAVITY_NOT_CLOSED",
-          required_fix: "내부 단면의 한쪽 끝은 반경 0이어야 단면이 닫힙니다." });
-      }
-      // a cavity you cannot reach is a solid block with a wall thickness beside it
-      const rimR = Math.abs(g.outer_profile[g.outer_profile.length - 1].end?.[0] ?? 0);
-      if (rimR < 0.5) {
-        errors.push({ field_path: `parts.${p.part_id}.geometry.outer_profile`,
-          error_code: "OPEN_CONTAINER_SEALED_TOP",
-          required_fix: "내부 공동이 있는데 바깥 단면이 상단에서 반경 0으로 닫힙니다. "
-            + "열린 입구를 가진 파트는 림 반경에서 끝나야 합니다. 뚜껑은 별도 파트로 나누십시오." });
-      }
-    }
-  }
-  /* Drone-specific shape rules. The profile validators only fire when a
-     profile exists, so a wing written as ROUNDED_BOX sails through them and
-     renders as a plank. Aerodynamic surfaces must carry a section. */
-  if (spec.classification?.platform_family) {
-    const nameOf = (p) => `${p.name || ""} ${p.display_name_ko || ""}`;
-
-    /* A drone without its internals is a photo, not a design. Every platform
-       has a minimum part roster, internal avionics included; the repair
-       rounds add whatever is missing. */
-    const ROSTER = spec.classification.platform_family === "FIXED_WING"
-      ? [["동체|fuselage", "동체"], ["주익|날개|wing", "주익"], ["미익|tail|stab", "미익"],
-         ["모터|motor", "모터"], ["프로펠러|로터|propeller", "프로펠러"],
-         ["배터리|battery", "배터리"], ["비행제어|fc|avionics|autopilot", "비행제어 스택"]]
-      : [["바디|본체|body|center", "중앙 바디"], ["암|arm|붐|boom", "암"],
-         ["모터|motor", "모터"], ["로터|프로펠러|rotor|propeller", "로터"],
-         ["랜딩|스키드|landing|skid", "랜딩기어"], ["배터리|battery", "배터리"],
-         ["비행제어|fc|avionics|autopilot", "비행제어 스택"], ["gnss|gps|안테나|antenna", "GNSS"]];
-    const missing = ROSTER.filter(([rx]) => !parts.some((p) => new RegExp(rx, "i").test(nameOf(p))))
-      .map(([, label]) => label);
-    if (missing.length) {
-      errors.push({ field_path: "parts", error_code: "REQUIRED_PART_MISSING",
-        required_fix: `필수 파트가 빠졌습니다: ${missing.join(", ")}. 내부 부품(배터리·비행제어·ESC)도 `
-          + `실제 위치에 파트로 넣어야 합니다. 이 사양서는 분해 뷰에서 내부 구성을 보여줘야 합니다.` });
-    }
-    if ((spec.parameters || []).length < 5) {
-      errors.push({ field_path: "parameters", error_code: "PARAMS_TOO_FEW",
-        required_fix: `파라미터가 ${(spec.parameters || []).length}개뿐입니다. 형상을 실제로 바꾸는 `
-          + `파라미터를 최소 6개 만드십시오 (휠베이스·로터지름·암길이·바디폭·바디높이·기어높이 등).` });
-    }
-    for (const p of parts) {
-      const g = p.geometry || {};
-      const n = nameOf(p);
-      if (/날개|주익|미익|wing|stab|tail_plane|동체|fuselage/i.test(n)
-        && ["BOX", "ROUNDED_BOX", "CYLINDER"].includes(g.builder)) {
-        errors.push({ field_path: `parts.${p.part_id}.geometry.builder`, error_code: "AERO_SURFACE_AS_PRIMITIVE",
-          required_fix: `${p.display_name_ko || p.name}는 공력 형상입니다. 날개·미익은 EXTRUDE_2D에 `
-            + `날개 평면형(테이퍼·라운드 팁) 단면을, 동체는 REVOLVE에 유선형 단면을 쓰십시오. `
-            + `ROUNDED_BOX 날개는 판자처럼 보입니다.` });
-      }
-      /* A wing drawn in the front plane is a billboard standing on its edge.
-         The planform lives in the top view; the section's plane says which. */
-      if (/날개|주익|수평\s*미익|wing|h[_-]?stab|horizontal/i.test(n)
-        && g.builder === "EXTRUDE_2D" && g.plane !== "TOP") {
-        errors.push({ field_path: `parts.${p.part_id}.geometry.plane`, error_code: "WING_NOT_TOP_PLANE",
-          required_fix: `${p.display_name_ko || p.name}의 plane은 TOP이어야 합니다. outer_profile을 `
-            + `위에서 본 평면형(x 스팬, y 코드)으로 다시 쓰고 size_mm.d를 날개 두께로 하십시오. `
-            + `좌우 MIRROR_PAIR 대신 -스팬/2~+스팬/2 관통 한 파트로 그리십시오.` });
-      }
-      if (/수직\s*미익|v[_-]?stab|vertical|rudder/i.test(n)
-        && g.builder === "EXTRUDE_2D" && g.plane !== "SIDE") {
-        errors.push({ field_path: `parts.${p.part_id}.geometry.plane`, error_code: "VSTAB_NOT_SIDE_PLANE",
-          required_fix: `수직미익의 plane은 SIDE(YZ 단면, 두께가 좌우 X)여야 합니다.` });
-      }
-      if (/로터|프로펠러|rotor|propeller|prop\b/i.test(n) && g.builder === "CYLINDER") {
-        const dia = Math.max(g.size_mm?.w || 0, g.size_mm?.d || 0);
-        if ((g.size_mm?.h || 0) > dia * 0.08) {
-          errors.push({ field_path: `parts.${p.part_id}.geometry.size_mm.h`, error_code: "ROTOR_DISK_TOO_THICK",
-            required_fix: `로터 디스크는 얇은 원반입니다. 높이(h)는 지름의 8% 이하(권장 2~4mm)여야 합니다. `
-              + `지금은 h ${g.size_mm?.h}에 지름 ${dia}입니다. 회전축이 Y가 되도록 w·d가 지름, h가 두께입니다.` });
-        }
-        /* A lift rotor labelled FRONT flips onto its side now that cylinders
-           honour the plane. Cruise/nose props legitimately face FRONT, so only
-           lift/vertical rotors are checked. */
-        if (/리프트|lift|상승/i.test(n) && g.plane && g.plane !== "TOP") {
-          errors.push({ field_path: `parts.${p.part_id}.geometry.plane`, error_code: "LIFT_ROTOR_NOT_TOP",
-            required_fix: `리프트 로터·모터의 plane은 TOP(수직축)이어야 합니다. FRONT는 순항 프로펠러 전용입니다.` });
-        }
-      }
-      /* An empennage sharing the wing's station compiles INSIDE the wing and
-         vanishes — exactly what happened to the first sar-vtol sample. */
-      if (/수평\s*미익|h[_-]?stab|tail\s*plane|horizontal\s*stab/i.test(n)) {
-        const wing = parts.find((q) => /주익|main\s*wing/i.test(nameOf(q)) && q !== p);
-        if (wing) {
-          const dz = Math.abs((g.center_mm?.z ?? 0) - (wing.geometry?.center_mm?.z ?? 0));
-          const need = ((g.size_mm?.d || 0) + (wing.geometry?.size_mm?.d || 0)) / 2;
-          if (dz < need) {
-            errors.push({ field_path: `parts.${p.part_id}.geometry.center_mm.z`, error_code: "EMPENNAGE_INSIDE_WING",
-              required_fix: `수평미익이 주익과 같은 자리(z 차이 ${dz.toFixed(0)}mm)에 있어 주익 속에 묻힙니다. `
-                + `미익은 동체 꼬리 쪽(z 간격 ${need.toFixed(0)}mm 이상)에 두십시오.` });
-          }
-        }
-      }
-    }
-  }
-
-  /* Structure and part count have to agree, or the specification claims an
-     assembly it did not describe. */
-  if (spec.global_geometry?.object_structure === "MULTI_PART_ASSEMBLY" && parts.length < 2) {
-    errors.push({ field_path: "parts", error_code: "ASSEMBLY_WITH_ONE_PART",
-      required_fix: "MULTI_PART_ASSEMBLY인데 파트가 하나입니다. 부품을 분리하거나 구조를 고치십시오." });
-  }
-  // cycles in the part hierarchy
-  const parent = new Map(parts.map((p) => [p.part_id, p.parent_part_id]));
-  for (const p of parts) {
-    const seen = new Set([p.part_id]);
-    let cur = parent.get(p.part_id);
-    while (cur) {
-      if (seen.has(cur)) {
-        errors.push({ field_path: `parts.${p.part_id}.parent_part_id`, error_code: "HIERARCHY_CYCLE",
-          required_fix: "부품 계층에 순환 참조가 있습니다." });
-        break;
-      }
-      seen.add(cur); cur = parent.get(cur);
-    }
-  }
-  return errors;
-}
+/* validateSpec now lives in spec-validate.mjs — see the import at the top. */
 
 async function handleSpecJson(body) {
   const image = typeof body.imageB64 === "string" && body.imageB64.startsWith("data:image/")

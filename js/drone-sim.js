@@ -270,6 +270,13 @@ export function createDroneSim({ root, spec }) {
       out.push({
         id: "rotor_clearance", label: "로터 디스크 간격",
         value: `${clear.toFixed(0)}mm (s/D ${sepRatio.toFixed(2)})`,
+        /* `n` is the same quantity as `value`, without the sentence around it.
+           ok is a verdict against a threshold and cannot say that a design got
+           worse while staying on the same side of it — tools/fit-spec.mjs has
+           to refuse a change that halves the rotor gap even when the gap was
+           already below the recommended ratio, and reading that back out of a
+           Korean string would be a parser waiting to break. Higher is better. */
+        n: sepRatio,
         ok: clear > 0 ? (sepRatio >= 1.15 ? true : null) : false,
         note: `인접 로터 중심거리 ${minGap.toFixed(0)} − 디스크 지름 ${dia.toFixed(0)}. `
           + (clear <= 0 ? "디스크가 겹칩니다 — 휠베이스를 넓히거나 로터를 줄이십시오."
@@ -468,6 +475,11 @@ export function createDroneSim({ root, spec }) {
         out.push({
           id: "assembly_contact", label: "조립 연결성",
           value: groups === 1 ? "한 덩어리" : `${groups}덩어리로 분리`,
+          /* Machine-readable for the same reason as rotor_clearance: an
+             assembly that was already in three pieces must not be allowed to
+             fall into five on the way to a better silhouette. Lower is better,
+             1 is whole. */
+          n: groups, lowerIsBetter: true,
           ok: groups === 1,
           note: groups === 1
             ? `메시 ${boxes.length}개가 ${TOL}mm 이내로 서로 이어져 있습니다.`

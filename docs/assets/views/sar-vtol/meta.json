@@ -1,0 +1,98 @@
+{
+  "id": "sar-vtol",
+  "source": "photo",
+  "generator": "1차 이미지 모델",
+  "generated": "2026-08-12T23:44:53.614Z",
+  "photo": "docs/assets/samples/drones/sar-vtol.jpg",
+  "mesh": null,
+  "attempt": 2,
+  "layout": "1x4",
+  "mask_px": 868,
+  "views": {
+    "front": {
+      "w": 819,
+      "h": 355,
+      "area": 55769
+    },
+    "left": {
+      "w": 672,
+      "h": 354,
+      "area": 81146
+    },
+    "rear": {
+      "w": 737,
+      "h": 355,
+      "area": 52251
+    },
+    "right": {
+      "w": 684,
+      "h": 354,
+      "area": 80480
+    }
+  },
+  "consistency": {
+    "height_spread": 0.0028,
+    "solidity": [
+      0.5554,
+      0.7558,
+      0.5594,
+      0.7535
+    ],
+    "mirror_iou": {
+      "front_rear": 0.6779,
+      "left_right": 0.843
+    },
+    "mirror_wrong_order": 0.3073,
+    "pair_width_error": {
+      "front_rear": 0.1054,
+      "left_right": 0.0177
+    },
+    "pair_area_error": {
+      "front_rear": 0.0651,
+      "left_right": 0.0082
+    },
+    "pass": true,
+    "fail": []
+  },
+  "rejected": [
+    {
+      "attempt": 1,
+      "generator": "1차 이미지 모델",
+      "layout": "1x4",
+      "reason": [
+        "뷰마다 기체 높이가 다릅니다 (368/292/558/292px, 편차 70%)",
+        "마주 보는 두 뷰가 서로의 거울상이 아닙니다 (정면·후면 0.41, 좌·우 0.86)",
+        "마주 보는 두 뷰의 폭이 다릅니다 (13%)",
+        "마주 보는 두 뷰의 면적이 다릅니다 (43%)"
+      ],
+      "consistency": {
+        "height_spread": 0.7046,
+        "mirror_iou": {
+          "front_rear": 0.4132,
+          "left_right": 0.8617
+        },
+        "mirror_wrong_order": 0.3477,
+        "pair_width_error": {
+          "front_rear": 0.1254,
+          "left_right": 0.0263
+        },
+        "pair_area_error": {
+          "front_rear": 0.4277,
+          "left_right": 0.0289
+        },
+        "pass": false,
+        "fail": [
+          "뷰마다 기체 높이가 다릅니다 (368/292/558/292px, 편차 70%)",
+          "마주 보는 두 뷰가 서로의 거울상이 아닙니다 (정면·후면 0.41, 좌·우 0.86)",
+          "마주 보는 두 뷰의 폭이 다릅니다 (13%)",
+          "마주 보는 두 뷰의 면적이 다릅니다 (43%)"
+        ]
+      }
+    }
+  ],
+  "mesh_cross_check": {
+    "yaw_deg": 270,
+    "iou_mean": 0.4938,
+    "chamfer_mean": 0.018
+  }
+}
