@@ -1,0 +1,63 @@
+{
+  "id": "fire-octo",
+  "source": "photo",
+  "generator": "1차 이미지 모델",
+  "generated": "2026-08-14T00:44:22.383Z",
+  "photo": "docs/assets/samples/drones/fire-octo.png",
+  "mesh": null,
+  "attempt": 1,
+  "layout": "1x4",
+  "mask_px": 741,
+  "views": {
+    "front": {
+      "w": 699,
+      "h": 404,
+      "area": 74291
+    },
+    "left": {
+      "w": 693,
+      "h": 405,
+      "area": 87743
+    },
+    "rear": {
+      "w": 698,
+      "h": 404,
+      "area": 74235
+    },
+    "right": {
+      "w": 694,
+      "h": 405,
+      "area": 87776
+    }
+  },
+  "consistency": {
+    "height_spread": 0.0025,
+    "solidity": [
+      0.7519,
+      0.7369,
+      0.7516,
+      0.7367
+    ],
+    "mirror_iou": {
+      "front_rear": 0.9693,
+      "left_right": 0.975
+    },
+    "mirror_wrong_order": 0.5691,
+    "pair_width_error": {
+      "front_rear": 0.0014,
+      "left_right": 0.0014
+    },
+    "pair_area_error": {
+      "front_rear": 0.0008,
+      "left_right": 0.0004
+    },
+    "pass": true,
+    "fail": []
+  },
+  "rejected": [],
+  "mesh_cross_check": {
+    "yaw_deg": 90,
+    "iou_mean": 0.5662,
+    "chamfer_mean": 0.0153
+  }
+}

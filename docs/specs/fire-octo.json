@@ -1,0 +1,1961 @@
+{
+  "identity": {
+    "name_ko": "고층 방재용 X8 옥토콥터",
+    "revision": "1.1",
+    "created_from": "IMAGE_TO_3D"
+  },
+  "classification": {
+    "domain": "PUBLIC_SAFETY",
+    "mission_effect": "TRANSPORT",
+    "mission_primary": "HEAVY_LIFT",
+    "platform_family": "MULTIROTOR",
+    "platform_architecture": "OCTO_X8",
+    "confidence": 0.98,
+    "mission_secondary": [
+      "SEARCH_AND_RESCUE",
+      "INFRASTRUCTURE_INSPECTION"
+    ]
+  },
+  "coordinate_system": {
+    "linear_unit": "mm",
+    "up_axis": "Y",
+    "handedness": "RIGHT_HANDED",
+    "origin": "BOUNDING_BOX_BOTTOM_CENTER",
+    "axis_semantics": {
+      "x": "Right",
+      "y": "Up",
+      "z": "Front"
+    }
+  },
+  "scale": {
+    "absolute_scale_status": "KNOWN",
+    "reference_description": "Wheelbase 1600mm",
+    "bounding_box_mm": {
+      "x": 1600,
+      "y": 1000,
+      "z": 1600
+    },
+    "requires_user_confirmation": false
+  },
+  "size_performance": {
+    "mtow": {
+      "value": 35,
+      "unit": "kg",
+      "provenance": "CATEGORY_DEFAULT"
+    },
+    "empty_mass": {
+      "value": 15,
+      "unit": "kg",
+      "provenance": "CATEGORY_DEFAULT"
+    },
+    "payload_capacity": {
+      "value": 20,
+      "unit": "kg",
+      "provenance": "CATEGORY_DEFAULT"
+    },
+    "wheelbase_mm": 1600,
+    "rotor_count": 8,
+    "nominal_endurance": {
+      "value": null,
+      "unit": "min",
+      "provenance": "UNRESOLVED"
+    },
+    "wingspan_mm": null
+  },
+  "parts": [
+    {
+      "part_id": "central_body_canopy",
+      "parent_part_id": null,
+      "name": "central_body_canopy",
+      "display_name_ko": "중앙 바디 캐노피 (하부 셸)",
+      "semantic_role": "COVER",
+      "visibility": "VISIBLE",
+      "representation_strategy": "PROFILE_REVOLVE",
+      "representation_reason": "유선형 상단 셸 구조 (뚜껑 분리형)",
+      "editable": true,
+      "locked_characteristics": [
+        "outer_silhouette"
+      ],
+      "geometry": {
+        "builder": "REVOLVE",
+        "plane": "TOP",
+        "size_mm": {
+          "w": 408,
+          "h": 184,
+          "d": 408
+        },
+        "center_mm": {
+          "x": 0,
+          "y": 600,
+          "z": 0
+        },
+        "outer_profile": [
+          {
+            "type": "LINE",
+            "start": [
+              0,
+              0
+            ],
+            "end": [
+              160,
+              0
+            ],
+            "radius": null,
+            "sweep": "NONE",
+            "control1": null,
+            "control2": null
+          },
+          {
+            "type": "ARC",
+            "start": [
+              160,
+              0
+            ],
+            "end": [
+              175,
+              5
+            ],
+            "radius": 20,
+            "sweep": "CCW",
+            "control1": null,
+            "control2": null
+          },
+          {
+            "type": "ARC",
+            "start": [
+              175,
+              5
+            ],
+            "end": [
+              180,
+              20
+            ],
+            "radius": 20,
+            "sweep": "CCW",
+            "control1": null,
+            "control2": null
+          },
+          {
+            "type": "LINE",
+            "start": [
+              180,
+              20
+            ],
+            "end": [
+              180,
+              120
+            ],
+            "radius": null,
+            "sweep": "NONE",
+            "control1": null,
+            "control2": null
+          },
+          {
+            "type": "BEZIER",
+            "start": [
+              180,
+              120
+            ],
+            "end": [
+              150,
+              155
+            ],
+            "radius": null,
+            "sweep": "NONE",
+            "control1": [
+              180,
+              140
+            ],
+            "control2": [
+              165,
+              155
+            ]
+          },
+          {
+            "type": "ARC",
+            "start": [
+              150,
+              155
+            ],
+            "end": [
+              130,
+              160
+            ],
+            "radius": 30,
+            "sweep": "CCW",
+            "control1": null,
+            "control2": null
+          },
+          {
+            "type": "LINE",
+            "start": [
+              130,
+              160
+            ],
+            "end": [
+              105,
+              160
+            ],
+            "radius": null,
+            "sweep": "NONE",
+            "control1": null,
+            "control2": null
+          },
+          {
+            "type": "ARC",
+            "start": [
+              105,
+              160
+            ],
+            "end": [
+              100,
+              155
+            ],
+            "radius": 5,
+            "sweep": "CCW",
+            "control1": null,
+            "control2": null
+          }
+        ],
+        "inner_profile": [
+          {
+            "type": "ARC",
+            "start": [
+              95,
+              155
+            ],
+            "end": [
+              100,
+              150
+            ],
+            "radius": 5,
+            "sweep": "CCW",
+            "control1": null,
+            "control2": null
+          },
+          {
+            "type": "LINE",
+            "start": [
+              100,
+              150
+            ],
+            "end": [
+              125,
+              150
+            ],
+            "radius": null,
+            "sweep": "NONE",
+            "control1": null,
+            "control2": null
+          },
+          {
+            "type": "ARC",
+            "start": [
+              125,
+              150
+            ],
+            "end": [
+              145,
+              145
+            ],
+            "radius": 30,
+            "sweep": "CW",
+            "control1": null,
+            "control2": null
+          },
+          {
+            "type": "BEZIER",
+            "start": [
+              145,
+              145
+            ],
+            "end": [
+              175,
+              115
+            ],
+            "radius": null,
+            "sweep": "NONE",
+            "control1": [
+              160,
+              145
+            ],
+            "control2": [
+              175,
+              130
+            ]
+          },
+          {
+            "type": "LINE",
+            "start": [
+              175,
+              115
+            ],
+            "end": [
+              175,
+              20
+            ],
+            "radius": null,
+            "sweep": "NONE",
+            "control1": null,
+            "control2": null
+          },
+          {
+            "type": "ARC",
+            "start": [
+              175,
+              20
+            ],
+            "end": [
+              170,
+              5
+            ],
+            "radius": 20,
+            "sweep": "CW",
+            "control1": null,
+            "control2": null
+          },
+          {
+            "type": "LINE",
+            "start": [
+              170,
+              5
+            ],
+            "end": [
+              160,
+              5
+            ],
+            "radius": null,
+            "sweep": "NONE",
+            "control1": null,
+            "control2": null
+          },
+          {
+            "type": "LINE",
+            "start": [
+              160,
+              5
+            ],
+            "end": [
+              0,
+              5
+            ],
+            "radius": null,
+            "sweep": "NONE",
+            "control1": null,
+            "control2": null
+          }
+        ],
+        "corner_radius_mm": null,
+        "repeat": null,
+        "loft_sections": null,
+        "rotation_deg": null,
+        "airfoil": null
+      },
+      "dimensions": [
+        {
+          "name": "canopy_width",
+          "value": 360,
+          "unit": "mm",
+          "precision": "APPROXIMATE",
+          "provenance": "IMAGE_INFERRED",
+          "confidence": 0.85,
+          "requires_confirmation": false
+        }
+      ],
+      "features": [],
+      "material_id": "mat_canopy_white",
+      "confidence": 0.9
+    },
+    {
+      "part_id": "canopy_lid",
+      "parent_part_id": "central_body_canopy",
+      "name": "canopy_lid",
+      "display_name_ko": "캐노피 상단 뚜껑",
+      "semantic_role": "COVER",
+      "visibility": "VISIBLE",
+      "representation_strategy": "PROFILE_REVOLVE",
+      "representation_reason": "캐노피 입구를 덮는 상단 캡",
+      "editable": true,
+      "locked_characteristics": [],
+      "geometry": {
+        "builder": "REVOLVE",
+        "plane": "TOP",
+        "size_mm": {
+          "w": 192,
+          "h": 35,
+          "d": 221
+        },
+        "center_mm": {
+          "x": -16,
+          "y": 739,
+          "z": 1
+        },
+        "outer_profile": [
+          {
+            "type": "LINE",
+            "start": [
+              0,
+              0
+            ],
+            "end": [
+              80,
+              0
+            ],
+            "radius": null,
+            "sweep": "NONE",
+            "control1": null,
+            "control2": null
+          },
+          {
+            "type": "ARC",
+            "start": [
+              80,
+              0
+            ],
+            "end": [
+              95,
+              5
+            ],
+            "radius": 20,
+            "sweep": "CCW",
+            "control1": null,
+            "control2": null
+          },
+          {
+            "type": "ARC",
+            "start": [
+              95,
+              5
+            ],
+            "end": [
+              100,
+              15
+            ],
+            "radius": 15,
+            "sweep": "CCW",
+            "control1": null,
+            "control2": null
+          },
+          {
+            "type": "LINE",
+            "start": [
+              100,
+              15
+            ],
+            "end": [
+              100,
+              20
+            ],
+            "radius": null,
+            "sweep": "NONE",
+            "control1": null,
+            "control2": null
+          },
+          {
+            "type": "BEZIER",
+            "start": [
+              100,
+              20
+            ],
+            "end": [
+              0,
+              35
+            ],
+            "radius": null,
+            "sweep": "NONE",
+            "control1": [
+              100,
+              30
+            ],
+            "control2": [
+              50,
+              35
+            ]
+          }
+        ],
+        "inner_profile": [
+          {
+            "type": "BEZIER",
+            "start": [
+              0,
+              30
+            ],
+            "end": [
+              95,
+              15
+            ],
+            "radius": null,
+            "sweep": "NONE",
+            "control1": [
+              50,
+              30
+            ],
+            "control2": [
+              95,
+              20
+            ]
+          },
+          {
+            "type": "LINE",
+            "start": [
+              95,
+              15
+            ],
+            "end": [
+              95,
+              10
+            ],
+            "radius": null,
+            "sweep": "NONE",
+            "control1": null,
+            "control2": null
+          },
+          {
+            "type": "ARC",
+            "start": [
+              95,
+              10
+            ],
+            "end": [
+              80,
+              5
+            ],
+            "radius": 15,
+            "sweep": "CW",
+            "control1": null,
+            "control2": null
+          },
+          {
+            "type": "LINE",
+            "start": [
+              80,
+              5
+            ],
+            "end": [
+              80,
+              2
+            ],
+            "radius": null,
+            "sweep": "NONE",
+            "control1": null,
+            "control2": null
+          },
+          {
+            "type": "LINE",
+            "start": [
+              80,
+              2
+            ],
+            "end": [
+              0,
+              2
+            ],
+            "radius": null,
+            "sweep": "NONE",
+            "control1": null,
+            "control2": null
+          }
+        ],
+        "corner_radius_mm": null,
+        "repeat": null,
+        "loft_sections": null,
+        "rotation_deg": null,
+        "airfoil": null
+      },
+      "dimensions": [],
+      "features": [],
+      "material_id": "mat_canopy_white",
+      "confidence": 0.95
+    },
+    {
+      "part_id": "upper_frame_plate",
+      "parent_part_id": null,
+      "name": "upper_frame_plate",
+      "display_name_ko": "기체 상판",
+      "semantic_role": "STRUCTURAL_BODY",
+      "visibility": "PARTIALLY_VISIBLE",
+      "representation_strategy": "PRIMITIVE",
+      "representation_reason": "하판과 분리되는 상단 프레임 베이스",
+      "editable": true,
+      "locked_characteristics": [],
+      "geometry": {
+        "builder": "CYLINDER",
+        "plane": "TOP",
+        "size_mm": {
+          "w": 404,
+          "h": 11,
+          "d": 408
+        },
+        "center_mm": {
+          "x": -1,
+          "y": 610,
+          "z": 0
+        },
+        "outer_profile": null,
+        "inner_profile": null,
+        "corner_radius_mm": 5,
+        "repeat": null,
+        "loft_sections": null,
+        "rotation_deg": null,
+        "airfoil": null
+      },
+      "dimensions": [],
+      "features": [],
+      "material_id": "mat_carbon_fiber",
+      "confidence": 0.95
+    },
+    {
+      "part_id": "lower_frame_plate",
+      "parent_part_id": null,
+      "name": "lower_frame_plate",
+      "display_name_ko": "하부 프레임 플레이트",
+      "semantic_role": "STRUCTURAL_BODY",
+      "visibility": "PARTIALLY_VISIBLE",
+      "representation_strategy": "PRIMITIVE",
+      "representation_reason": "평면 카본 베이스",
+      "editable": true,
+      "locked_characteristics": [],
+      "geometry": {
+        "builder": "CYLINDER",
+        "plane": "TOP",
+        "size_mm": {
+          "w": 405,
+          "h": 11,
+          "d": 408
+        },
+        "center_mm": {
+          "x": -1,
+          "y": 600,
+          "z": 0
+        },
+        "outer_profile": null,
+        "inner_profile": null,
+        "corner_radius_mm": 5,
+        "repeat": null,
+        "loft_sections": null,
+        "rotation_deg": null,
+        "airfoil": null
+      },
+      "dimensions": [],
+      "features": [],
+      "material_id": "mat_carbon_fiber",
+      "confidence": 0.95
+    },
+    {
+      "part_id": "side_orange_panels",
+      "parent_part_id": "central_body_canopy",
+      "name": "side_orange_panels",
+      "display_name_ko": "측면 오렌지 패널",
+      "semantic_role": "PANEL",
+      "visibility": "VISIBLE",
+      "representation_strategy": "PRIMITIVE",
+      "representation_reason": "측면 돌출 커버",
+      "editable": true,
+      "locked_characteristics": [],
+      "geometry": {
+        "builder": "BOX",
+        "plane": "FRONT",
+        "size_mm": {
+          "w": 115,
+          "h": 66,
+          "d": 283
+        },
+        "center_mm": {
+          "x": 0,
+          "y": 690,
+          "z": 0
+        },
+        "outer_profile": null,
+        "inner_profile": null,
+        "corner_radius_mm": 10,
+        "repeat": {
+          "pattern": "MIRROR_PAIR",
+          "count": 2,
+          "radius_mm": null,
+          "spacing_mm": 360,
+          "start_angle_deg": null
+        },
+        "loft_sections": null,
+        "rotation_deg": null,
+        "airfoil": null
+      },
+      "dimensions": [],
+      "features": [],
+      "material_id": "mat_panel_orange",
+      "confidence": 0.9
+    },
+    {
+      "part_id": "carbon_arms",
+      "parent_part_id": "lower_frame_plate",
+      "name": "carbon_arms",
+      "display_name_ko": "카본 튜브 암",
+      "semantic_role": "FRAME",
+      "visibility": "VISIBLE",
+      "representation_strategy": "PRIMITIVE",
+      "representation_reason": "원통형 튜브 구조",
+      "editable": true,
+      "locked_characteristics": [],
+      "geometry": {
+        "builder": "TUBE",
+        "plane": "FRONT",
+        "size_mm": {
+          "w": 53,
+          "h": 53,
+          "d": 650
+        },
+        "center_mm": {
+          "x": 0,
+          "y": 620,
+          "z": 0
+        },
+        "outer_profile": null,
+        "inner_profile": null,
+        "corner_radius_mm": null,
+        "repeat": {
+          "pattern": "CIRCULAR",
+          "count": 4,
+          "radius_mm": 475,
+          "spacing_mm": null,
+          "start_angle_deg": 45
+        },
+        "loft_sections": null,
+        "rotation_deg": null,
+        "airfoil": null
+      },
+      "dimensions": [
+        {
+          "name": "arm_length",
+          "value": 650,
+          "unit": "mm",
+          "precision": "APPROXIMATE",
+          "provenance": "COMPUTED",
+          "confidence": 0.95,
+          "requires_confirmation": false
+        }
+      ],
+      "features": [],
+      "material_id": "mat_carbon_fiber",
+      "confidence": 0.98
+    },
+    {
+      "part_id": "arm_hinge_joints",
+      "parent_part_id": "lower_frame_plate",
+      "name": "arm_hinge_joints",
+      "display_name_ko": "암 접이 힌지부",
+      "semantic_role": "JOINT_COMPONENT",
+      "visibility": "VISIBLE",
+      "representation_strategy": "PRIMITIVE",
+      "representation_reason": "암과 몸체 연결 관절",
+      "editable": true,
+      "locked_characteristics": [],
+      "geometry": {
+        "builder": "CYLINDER",
+        "plane": "TOP",
+        "size_mm": {
+          "w": 60,
+          "h": 60,
+          "d": 60
+        },
+        "center_mm": {
+          "x": 0,
+          "y": 620,
+          "z": 0
+        },
+        "outer_profile": null,
+        "inner_profile": null,
+        "corner_radius_mm": null,
+        "repeat": {
+          "pattern": "CIRCULAR",
+          "count": 4,
+          "radius_mm": 150,
+          "spacing_mm": null,
+          "start_angle_deg": 45
+        },
+        "loft_sections": null,
+        "rotation_deg": null,
+        "airfoil": null
+      },
+      "dimensions": [],
+      "features": [],
+      "material_id": "mat_dark_metal",
+      "confidence": 0.85
+    },
+    {
+      "part_id": "quick_release_fasteners",
+      "parent_part_id": "arm_hinge_joints",
+      "name": "quick_release_fasteners",
+      "display_name_ko": "퀵릴리즈 클램프",
+      "semantic_role": "FASTENER",
+      "visibility": "VISIBLE",
+      "representation_strategy": "PRIMITIVE",
+      "representation_reason": "접이식 암 고정용",
+      "editable": true,
+      "locked_characteristics": [],
+      "geometry": {
+        "builder": "CYLINDER",
+        "plane": "TOP",
+        "size_mm": {
+          "w": 30,
+          "h": 20,
+          "d": 30
+        },
+        "center_mm": {
+          "x": 0,
+          "y": 600,
+          "z": 0
+        },
+        "outer_profile": null,
+        "inner_profile": null,
+        "corner_radius_mm": null,
+        "repeat": {
+          "pattern": "CIRCULAR",
+          "count": 4,
+          "radius_mm": 160,
+          "spacing_mm": null,
+          "start_angle_deg": 45
+        },
+        "loft_sections": null,
+        "rotation_deg": null,
+        "airfoil": null
+      },
+      "dimensions": [],
+      "features": [],
+      "material_id": "mat_dark_metal",
+      "confidence": 0.85
+    },
+    {
+      "part_id": "arm_cable_covers",
+      "parent_part_id": "carbon_arms",
+      "name": "arm_cable_covers",
+      "display_name_ko": "암 배선 커버",
+      "semantic_role": "COVER",
+      "visibility": "VISIBLE",
+      "representation_strategy": "PRIMITIVE",
+      "representation_reason": "암 일부를 덮는 튜브",
+      "editable": true,
+      "locked_characteristics": [],
+      "geometry": {
+        "builder": "CYLINDER",
+        "plane": "FRONT",
+        "size_mm": {
+          "w": 50,
+          "h": 50,
+          "d": 80
+        },
+        "center_mm": {
+          "x": 0,
+          "y": 620,
+          "z": 0
+        },
+        "outer_profile": null,
+        "inner_profile": null,
+        "corner_radius_mm": null,
+        "repeat": {
+          "pattern": "CIRCULAR",
+          "count": 4,
+          "radius_mm": 200,
+          "spacing_mm": null,
+          "start_angle_deg": 45
+        },
+        "loft_sections": null,
+        "rotation_deg": null,
+        "airfoil": null
+      },
+      "dimensions": [],
+      "features": [],
+      "material_id": "mat_black_plastic",
+      "confidence": 0.9
+    },
+    {
+      "part_id": "motor_pods_top",
+      "parent_part_id": "carbon_arms",
+      "name": "motor_pods_top",
+      "display_name_ko": "상단 모터 포드",
+      "semantic_role": "MECHANISM",
+      "visibility": "VISIBLE",
+      "representation_strategy": "PRIMITIVE",
+      "representation_reason": "표준 모터 원통형 하우징",
+      "editable": true,
+      "locked_characteristics": [],
+      "geometry": {
+        "builder": "CYLINDER",
+        "plane": "TOP",
+        "size_mm": {
+          "w": 80,
+          "h": 40,
+          "d": 80
+        },
+        "center_mm": {
+          "x": 0,
+          "y": 640,
+          "z": 0
+        },
+        "outer_profile": null,
+        "inner_profile": null,
+        "corner_radius_mm": null,
+        "repeat": {
+          "pattern": "CIRCULAR",
+          "count": 4,
+          "radius_mm": 800,
+          "spacing_mm": null,
+          "start_angle_deg": 45
+        },
+        "loft_sections": null,
+        "rotation_deg": null,
+        "airfoil": null
+      },
+      "dimensions": [],
+      "features": [],
+      "material_id": "mat_black_plastic",
+      "confidence": 0.98
+    },
+    {
+      "part_id": "motor_pods_bottom",
+      "parent_part_id": "carbon_arms",
+      "name": "motor_pods_bottom",
+      "display_name_ko": "하단 모터 포드",
+      "semantic_role": "MECHANISM",
+      "visibility": "VISIBLE",
+      "representation_strategy": "PRIMITIVE",
+      "representation_reason": "표준 모터 원통형 하우징 (동축)",
+      "editable": true,
+      "locked_characteristics": [],
+      "geometry": {
+        "builder": "CYLINDER",
+        "plane": "TOP",
+        "size_mm": {
+          "w": 80,
+          "h": 40,
+          "d": 80
+        },
+        "center_mm": {
+          "x": 0,
+          "y": 600,
+          "z": 0
+        },
+        "outer_profile": null,
+        "inner_profile": null,
+        "corner_radius_mm": null,
+        "repeat": {
+          "pattern": "CIRCULAR",
+          "count": 4,
+          "radius_mm": 800,
+          "spacing_mm": null,
+          "start_angle_deg": 45
+        },
+        "loft_sections": null,
+        "rotation_deg": null,
+        "airfoil": null
+      },
+      "dimensions": [],
+      "features": [],
+      "material_id": "mat_black_plastic",
+      "confidence": 0.98
+    },
+    {
+      "part_id": "2_blade_rotors_top",
+      "parent_part_id": "motor_pods_top",
+      "name": "2_blade_rotors_top",
+      "display_name_ko": "상단 2엽 프로펠러",
+      "semantic_role": "MECHANISM",
+      "visibility": "VISIBLE",
+      "representation_strategy": "PRIMITIVE",
+      "representation_reason": "컴파일러 엽수 해석용 단순 원통",
+      "editable": true,
+      "locked_characteristics": [
+        "rotor_diameter"
+      ],
+      "geometry": {
+        "builder": "CYLINDER",
+        "plane": "TOP",
+        "size_mm": {
+          "w": 750,
+          "h": 32,
+          "d": 750
+        },
+        "center_mm": {
+          "x": 0,
+          "y": 670,
+          "z": 0
+        },
+        "outer_profile": null,
+        "inner_profile": null,
+        "corner_radius_mm": null,
+        "repeat": {
+          "pattern": "CIRCULAR",
+          "count": 4,
+          "radius_mm": 800,
+          "spacing_mm": null,
+          "start_angle_deg": 45
+        },
+        "loft_sections": null,
+        "rotation_deg": null,
+        "airfoil": null
+      },
+      "dimensions": [
+        {
+          "name": "rotor_diameter",
+          "value": 750,
+          "unit": "mm",
+          "precision": "APPROXIMATE",
+          "provenance": "COMPUTED",
+          "confidence": 0.9,
+          "requires_confirmation": false
+        }
+      ],
+      "features": [],
+      "material_id": "mat_carbon_fiber",
+      "confidence": 0.99
+    },
+    {
+      "part_id": "2_blade_rotors_bottom",
+      "parent_part_id": "motor_pods_bottom",
+      "name": "2_blade_rotors_bottom",
+      "display_name_ko": "하단 2엽 프로펠러",
+      "semantic_role": "MECHANISM",
+      "visibility": "VISIBLE",
+      "representation_strategy": "PRIMITIVE",
+      "representation_reason": "컴파일러 엽수 해석용 단순 원통",
+      "editable": true,
+      "locked_characteristics": [
+        "rotor_diameter"
+      ],
+      "geometry": {
+        "builder": "CYLINDER",
+        "plane": "TOP",
+        "size_mm": {
+          "w": 750,
+          "h": 33,
+          "d": 750
+        },
+        "center_mm": {
+          "x": 0,
+          "y": 570,
+          "z": 0
+        },
+        "outer_profile": null,
+        "inner_profile": null,
+        "corner_radius_mm": null,
+        "repeat": {
+          "pattern": "CIRCULAR",
+          "count": 4,
+          "radius_mm": 800,
+          "spacing_mm": null,
+          "start_angle_deg": 45
+        },
+        "loft_sections": null,
+        "rotation_deg": null,
+        "airfoil": null
+      },
+      "dimensions": [],
+      "features": [],
+      "material_id": "mat_carbon_fiber",
+      "confidence": 0.99
+    },
+    {
+      "part_id": "landing_gear_frames",
+      "parent_part_id": "lower_frame_plate",
+      "name": "landing_gear_frames",
+      "display_name_ko": "랜딩기어 측면 프레임",
+      "semantic_role": "FRAME",
+      "visibility": "VISIBLE",
+      "representation_strategy": "PROFILE_EXTRUDE",
+      "representation_reason": "A자 형태의 다리 구조",
+      "editable": true,
+      "locked_characteristics": [],
+      "geometry": {
+        "builder": "LOFT",
+        "plane": "SIDE",
+        "size_mm": {
+          "w": 36,
+          "h": 453,
+          "d": 568
+        },
+        "center_mm": {
+          "x": 0,
+          "y": 300,
+          "z": 0
+        },
+        "outer_profile": [
+          {
+            "type": "LINE",
+            "start": [
+              120,
+              300
+            ],
+            "end": [
+              250,
+              -260
+            ],
+            "radius": null,
+            "sweep": "NONE",
+            "control1": null,
+            "control2": null
+          },
+          {
+            "type": "ARC",
+            "start": [
+              250,
+              -260
+            ],
+            "end": [
+              230,
+              -285
+            ],
+            "radius": 30,
+            "sweep": "CW",
+            "control1": null,
+            "control2": null
+          },
+          {
+            "type": "LINE",
+            "start": [
+              230,
+              -285
+            ],
+            "end": [
+              -230,
+              -285
+            ],
+            "radius": null,
+            "sweep": "NONE",
+            "control1": null,
+            "control2": null
+          },
+          {
+            "type": "ARC",
+            "start": [
+              -230,
+              -285
+            ],
+            "end": [
+              -250,
+              -260
+            ],
+            "radius": 30,
+            "sweep": "CW",
+            "control1": null,
+            "control2": null
+          },
+          {
+            "type": "LINE",
+            "start": [
+              -250,
+              -260
+            ],
+            "end": [
+              -120,
+              300
+            ],
+            "radius": null,
+            "sweep": "NONE",
+            "control1": null,
+            "control2": null
+          },
+          {
+            "type": "LINE",
+            "start": [
+              -120,
+              300
+            ],
+            "end": [
+              120,
+              300
+            ],
+            "radius": null,
+            "sweep": "NONE",
+            "control1": null,
+            "control2": null
+          }
+        ],
+        "inner_profile": [
+          {
+            "type": "LINE",
+            "start": [
+              90,
+              270
+            ],
+            "end": [
+              210,
+              -250
+            ],
+            "radius": null,
+            "sweep": "NONE",
+            "control1": null,
+            "control2": null
+          },
+          {
+            "type": "ARC",
+            "start": [
+              210,
+              -250
+            ],
+            "end": [
+              190,
+              -265
+            ],
+            "radius": 20,
+            "sweep": "CW",
+            "control1": null,
+            "control2": null
+          },
+          {
+            "type": "LINE",
+            "start": [
+              190,
+              -265
+            ],
+            "end": [
+              -190,
+              -265
+            ],
+            "radius": null,
+            "sweep": "NONE",
+            "control1": null,
+            "control2": null
+          },
+          {
+            "type": "ARC",
+            "start": [
+              -190,
+              -265
+            ],
+            "end": [
+              -210,
+              -250
+            ],
+            "radius": 20,
+            "sweep": "CW",
+            "control1": null,
+            "control2": null
+          },
+          {
+            "type": "LINE",
+            "start": [
+              -210,
+              -250
+            ],
+            "end": [
+              -90,
+              270
+            ],
+            "radius": null,
+            "sweep": "NONE",
+            "control1": null,
+            "control2": null
+          },
+          {
+            "type": "LINE",
+            "start": [
+              -90,
+              270
+            ],
+            "end": [
+              90,
+              270
+            ],
+            "radius": null,
+            "sweep": "NONE",
+            "control1": null,
+            "control2": null
+          }
+        ],
+        "corner_radius_mm": null,
+        "repeat": {
+          "pattern": "MIRROR_PAIR",
+          "count": 2,
+          "radius_mm": null,
+          "spacing_mm": 500,
+          "start_angle_deg": null
+        },
+        "loft_sections": [
+          {
+            "at_pct": 6,
+            "w_mm": 453,
+            "h_mm": 568,
+            "fill": 0.55
+          },
+          {
+            "at_pct": 19,
+            "w_mm": 450,
+            "h_mm": 519,
+            "fill": 0.62
+          },
+          {
+            "at_pct": 31,
+            "w_mm": 444,
+            "h_mm": 417,
+            "fill": 0.75
+          },
+          {
+            "at_pct": 44,
+            "w_mm": 437,
+            "h_mm": 357,
+            "fill": 0.8
+          },
+          {
+            "at_pct": 56,
+            "w_mm": 429,
+            "h_mm": 344,
+            "fill": 0.75
+          },
+          {
+            "at_pct": 69,
+            "w_mm": 421,
+            "h_mm": 335,
+            "fill": 0.72
+          },
+          {
+            "at_pct": 81,
+            "w_mm": 412,
+            "h_mm": 332,
+            "fill": 0.7
+          },
+          {
+            "at_pct": 94,
+            "w_mm": 403,
+            "h_mm": 331,
+            "fill": 0.69
+          }
+        ],
+        "rotation_deg": null,
+        "airfoil": null
+      },
+      "dimensions": [],
+      "features": [],
+      "material_id": "mat_carbon_fiber",
+      "confidence": 0.95
+    },
+    {
+      "part_id": "landing_gear_skids",
+      "parent_part_id": "landing_gear_frames",
+      "name": "landing_gear_skids",
+      "display_name_ko": "하부 착륙 스키드",
+      "semantic_role": "FRAME",
+      "visibility": "VISIBLE",
+      "representation_strategy": "PRIMITIVE",
+      "representation_reason": "바닥에 닿는 긴 튜브",
+      "editable": true,
+      "locked_characteristics": [],
+      "geometry": {
+        "builder": "CYLINDER",
+        "plane": "FRONT",
+        "size_mm": {
+          "w": 45,
+          "h": 31,
+          "d": 798
+        },
+        "center_mm": {
+          "x": 0,
+          "y": 15,
+          "z": 0
+        },
+        "outer_profile": null,
+        "inner_profile": null,
+        "corner_radius_mm": null,
+        "repeat": {
+          "pattern": "MIRROR_PAIR",
+          "count": 2,
+          "radius_mm": null,
+          "spacing_mm": 500,
+          "start_angle_deg": null
+        },
+        "loft_sections": null,
+        "rotation_deg": null,
+        "airfoil": null
+      },
+      "dimensions": [],
+      "features": [],
+      "material_id": "mat_carbon_fiber",
+      "confidence": 0.95
+    },
+    {
+      "part_id": "cable_reel_payload",
+      "parent_part_id": "lower_frame_plate",
+      "name": "cable_reel_payload",
+      "display_name_ko": "케이블 릴 페이로드",
+      "semantic_role": "MECHANISM",
+      "visibility": "VISIBLE",
+      "representation_strategy": "PRIMITIVE",
+      "representation_reason": "하단 현수형 드럼 형태",
+      "editable": true,
+      "locked_characteristics": [],
+      "geometry": {
+        "builder": "LOFT",
+        "plane": "SIDE",
+        "size_mm": {
+          "w": 284,
+          "h": 295,
+          "d": 340
+        },
+        "center_mm": {
+          "x": 0,
+          "y": 270,
+          "z": 0
+        },
+        "outer_profile": null,
+        "inner_profile": null,
+        "corner_radius_mm": null,
+        "repeat": null,
+        "loft_sections": [
+          {
+            "at_pct": 6,
+            "w_mm": 246,
+            "h_mm": 295,
+            "fill": 0.86
+          },
+          {
+            "at_pct": 19,
+            "w_mm": 267,
+            "h_mm": 287,
+            "fill": 0.88
+          },
+          {
+            "at_pct": 31,
+            "w_mm": 282,
+            "h_mm": 283,
+            "fill": 0.9
+          },
+          {
+            "at_pct": 44,
+            "w_mm": 284,
+            "h_mm": 283,
+            "fill": 0.9
+          },
+          {
+            "at_pct": 56,
+            "w_mm": 284,
+            "h_mm": 283,
+            "fill": 0.9
+          },
+          {
+            "at_pct": 69,
+            "w_mm": 282,
+            "h_mm": 283,
+            "fill": 0.9
+          },
+          {
+            "at_pct": 81,
+            "w_mm": 267,
+            "h_mm": 287,
+            "fill": 0.88
+          },
+          {
+            "at_pct": 94,
+            "w_mm": 246,
+            "h_mm": 295,
+            "fill": 0.86
+          }
+        ],
+        "rotation_deg": null,
+        "airfoil": null
+      },
+      "dimensions": [],
+      "features": [],
+      "material_id": "mat_black_plastic",
+      "confidence": 0.95
+    },
+    {
+      "part_id": "front_boom_tube",
+      "parent_part_id": "lower_frame_plate",
+      "name": "front_boom_tube",
+      "display_name_ko": "전방 돌출 튜브",
+      "semantic_role": "MECHANISM",
+      "visibility": "VISIBLE",
+      "representation_strategy": "PRIMITIVE",
+      "representation_reason": "전방 노즐용 직선 관",
+      "editable": true,
+      "locked_characteristics": [],
+      "geometry": {
+        "builder": "LOFT",
+        "plane": "FRONT",
+        "size_mm": {
+          "w": 32,
+          "h": 24,
+          "d": 300
+        },
+        "center_mm": {
+          "x": 0,
+          "y": 500,
+          "z": 183
+        },
+        "outer_profile": null,
+        "inner_profile": null,
+        "corner_radius_mm": null,
+        "repeat": null,
+        "loft_sections": [
+          {
+            "at_pct": 6,
+            "w_mm": 32,
+            "h_mm": 22,
+            "fill": 0.87
+          },
+          {
+            "at_pct": 19,
+            "w_mm": 32,
+            "h_mm": 24,
+            "fill": 0.83
+          },
+          {
+            "at_pct": 31,
+            "w_mm": 32,
+            "h_mm": 21,
+            "fill": 0.72
+          }
+        ],
+        "rotation_deg": null,
+        "airfoil": null
+      },
+      "dimensions": [],
+      "features": [],
+      "material_id": "mat_dark_metal",
+      "confidence": 0.95
+    },
+    {
+      "part_id": "comm_antenna",
+      "parent_part_id": "lower_frame_plate",
+      "name": "comm_antenna",
+      "display_name_ko": "통신 안테나",
+      "semantic_role": "OTHER",
+      "visibility": "VISIBLE",
+      "representation_strategy": "PRIMITIVE",
+      "representation_reason": "직선 봉형 안테나",
+      "editable": true,
+      "locked_characteristics": [],
+      "geometry": {
+        "builder": "CYLINDER",
+        "plane": "TOP",
+        "size_mm": {
+          "w": 10,
+          "h": 180,
+          "d": 10
+        },
+        "center_mm": {
+          "x": -150,
+          "y": 550,
+          "z": 200
+        },
+        "outer_profile": null,
+        "inner_profile": null,
+        "corner_radius_mm": null,
+        "repeat": null,
+        "loft_sections": null,
+        "rotation_deg": {
+          "x": 45,
+          "y": 0,
+          "z": 45
+        },
+        "airfoil": null
+      },
+      "dimensions": [],
+      "features": [],
+      "material_id": "mat_black_plastic",
+      "confidence": 0.9
+    },
+    {
+      "part_id": "fpv_front_camera",
+      "parent_part_id": "central_body_canopy",
+      "name": "fpv_front_camera",
+      "display_name_ko": "FPV·전방 카메라",
+      "semantic_role": "MECHANISM",
+      "visibility": "VISIBLE",
+      "representation_strategy": "PRIMITIVE",
+      "representation_reason": "전면부 렌즈 박스",
+      "editable": true,
+      "locked_characteristics": [],
+      "geometry": {
+        "builder": "BOX",
+        "plane": "FRONT",
+        "size_mm": {
+          "w": 34,
+          "h": 29,
+          "d": 27
+        },
+        "center_mm": {
+          "x": 0,
+          "y": 688,
+          "z": 172
+        },
+        "outer_profile": null,
+        "inner_profile": null,
+        "corner_radius_mm": 5,
+        "repeat": null,
+        "loft_sections": null,
+        "rotation_deg": null,
+        "airfoil": null
+      },
+      "dimensions": [],
+      "features": [],
+      "material_id": "mat_black_plastic",
+      "confidence": 0.9
+    },
+    {
+      "part_id": "flight_controller_stack",
+      "parent_part_id": "lower_frame_plate",
+      "name": "flight_controller_stack",
+      "display_name_ko": "비행제어 스택",
+      "semantic_role": "MECHANISM",
+      "visibility": "OCCLUDED",
+      "representation_strategy": "PRIMITIVE",
+      "representation_reason": "내부 제어 보드 적층 구조",
+      "editable": true,
+      "locked_characteristics": [],
+      "geometry": {
+        "builder": "BOX",
+        "plane": "TOP",
+        "size_mm": {
+          "w": 40,
+          "h": 30,
+          "d": 40
+        },
+        "center_mm": {
+          "x": 0,
+          "y": 630,
+          "z": 0
+        },
+        "outer_profile": null,
+        "inner_profile": null,
+        "corner_radius_mm": null,
+        "repeat": null,
+        "loft_sections": null,
+        "rotation_deg": null,
+        "airfoil": null
+      },
+      "dimensions": [],
+      "features": [],
+      "material_id": "mat_black_plastic",
+      "confidence": 0.95
+    },
+    {
+      "part_id": "esc_board",
+      "parent_part_id": "lower_frame_plate",
+      "name": "esc_board",
+      "display_name_ko": "ESC 통합 보드",
+      "semantic_role": "MECHANISM",
+      "visibility": "OCCLUDED",
+      "representation_strategy": "PRIMITIVE",
+      "representation_reason": "내부 전원 분배 평판형 기판",
+      "editable": true,
+      "locked_characteristics": [],
+      "geometry": {
+        "builder": "BOX",
+        "plane": "TOP",
+        "size_mm": {
+          "w": 80,
+          "h": 10,
+          "d": 80
+        },
+        "center_mm": {
+          "x": 0,
+          "y": 605,
+          "z": 0
+        },
+        "outer_profile": null,
+        "inner_profile": null,
+        "corner_radius_mm": null,
+        "repeat": null,
+        "loft_sections": null,
+        "rotation_deg": null,
+        "airfoil": null
+      },
+      "dimensions": [],
+      "features": [],
+      "material_id": "mat_black_plastic",
+      "confidence": 0.95
+    },
+    {
+      "part_id": "internal_battery",
+      "parent_part_id": "central_body_canopy",
+      "name": "internal_battery",
+      "display_name_ko": "메인 배터리",
+      "semantic_role": "OTHER",
+      "visibility": "OCCLUDED",
+      "representation_strategy": "PRIMITIVE",
+      "representation_reason": "캐노피 내부 하단 배치",
+      "editable": true,
+      "locked_characteristics": [],
+      "geometry": {
+        "builder": "BOX",
+        "plane": "FRONT",
+        "size_mm": {
+          "w": 150,
+          "h": 80,
+          "d": 200
+        },
+        "center_mm": {
+          "x": 0,
+          "y": 650,
+          "z": 0
+        },
+        "outer_profile": null,
+        "inner_profile": null,
+        "corner_radius_mm": null,
+        "repeat": null,
+        "loft_sections": null,
+        "rotation_deg": null,
+        "airfoil": null
+      },
+      "dimensions": [],
+      "features": [],
+      "material_id": "mat_black_plastic",
+      "confidence": 0.85
+    }
+  ],
+  "materials": [
+    {
+      "material_id": "mat_canopy_white",
+      "material_class": "PLASTIC",
+      "material_subtype": "ABS",
+      "finish": "GLOSSY",
+      "base_color_hex": "#FFFFFF",
+      "metalness": 0,
+      "roughness": 0.2,
+      "provenance": "IMAGE_OBSERVED",
+      "confidence": 0.95,
+      "requires_confirmation": false
+    },
+    {
+      "material_id": "mat_panel_orange",
+      "material_class": "PLASTIC",
+      "material_subtype": "PC",
+      "finish": "MATTE",
+      "base_color_hex": "#FF7700",
+      "metalness": 0,
+      "roughness": 0.4,
+      "provenance": "IMAGE_OBSERVED",
+      "confidence": 0.95,
+      "requires_confirmation": false
+    },
+    {
+      "material_id": "mat_carbon_fiber",
+      "material_class": "COMPOSITE",
+      "material_subtype": "CFRP",
+      "finish": "MATTE",
+      "base_color_hex": "#222222",
+      "metalness": 0.1,
+      "roughness": 0.6,
+      "provenance": "IMAGE_OBSERVED",
+      "confidence": 0.98,
+      "requires_confirmation": false
+    },
+    {
+      "material_id": "mat_black_plastic",
+      "material_class": "PLASTIC",
+      "material_subtype": "NYLON",
+      "finish": "MATTE",
+      "base_color_hex": "#111111",
+      "metalness": 0,
+      "roughness": 0.5,
+      "provenance": "IMAGE_OBSERVED",
+      "confidence": 0.9,
+      "requires_confirmation": false
+    },
+    {
+      "material_id": "mat_dark_metal",
+      "material_class": "METAL",
+      "material_subtype": "ALUMINUM",
+      "finish": "ANODIZED",
+      "base_color_hex": "#333333",
+      "metalness": 0.8,
+      "roughness": 0.4,
+      "provenance": "IMAGE_INFERRED",
+      "confidence": 0.8,
+      "requires_confirmation": false
+    }
+  ],
+  "parameters": [
+    {
+      "id": "airframe.wheelbase",
+      "label_ko": "모터 축간거리",
+      "value": 1600,
+      "unit": "mm",
+      "min": 1400,
+      "max": 1800,
+      "default_policy": "USER_REQUIRED",
+      "provenance": "USER_PROVIDED",
+      "confidence": 1,
+      "affects": [
+        "carbon_arms",
+        "motor_pods_top",
+        "motor_pods_bottom",
+        "2_blade_rotors_top",
+        "2_blade_rotors_bottom"
+      ]
+    },
+    {
+      "id": "propulsion.rotor_diameter",
+      "label_ko": "로터 직경",
+      "value": 750,
+      "unit": "mm",
+      "min": 600,
+      "max": 900,
+      "default_policy": "DERIVED",
+      "provenance": "COMPUTED",
+      "confidence": 0.9,
+      "affects": [
+        "2_blade_rotors_top",
+        "2_blade_rotors_bottom"
+      ]
+    },
+    {
+      "id": "airframe.arm_length",
+      "label_ko": "암 길이",
+      "value": 650,
+      "unit": "mm",
+      "min": 500,
+      "max": 800,
+      "default_policy": "DERIVED",
+      "provenance": "COMPUTED",
+      "confidence": 0.95,
+      "affects": [
+        "carbon_arms"
+      ]
+    },
+    {
+      "id": "airframe.body_width",
+      "label_ko": "바디 폭",
+      "value": 360,
+      "unit": "mm",
+      "min": 250,
+      "max": 500,
+      "default_policy": "INFER_FROM_IMAGE",
+      "provenance": "IMAGE_INFERRED",
+      "confidence": 0.85,
+      "affects": [
+        "central_body_canopy",
+        "lower_frame_plate",
+        "upper_frame_plate",
+        "side_orange_panels"
+      ]
+    },
+    {
+      "id": "airframe.body_height",
+      "label_ko": "바디 높이",
+      "value": 195,
+      "unit": "mm",
+      "min": 150,
+      "max": 300,
+      "default_policy": "INFER_FROM_IMAGE",
+      "provenance": "IMAGE_INFERRED",
+      "confidence": 0.85,
+      "affects": [
+        "central_body_canopy",
+        "canopy_lid"
+      ]
+    },
+    {
+      "id": "airframe.gear_height",
+      "label_ko": "랜딩기어 높이",
+      "value": 600,
+      "unit": "mm",
+      "min": 400,
+      "max": 800,
+      "default_policy": "INFER_FROM_IMAGE",
+      "provenance": "IMAGE_INFERRED",
+      "confidence": 0.9,
+      "affects": [
+        "landing_gear_frames",
+        "landing_gear_skids"
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "relationship_id": "rel_arms_to_plate",
+      "source_part_id": "carbon_arms",
+      "target_part_id": "lower_frame_plate",
+      "relationship_type": "FASTENED",
+      "axis_origin_mm": null,
+      "axis_direction": null,
+      "provenance": "IMAGE_INFERRED",
+      "confidence": 0.95,
+      "requires_confirmation": false
+    },
+    {
+      "relationship_id": "rel_gear_to_plate",
+      "source_part_id": "landing_gear_frames",
+      "target_part_id": "lower_frame_plate",
+      "relationship_type": "FIXED",
+      "axis_origin_mm": null,
+      "axis_direction": null,
+      "provenance": "IMAGE_INFERRED",
+      "confidence": 0.95,
+      "requires_confirmation": false
+    },
+    {
+      "relationship_id": "rel_payload_to_plate",
+      "source_part_id": "cable_reel_payload",
+      "target_part_id": "lower_frame_plate",
+      "relationship_type": "FASTENED",
+      "axis_origin_mm": null,
+      "axis_direction": null,
+      "provenance": "IMAGE_INFERRED",
+      "confidence": 0.9,
+      "requires_confirmation": false
+    },
+    {
+      "relationship_id": "rel_rotor_top_spin",
+      "source_part_id": "2_blade_rotors_top",
+      "target_part_id": "motor_pods_top",
+      "relationship_type": "REVOLUTE_JOINT",
+      "axis_origin_mm": [
+        0,
+        670,
+        0
+      ],
+      "axis_direction": [
+        0,
+        1,
+        0
+      ],
+      "provenance": "CATEGORY_DEFAULT",
+      "confidence": 1,
+      "requires_confirmation": false
+    }
+  ],
+  "state_variants": [
+    {
+      "id": "GROUND",
+      "description_ko": "착륙 및 대기 상태"
+    },
+    {
+      "id": "FLIGHT",
+      "description_ko": "호버링 및 비행 상태 (페이로드 장착)"
+    },
+    {
+      "id": "PAYLOAD_DEPLOYED",
+      "description_ko": "호스 릴 전개 및 방수 작업 상태"
+    }
+  ],
+  "assurance": {
+    "geometry_status": "IMAGE_ESTIMATED",
+    "engineering_status": "PRELIMINARY",
+    "airworthiness_claim": false
+  },
+  "uncertainties": [
+    {
+      "field_path": "size_performance.nominal_endurance.value",
+      "severity": "INFO",
+      "reason": "페이로드 운용 시 정확한 배터리 소모율 추정 불가",
+      "resolution_action": "제조사 사양서 또는 시뮬레이션 기반 사용자 입력 필요"
+    },
+    {
+      "field_path": "size_performance.mtow.value",
+      "severity": "INFO",
+      "reason": "소화액 탑재량 및 호스 무게에 따른 가변적 중량",
+      "resolution_action": "임무 프로필 확정 시 MTOW 보정"
+    }
+  ],
+  "review": {
+    "human_review_required": false,
+    "blocking_issue_count": 0,
+    "review_reasons": []
+  },
+  "external_classifications": [
+    {
+      "scheme": "KR_UAS_PILOT_CLASS",
+      "value": "CLASS_1",
+      "derivation": "COMPUTED_FROM_MTOW"
+    }
+  ]
+}

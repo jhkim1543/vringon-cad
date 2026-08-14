@@ -14,5 +14,21 @@
   "sar-vtol": {
     "file": "sar-vtol.glb",
     "bytes": 9269524
+  },
+  "cage-inspect": {
+    "file": "cage-inspect.glb",
+    "bytes": 15120152
+  },
+  "fpv-racer": {
+    "file": "fpv-racer.glb",
+    "bytes": 8223836
+  },
+  "fire-octo": {
+    "file": "fire-octo.glb",
+    "bytes": 12687772
+  },
+  "relay-hexa": {
+    "file": "relay-hexa.glb",
+    "bytes": 6834604
   }
 }

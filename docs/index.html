@@ -239,15 +239,15 @@ import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
-import { buildFromSpec } from "./js/spec-cad.js?v=8c817597";
-import { createDroneSim } from "./js/drone-sim.js?v=8c817597";
-import { applyParameter } from "./js/drone-params.js?v=8c817597";
-import { COMPONENT_CATALOG, CATALOG_GROUPS, fitTargets, applyComponent, addComponentAsPart } from "./js/drone-catalog.js?v=8c817597";
-import { PRINTERS, MATERIALS as PRINT_MATERIALS, estimatePrint } from "./js/print-estimate.js?v=8c817597";
+import { buildFromSpec } from "./js/spec-cad.js?v=396db0bf";
+import { createDroneSim } from "./js/drone-sim.js?v=396db0bf";
+import { applyParameter } from "./js/drone-params.js?v=396db0bf";
+import { COMPONENT_CATALOG, CATALOG_GROUPS, fitTargets, applyComponent, addComponentAsPart } from "./js/drone-catalog.js?v=396db0bf";
+import { PRINTERS, MATERIALS as PRINT_MATERIALS, estimatePrint } from "./js/print-estimate.js?v=396db0bf";
 
 /* 배포 버전 — tools/stamp-version.mjs가 다시 씁니다. 사양서·메시 URL에 붙어
    CDN 캐시가 옛 데이터를 주는 것을 막습니다. */
-const BUILD = "8c817597";
+const BUILD = "396db0bf";
 
 /* Each sample carries the prompt it was actually generated from, so what the
    composer shows is the real input and not a caption written afterwards.

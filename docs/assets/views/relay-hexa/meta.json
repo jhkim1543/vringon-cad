@@ -1,0 +1,98 @@
+{
+  "id": "relay-hexa",
+  "source": "photo",
+  "generator": "1차 이미지 모델",
+  "generated": "2026-08-14T00:45:05.951Z",
+  "photo": "docs/assets/samples/drones/relay-hexa.png",
+  "mesh": null,
+  "attempt": 2,
+  "layout": "1x4",
+  "mask_px": 1181,
+  "views": {
+    "front": {
+      "w": 752,
+      "h": 1112,
+      "area": 66266
+    },
+    "left": {
+      "w": 718,
+      "h": 1114,
+      "area": 92662
+    },
+    "rear": {
+      "w": 750,
+      "h": 1112,
+      "area": 66524
+    },
+    "right": {
+      "w": 717,
+      "h": 1114,
+      "area": 92962
+    }
+  },
+  "consistency": {
+    "height_spread": 0.0018,
+    "solidity": [
+      0.5884,
+      0.662,
+      0.5895,
+      0.6619
+    ],
+    "mirror_iou": {
+      "front_rear": 0.9017,
+      "left_right": 0.9843
+    },
+    "mirror_wrong_order": 0.4539,
+    "pair_width_error": {
+      "front_rear": 0.0027,
+      "left_right": 0.0014
+    },
+    "pair_area_error": {
+      "front_rear": 0.0039,
+      "left_right": 0.0032
+    },
+    "pass": true,
+    "fail": []
+  },
+  "rejected": [
+    {
+      "attempt": 1,
+      "generator": "1차 이미지 모델",
+      "layout": "1x4",
+      "reason": [
+        "뷰마다 기체 높이가 다릅니다 (644/1111/644/1112px, 편차 53%)"
+      ],
+      "consistency": {
+        "height_spread": 0.5332,
+        "solidity": [
+          0.6243,
+          0.6461,
+          0.6237,
+          0.6472
+        ],
+        "mirror_iou": {
+          "front_rear": 0.9722,
+          "left_right": 0.888
+        },
+        "mirror_wrong_order": 0.0945,
+        "pair_width_error": {
+          "front_rear": 0.0013,
+          "left_right": 0.0028
+        },
+        "pair_area_error": {
+          "front_rear": 0.0032,
+          "left_right": 0.0066
+        },
+        "pass": false,
+        "fail": [
+          "뷰마다 기체 높이가 다릅니다 (644/1111/644/1112px, 편차 53%)"
+        ]
+      }
+    }
+  ],
+  "mesh_cross_check": {
+    "yaw_deg": 90,
+    "iou_mean": 0.1832,
+    "chamfer_mean": 0.0666
+  }
+}

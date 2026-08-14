@@ -13,7 +13,7 @@
    every curve shares one scale instead of each part guessing its own.
    ========================================================================== */
 import * as THREE from "three";
-import { findRecipe, GRADE } from "./recipes.js?v=8c817597";
+import { findRecipe, GRADE } from "./recipes.js?v=396db0bf";
 
 const numv = (v, d = 0) => (Number.isFinite(Number(v)) ? Number(v) : d);
 

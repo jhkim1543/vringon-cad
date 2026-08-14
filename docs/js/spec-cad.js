@@ -9,7 +9,7 @@
    ========================================================================== */
 import * as THREE from "three";
 import { tessellate, revolveVolume, buildFromAnalysis, generateThreeCode,
-  airfoilDepth, maxChord } from "./spec-to-code.js?v=8c817597";
+  airfoilDepth, maxChord } from "./spec-to-code.js?v=396db0bf";
 
 const num = (v, d = 0) => (Number.isFinite(v) ? v : d);
 const dist = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1]);

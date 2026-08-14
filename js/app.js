@@ -171,6 +171,15 @@ window.__vringon = { renderer, scene, camera, controls,
     renderStepper();
   },
   qaStep: (n) => pipeRun(n),
+  /* Seed step 2's only hard input — the photograph — so the specification
+     stage and its live progress captions can be exercised without paying for
+     a 메시 클라우드 run first. Same reasoning as qaSpec one stage earlier. */
+  qaImage: (b64, prompt) => {
+    state.designImageB64 = b64;
+    state.pipeMesh = null;
+    pipe.active = true; pipe.prompt = prompt || ""; pipe.done = 1; pipe.running = 0; pipe.notes = [];
+    renderStepper();
+  },
   /* Save the current drone as a NEW library entry under a given name — the
      seeding path for shipping worked examples alongside the samples. */
   saveAs: (title) => {
@@ -988,6 +997,135 @@ function renderSteps(i, subtitle) {
   $("genBar").style.width = `${Math.min(1, (i + 1) / 4) * 100}%`;
 }
 
+/* --------------------------------------------------------- live progress
+   The specification stage is minutes long and is five model calls deep. One
+   caption that never changes reads as a hang, so the box carries the server's
+   own stage name, its clock, and the stages already behind it. Every string
+   below comes from a stage the server actually entered — nothing here is a
+   timer pretending to know what the machine is doing. */
+function fmtDur(ms) {
+  const s = Math.max(0, Math.round(ms / 1000));
+  return s < 60 ? `${s}초` : `${Math.floor(s / 60)}분 ${String(s % 60).padStart(2, "0")}초`;
+}
+
+/* The band of the bar each stage owns, and how long that stage typically runs.
+   The stage boundaries are facts — the server says which one it is in — and
+   `ms` is the median of five on-prem runs, used only to creep the bar inside a
+   band it has already honestly reached. The creep is asymptotic, so the bar
+   can never claim a stage the server has not actually entered. */
+const SPEC_STAGE_BAND = {
+  inventory: [0, 0.14, 11_500],
+  inventory_recheck: [0.14, 0.26, 10_000],
+  spec: [0.26, 0.72, 130_000],
+  validate: [0.72, 0.76, 500],
+  repair: [0.76, 0.93, 120_000],
+  finish: [0.93, 0.99, 500],
+};
+
+function specBarWidth(key, ms) {
+  const band = SPEC_STAGE_BAND[key];
+  if (!band) return 0.5;
+  const [from, to, typical] = band;
+  return from + (to - from) * (1 - Math.exp(-ms / typical));
+}
+
+/** Paint one progress snapshot from /api/spec-progress into the overlay.
+    `t0` is the browser's own start, so the total row counts the upload of a
+    multi-megabyte photograph that the server's clock never sees. */
+function paintSpecProgress(p, t0) {
+  if (!p || !p.ok) return;
+  const st = p.stage;
+  if (st) {
+    $("genSub").textContent = `${st.label} · ${fmtDur(st.ms)}`;
+    $("genBar").style.width = `${(specBarWidth(st.key, st.ms) * 100).toFixed(1)}%`;
+  }
+  /* Stages that took under a second are real but not news — the deterministic
+     validation pass would otherwise push the interesting lines off the box. */
+  const rows = (p.steps || []).filter((s) => s.ms >= 1000).map((s) =>
+    `<div class="gen-step done"><span class="dot"></span><span>${esc(s.label)}</span>`
+    + `<span class="t">${fmtDur(s.ms)}</span></div>`);
+  if (st) {
+    rows.push(`<div class="gen-step run"><span class="dot"></span><span>${esc(st.note || st.label)}</span>`
+      + `<span class="t">${fmtDur(st.ms)}</span></div>`);
+  }
+  rows.push(`<div class="gen-step"><span class="dot"></span><span>전체 경과</span>`
+    + `<span class="t">${fmtDur(t0 ? Date.now() - t0 : p.elapsedMs)}</span></div>`);
+  $("genSteps").innerHTML = rows.join("");
+}
+
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+/* Deadlines. The upload is a multi-megabyte photograph and has to complete or
+   fail quickly; the run behind it measured 232–434s over five samples and is
+   never carried on a held-open connection, so it is bounded instead by the
+   server's own five per-call deadlines (about seventeen minutes end to end)
+   plus slack. Two separate numbers, because a stalled upload and a slow
+   specification are different failures and the user is told which happened. */
+const SPEC_POST_TIMEOUT_MS = 120_000;
+const SPEC_RUN_CEILING_MS = 20 * 60_000;
+const SPEC_POLL_MS = 1000;
+/* A poll that fails is usually one dropped packet, not a dead server. Only a
+   run of consecutive failures means the connection is really gone. */
+const SPEC_POLL_FAIL_LIMIT = 20;
+
+/** Run the specification job while the overlay narrates the server's stages. */
+async function requestSpecJson(payload) {
+  const jobId = `spec-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+  const t0 = Date.now();
+
+  /* Hand the work over and let go of the connection. A socket held open for
+     six minutes with nothing flowing on it is at the mercy of every proxy
+     between here and the box; the job id is what survives that, and it is also
+     what lets the overlay say which of the five calls is running. */
+  let ack;
+  try {
+    ack = await fetch("/api/spec-json", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ...payload, jobId, async: true }),
+      signal: AbortSignal.timeout(SPEC_POST_TIMEOUT_MS),
+    }).then((x) => x.json());
+  } catch (e) {
+    throw new Error(e.name === "TimeoutError"
+      ? "요청을 서버에 보내지 못했습니다 (이미지 업로드 시간 초과). 네트워크를 확인하고 다시 시도해 주세요"
+      : `요청을 서버에 보내지 못했습니다 (${e.message})`);
+  }
+  // an older server without the job runner answers with the finished spec
+  if (!ack.accepted) return ack;
+
+  let fails = 0;
+  let last = null;
+  while (Date.now() - t0 < SPEC_RUN_CEILING_MS) {
+    await new Promise((r) => setTimeout(r, SPEC_POLL_MS));
+    let p = null;
+    try {
+      p = await fetch(`/api/spec-progress?id=${encodeURIComponent(jobId)}`,
+        { signal: AbortSignal.timeout(8000) }).then((r) => r.json());
+      fails = 0;
+    } catch {
+      if (++fails >= SPEC_POLL_FAIL_LIMIT) {
+        throw new Error(`서버와 연결이 끊겼습니다. 사양서 작성은 서버에서 계속되고 있을 수 있습니다 `
+          + `(작업 번호 ${jobId})`);
+      }
+      continue;
+    }
+    if (p.unknown) {
+      throw new Error("서버가 작업 기록을 잃었습니다 (재시작된 것으로 보입니다). 다시 시도해 주세요");
+    }
+    last = p;
+    if (!p.done) { paintSpecProgress(p, t0); continue; }
+    if (p.failed || !p.hasResult) {
+      const where = last?.steps?.length ? `${last.steps[last.steps.length - 1].label} 이후 ` : "";
+      throw new Error(`${where}사양서 작성이 실패했습니다: ${p.error || "원인 미상"}`);
+    }
+    const out = await fetch(`/api/spec-result?id=${encodeURIComponent(jobId)}`,
+      { signal: AbortSignal.timeout(60_000) }).then((r) => r.json());
+    return out;
+  }
+  const where = last?.stage ? `${last.stage.label}에서 ` : "";
+  throw new Error(`${where}${fmtDur(SPEC_RUN_CEILING_MS)}이 지나 기다리기를 멈췄습니다. `
+    + `사양서 작성이 평소(4~7분)보다 훨씬 오래 걸리고 있습니다 — 다시 시도해 주세요`);
+}
+
 /* honest scope notice: shown whenever the request fell outside (or beside)
    the supported product families, so a "car" never silently becomes a shell */
 function showCoverage() {
@@ -1191,7 +1329,11 @@ async function pipeStep2() {
   try {
     /* No category routing call: the user picked domain·mission·platform before
        generating, and those selections ARE the classification. */
-    renderSteps(1, `${droneSelection().label} 사양서를 설계 AI로 작성합니다 (1~3분)`);
+    /* The range is measured, not aspirational: five on-prem runs of the bundled
+       sample photographs landed at 232s, 266s, 292s, 420s and 434s. The caption
+       is replaced a second later by the server's own live stage anyway — it
+       only has to set the expectation before the first poll comes back. */
+    renderSteps(1, `${droneSelection().label} 사양서를 설계 AI로 작성합니다 (보통 4~7분)`);
     /* The bounding box alone tells the model nothing about layout. Four
        renders of the stage-1 mesh let it read boom positions, rotor stations
        and tail geometry off the thing it is specifying. */
@@ -1199,14 +1341,13 @@ async function pipeStep2() {
     if (state.pipeMesh) {
       try { views = captureViews(state.pipeMesh); } catch (e) { console.warn("view capture failed", e); }
     }
-    const s = await fetch("/api/spec-json", {
-      method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        prompt: pipe.prompt, imageB64: state.designImageB64,
-        drone: droneSelection(), meshInfo: meshInfoForSpec(), views,
-      }),
-    }).then((x) => x.json());
+    const s = await requestSpecJson({
+      prompt: pipe.prompt, imageB64: state.designImageB64,
+      drone: droneSelection(), meshInfo: meshInfoForSpec(), views,
+    });
     if (!s.ok || !s.spec) throw new Error(s.error || "사양서 생성 실패");
+    $("genTitle").textContent = "2단계 · 드론 설계 사양서";
+    renderSteps(2, "메시에서 파트 좌표를 측정하는 중");
 
     /* The specification writer cannot see how a section changes along a body,
        so it writes an extrusion and the fuselage comes out a plank. The stage-1
@@ -1240,10 +1381,23 @@ async function pipeStep2() {
     toast(`사양서를 작성했습니다 — 파트 ${(s.spec.parts || []).length}개`
       + (bad ? ` · 검증 경고 ${bad}건` : "") + ". 확인·수정 후 3단계로 진행하세요", true);
     return true;
+  } catch (e) {
+    /* Several minutes of waiting deserve more than a toast that clears in
+       three seconds. The box that narrated the run says what went wrong, and
+       the stage list stays up so it is clear how far the run actually got. */
+    await holdGenFailure("2단계 · 사양서 생성 실패", e.message);
+    throw e;
   } finally {
     state.busy = false;
     showGen(false);
   }
+}
+
+/** Leave the failure in the progress box long enough to be read. */
+async function holdGenFailure(title, msg, holdMs = 7000) {
+  $("genTitle").textContent = title;
+  $("genSub").textContent = String(msg || "알 수 없는 오류");
+  await new Promise((r) => setTimeout(r, holdMs));
 }
 
 /** Put a specification into the sheet and remember it. */

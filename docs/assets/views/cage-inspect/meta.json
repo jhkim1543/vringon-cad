@@ -1,0 +1,168 @@
+{
+  "id": "cage-inspect",
+  "source": "mesh",
+  "generator": "1단계 메시",
+  "generated": "2026-08-14T00:43:23.733Z",
+  "photo": null,
+  "mesh": "docs/assets/meshes/cage-inspect.glb",
+  "attempt": 1,
+  "layout": "512×512 래스터",
+  "mask_px": 512,
+  "views": {
+    "front": {
+      "w": 466,
+      "h": 462,
+      "area": 94174
+    },
+    "left": {
+      "w": 462,
+      "h": 462,
+      "area": 94546
+    },
+    "rear": {
+      "w": 466,
+      "h": 462,
+      "area": 94174
+    },
+    "right": {
+      "w": 462,
+      "h": 462,
+      "area": 94546
+    }
+  },
+  "consistency": {
+    "height_spread": 0,
+    "solidity": [
+      0.5522,
+      0.558,
+      0.5522,
+      0.558
+    ],
+    "mirror_iou": {
+      "front_rear": 1,
+      "left_right": 1
+    },
+    "mirror_wrong_order": 0.4528,
+    "pair_width_error": {
+      "front_rear": 0,
+      "left_right": 0
+    },
+    "pair_area_error": {
+      "front_rear": 0,
+      "left_right": 0
+    },
+    "pass": true,
+    "fail": []
+  },
+  "rejected": [
+    {
+      "attempt": 1,
+      "generator": "1차 이미지 모델",
+      "layout": "1x4",
+      "reason": [
+        "속이 빈 윤곽선으로 그려졌습니다 (채움 0.39)",
+        "마주 보는 두 뷰가 서로의 거울상이 아닙니다 (정면·후면 0.42, 좌·우 0.58)"
+      ],
+      "consistency": {
+        "height_spread": 0.0057,
+        "solidity": [
+          0.4266,
+          0.3991,
+          0.3923,
+          0.3874
+        ],
+        "mirror_iou": {
+          "front_rear": 0.4224,
+          "left_right": 0.5798
+        },
+        "mirror_wrong_order": 0.3848,
+        "pair_width_error": {
+          "front_rear": 0.0267,
+          "left_right": 0.0217
+        },
+        "pair_area_error": {
+          "front_rear": 0.109,
+          "left_right": 0.0015
+        },
+        "pass": false,
+        "fail": [
+          "속이 빈 윤곽선으로 그려졌습니다 (채움 0.39)",
+          "마주 보는 두 뷰가 서로의 거울상이 아닙니다 (정면·후면 0.42, 좌·우 0.58)"
+        ]
+      }
+    },
+    {
+      "attempt": 2,
+      "generator": "1차 이미지 모델",
+      "layout": "1x4",
+      "reason": [
+        "속이 빈 윤곽선으로 그려졌습니다 (채움 0.41)",
+        "마주 보는 두 뷰가 서로의 거울상이 아닙니다 (정면·후면 0.44, 좌·우 0.68)"
+      ],
+      "consistency": {
+        "height_spread": 0.0146,
+        "solidity": [
+          0.423,
+          0.4152,
+          0.4162,
+          0.4122
+        ],
+        "mirror_iou": {
+          "front_rear": 0.4383,
+          "left_right": 0.6818
+        },
+        "mirror_wrong_order": 0.3764,
+        "pair_width_error": {
+          "front_rear": 0.0217,
+          "left_right": 0.0082
+        },
+        "pair_area_error": {
+          "front_rear": 0.0394,
+          "left_right": 0.0051
+        },
+        "pass": false,
+        "fail": [
+          "속이 빈 윤곽선으로 그려졌습니다 (채움 0.41)",
+          "마주 보는 두 뷰가 서로의 거울상이 아닙니다 (정면·후면 0.44, 좌·우 0.68)"
+        ]
+      }
+    },
+    {
+      "attempt": 3,
+      "generator": "1차 이미지 모델",
+      "layout": "1x4",
+      "reason": [
+        "속이 빈 윤곽선으로 그려졌습니다 (채움 0.41)",
+        "마주 보는 두 뷰가 서로의 거울상이 아닙니다 (정면·후면 0.43, 좌·우 0.69)"
+      ],
+      "consistency": {
+        "height_spread": 0.0161,
+        "solidity": [
+          0.4203,
+          0.4167,
+          0.4193,
+          0.4131
+        ],
+        "mirror_iou": {
+          "front_rear": 0.4298,
+          "left_right": 0.6874
+        },
+        "mirror_wrong_order": 0.3759,
+        "pair_width_error": {
+          "front_rear": 0.0217,
+          "left_right": 0.0082
+        },
+        "pair_area_error": {
+          "front_rear": 0.0255,
+          "left_right": 0.0015
+        },
+        "pass": false,
+        "fail": [
+          "속이 빈 윤곽선으로 그려졌습니다 (채움 0.41)",
+          "마주 보는 두 뷰가 서로의 거울상이 아닙니다 (정면·후면 0.43, 좌·우 0.69)"
+        ]
+      }
+    }
+  ],
+  "photo_error": "3회 시도 모두 일관성 검사를 통과하지 못했습니다"
+}

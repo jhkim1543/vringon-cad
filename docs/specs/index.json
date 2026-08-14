@@ -46,5 +46,37 @@
     "name": "중앙 동체 포드",
     "recipe": "FIXED_WING",
     "parts": 12
+  },
+  {
+    "id": "cage-inspect",
+    "prompt": "밀폐공간 점검용 케이지 멀티로터, 구형 보호 케이지 지름 400mm, 내부 짐벌 카메라와 LED 조명",
+    "group": "실내점검",
+    "name": "구형 보호 케이지",
+    "recipe": "CAGED_MULTIROTOR",
+    "parts": 18
+  },
+  {
+    "id": "fpv-racer",
+    "prompt": "5인치 FPV 레이싱 쿼드, 대각 220mm, 카본 X 프레임, 전방 경사 카메라와 캐노피",
+    "group": "레저",
+    "name": "중앙 바디 (하부 메인 프레임)",
+    "recipe": "QUAD_X",
+    "parts": 14
+  },
+  {
+    "id": "fire-octo",
+    "prompt": "고층 방재용 X8 동축 옥토콥터, 휠베이스 1600mm, 전방 소화 노즐과 하부 호스 릴",
+    "group": "소방",
+    "name": "중앙 바디 캐노피 (하부 셸)",
+    "recipe": "OCTO_X8",
+    "parts": 22
+  },
+  {
+    "id": "relay-hexa",
+    "prompt": "계류형 통신 중계 헥사콥터, 휠베이스 900mm, 상부 안테나 마스트와 하부 계류 케이블 스풀",
+    "group": "통신",
+    "name": "캐노피·셸",
+    "recipe": "HEXA",
+    "parts": 18
   }
 ]

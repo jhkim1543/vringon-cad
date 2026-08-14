@@ -35,7 +35,32 @@ const CATALOG = [
     drone: { domain: "CIVIL_COMMERCIAL", mission: "DELIVERY", platform: "OCTO_X8" } },
   { id: "isr-wing", group: "방산", prompt: "방산 정찰용 고정익, 날개폭 1800mm, 하방 안정화 센서 터렛, 견고한 동체",
     drone: { domain: "DEFENSE", mission: "DEFENSE_ISR", platform: "FIXED_WING" } },
+
+  /* Four types the first six do not reach, chosen so that no two of them share
+     a domain, a mission or an airframe: a library where every sample is a
+     mid-size observation multirotor only ever proves the pipeline on the shape
+     it was tuned against. The caged rotor is the one airframe in the taxonomy
+     nothing had exercised; the racer is an order of magnitude smaller than
+     anything else here; the X8 is the first coaxial stack; the tethered relay
+     is the first aircraft whose payload is a mast and a cable rather than a
+     camera. */
+  { id: "cage-inspect", group: "실내점검", img: "cage-inspect.png",
+    prompt: "밀폐공간 점검용 케이지 멀티로터, 구형 보호 케이지 지름 400mm, 내부 짐벌 카메라와 LED 조명",
+    drone: { domain: "CIVIL_COMMERCIAL", mission: "CONFINED_SPACE_INSPECTION", platform: "CAGED_MULTIROTOR" } },
+  { id: "fpv-racer", group: "레저", img: "fpv-racer.png",
+    prompt: "5인치 FPV 레이싱 쿼드, 대각 220mm, 카본 X 프레임, 전방 경사 카메라와 캐노피",
+    drone: { domain: "RECREATIONAL", mission: "FPV_RACING", platform: "QUAD_X" } },
+  { id: "fire-octo", group: "소방", img: "fire-octo.png",
+    prompt: "고층 방재용 X8 동축 옥토콥터, 휠베이스 1600mm, 전방 소화 노즐과 하부 호스 릴",
+    drone: { domain: "PUBLIC_SAFETY", mission: "HEAVY_LIFT", platform: "OCTO_X8" } },
+  { id: "relay-hexa", group: "통신", img: "relay-hexa.png",
+    prompt: "계류형 통신 중계 헥사콥터, 휠베이스 900mm, 상부 안테나 마스트와 하부 계류 케이블 스풀",
+    drone: { domain: "DEFENSE", mission: "COMMUNICATION_RELAY", platform: "HEXA" } },
 ];
+
+/* The first four photographs were collected as JPEG, the four drawn by
+   tools/gen-drone-photos.mjs are PNG; the data URI has to say which. */
+const mimeOf = (name) => (name.toLowerCase().endsWith(".png") ? "image/png" : "image/jpeg");
 
 /* Node's fetch (undici) gives up waiting for response headers after 300
    seconds and reports it as a bare "fetch failed". A hybrid VTOL specification
@@ -104,8 +129,8 @@ for (const item of CATALOG) {
   try {
     let imageB64 = null;
     if (item.img) {
-      const jpg = await readFile(new URL(item.img, IMG));
-      imageB64 = `data:image/jpeg;base64,${jpg.toString("base64")}`;
+      const photo = await readFile(new URL(item.img, IMG));
+      imageB64 = `data:${mimeOf(item.img)};base64,${photo.toString("base64")}`;
     }
     const spec = await post("/api/spec-json", { prompt: item.prompt, drone: item.drone, imageB64 });
     if (!spec.ok || !spec.spec) throw new Error(spec.error || "spec failed");

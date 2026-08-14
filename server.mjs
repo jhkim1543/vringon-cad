@@ -2782,7 +2782,104 @@ function groundProvenance(spec, hasImage) {
 
 /* validateSpec now lives in spec-validate.mjs — see the import at the top. */
 
+/* ---------------------------------------------------------- spec progress
+   Writing a specification is up to five sequential model calls and measures in
+   minutes, not seconds. A POST that only answers at the end leaves the browser
+   holding one frozen caption, and a user cannot tell a working run from a hung
+   one. So every stage writes its own name and its own clock into a job record
+   that the client polls: the caption on screen is the server's actual state,
+   not a timer guessing at it.
+
+   The record also survives the request. If the browser's connection dies the
+   run keeps going here, and the client can pick the finished specification back
+   up from /api/spec-result instead of paying for the whole thing twice. */
+const SPEC_JOBS = new Map();
+const SPEC_JOB_TTL_MS = 30 * 60_000;
+
+function pruneSpecJobs() {
+  const now = Date.now();
+  for (const [id, j] of SPEC_JOBS) if (now - j.touched > SPEC_JOB_TTL_MS) SPEC_JOBS.delete(id);
+}
+
+/** Open a progress record. Returns null for requests that did not ask for one. */
+function jobOpen(id) {
+  if (typeof id !== "string" || !/^[A-Za-z0-9_-]{6,64}$/.test(id)) return null;
+  pruneSpecJobs();
+  const job = {
+    id, startedAt: Date.now(), touched: Date.now(),
+    stage: null, steps: [], done: false, ok: null, error: null, result: null,
+  };
+  SPEC_JOBS.set(id, job);
+  return job;
+}
+
+/** Close the running stage and open `key`; `key === null` just closes. */
+function jobStage(job, key, label, note = null) {
+  if (!job) return;
+  const now = Date.now();
+  if (job.stage) { job.stage.ms = now - job.stage.startedAt; job.steps.push(job.stage); }
+  job.stage = key ? { key, label, note, startedAt: now, ms: null } : null;
+  job.touched = now;
+}
+
+/** Refine the caption of the stage already running (counts known only midway). */
+function jobNote(job, note) { if (job?.stage) { job.stage.note = note; job.touched = Date.now(); } }
+
+function jobDone(job, ok, result, error = null) {
+  if (!job) return;
+  jobStage(job, null);
+  job.done = true; job.ok = ok; job.result = result; job.error = error;
+  job.touched = Date.now();
+}
+
+function jobSnapshot(job) {
+  const now = Date.now();
+  return {
+    ok: true, id: job.id, done: job.done, failed: job.done && !job.ok,
+    error: job.error, hasResult: Boolean(job.result),
+    elapsedMs: now - job.startedAt,
+    stage: job.stage
+      ? { key: job.stage.key, label: job.stage.label, note: job.stage.note, ms: now - job.stage.startedAt }
+      : null,
+    steps: job.steps.map((s) => ({ key: s.key, label: s.label, note: s.note, ms: s.ms })),
+  };
+}
+
 async function handleSpecJson(body) {
+  const job = jobOpen(body.jobId);
+  /* Detached mode. A run measured at 4–7 minutes should not ride on one
+     held-open connection that sends no byte until the end: tools/build-samples
+     already had to abandon the platform fetch because it drops a headerless
+     response at 300 seconds, and any proxy in front of this box can do the
+     same. So the POST hands back the job id and the work is collected from the
+     record. Callers that do not ask for a job id keep the blocking behaviour —
+     the sample builder depends on it. */
+  if (job && body.async === true) {
+    runSpecJob(body, job);
+    return { ok: true, accepted: true, jobId: job.id };
+  }
+  try {
+    const out = await runSpecJson(body, job);
+    jobDone(job, true, out);
+    return out;
+  } catch (e) {
+    jobDone(job, false, null, String(e.message || e));
+    throw e;
+  }
+}
+
+/* Fire-and-forget: nothing awaits this, so every failure has to land in the
+   job record rather than in an unhandled rejection that takes the box down. */
+function runSpecJob(body, job) {
+  runSpecJson(body, job)
+    .then((out) => jobDone(job, true, out))
+    .catch((e) => {
+      console.error("[spec-job] failed:", e.message);
+      jobDone(job, false, null, String(e.message || e));
+    });
+}
+
+async function runSpecJson(body, job) {
   const image = typeof body.imageB64 === "string" && body.imageB64.startsWith("data:image/")
     && body.imageB64.length < 6_000_000 ? body.imageB64 : null;
   const prompt = String(body.prompt || "").slice(0, 1200);
@@ -2817,6 +2914,7 @@ async function handleSpecJson(body) {
         "통신 안테나", "FPV·전방 카메라", "장애물 센서(레이더·비전)", "LED 표시등",
         "케이블 커버", "랜딩기어 다리(+브레이스)", "퀵릴리즈·파스너",
       ];
+      jobStage(job, "inventory", "사진에서 부품을 찾는 중", "사진에 보이는 부품을 전수 조사합니다");
       try {
         const inv = await callLLM([
           { role: "system", content:
@@ -2838,6 +2936,8 @@ async function handleSpecJson(body) {
            is a miss, not a simple aircraft, so ask once more and keep the
            fuller list — the union, since each pass notices different things. */
         if (inventory.length < 12) {
+          jobStage(job, "inventory_recheck", "놓친 부품이 있는지 다시 확인하는 중",
+            `1차 조사 ${inventory.length}개 — 체결류·케이블·안테나를 다시 봅니다`);
           try {
             const inv2 = await callLLM([
               { role: "system", content:
@@ -2912,6 +3012,8 @@ async function handleSpecJson(body) {
     }
 
     const dmessages = [{ role: "system", content: DRONE_SPEC_SYSTEM }, { role: "user", content: dcontent }];
+    jobStage(job, "spec", "설계 사양서를 작성하는 중",
+      (inventory?.length ? `부품 ${inventory.length}개를 ` : "") + "파트·치수·재질로 옮겨 적습니다 (가장 오래 걸리는 단계)");
     let spec = await callLLM(dmessages, "drone_spec", DRONE_SPEC_SCHEMA, 16000, "spec");
     groundProvenance(spec, !!image);
 
@@ -2934,8 +3036,10 @@ async function handleSpecJson(body) {
     }];
 
     normalizeStrutRadius(spec);
+    jobStage(job, "validate", "치수·간섭·조립을 검증하는 중", "로터 간섭, 파트 접촉, 인벤토리 누락을 훑습니다");
     let errors = [...validateSpec(spec, { hasMesh: !!meshInfo }), ...inventoryGaps(spec, inventory), ...contactGaps(spec)];
     for (let round = 0; round < 2 && errors.length; round++) {
+      jobStage(job, "repair", `검증 지적 ${errors.length}건을 수정하는 중`, `수정 ${round + 1}회차 / 최대 2회`);
       try {
         const fixed = await callLLM([
           ...dmessages,
@@ -2951,6 +3055,7 @@ async function handleSpecJson(body) {
         spec = fixed; spec.external_classifications = ext; errors = after;
       } catch (e) { console.error("[drone-spec] repair failed:", e.message); break; }
     }
+    jobStage(job, "finish", "사양서를 정리하는 중", null);
     await logEvent("drone_spec", {
       platform: pf.id, mission: ms.id, parts: (spec.parts || []).length, errors: errors.length,
     });
@@ -2984,6 +3089,7 @@ async function handleSpecJson(body) {
   if (image) content.push({ type: "image_url", image_url: { url: image, detail: "high" } });
 
   const messages = [{ role: "system", content: SPEC_SYSTEM }, { role: "user", content }];
+  jobStage(job, "spec", "설계 사양서를 작성하는 중", "파트·치수·재질을 옮겨 적습니다 (가장 오래 걸리는 단계)");
   let spec = await callLLM(messages, "asset_spec", SPEC_CORE_SCHEMA, 14000, "spec");
   const downgraded = groundProvenance(spec, !!image);
 
@@ -2993,8 +3099,10 @@ async function handleSpecJson(body) {
      Two repair rounds, because the geometry rules are the strict ones and a
      first pass that adds the missing radii often trips the size check that the
      new coordinates then need to match. */
+  jobStage(job, "validate", "치수·간섭·조립을 검증하는 중", null);
   let errors = validateSpec(spec, { hasMesh: !!meshInfo });
   for (let round = 0; round < 2 && errors.length; round++) {
+    jobStage(job, "repair", `검증 지적 ${errors.length}건을 수정하는 중`, `수정 ${round + 1}회차 / 최대 2회`);
     try {
       const fixed = await callLLM([
         ...messages,
@@ -3009,6 +3117,7 @@ async function handleSpecJson(body) {
       spec = fixed; errors = after;
     } catch (e) { console.error("[spec] repair failed:", e.message); break; }
   }
+  jobStage(job, "finish", "사양서를 정리하는 중", null);
 
   if (!spec.classification) spec.classification = {};
   spec.classification.recipe_id = route.recipe_id || spec.classification.recipe_id || "freeform_visual_replica";
@@ -3592,6 +3701,22 @@ const server = createServer(async (req, res) => {
     if (req.method === "POST" && url.pathname === "/api/spec-json") {
       try { return json(res, 200, await handleSpecJson(await readBody(req, 8e6))); }
       catch (e) { return json(res, 200, { ok: false, error: String(e.message) }); }
+    }
+    /* Which of the five model calls is running right now, and for how long.
+       Cheap enough to poll every second — it reads one in-memory record. */
+    if (url.pathname === "/api/spec-progress") {
+      const job = SPEC_JOBS.get(url.searchParams.get("id") || "");
+      if (!job) return json(res, 200, { ok: false, unknown: true });
+      return json(res, 200, jobSnapshot(job));
+    }
+    /* The finished specification, kept beside the progress record so a browser
+       whose POST died mid-run can collect the work instead of paying again. */
+    if (url.pathname === "/api/spec-result") {
+      const job = SPEC_JOBS.get(url.searchParams.get("id") || "");
+      if (!job) return json(res, 200, { ok: false, error: "작업 기록이 없습니다" });
+      if (!job.done) return json(res, 200, { ok: false, pending: true });
+      if (!job.result) return json(res, 200, { ok: false, error: job.error || "결과가 없습니다" });
+      return json(res, 200, job.result);
     }
     if (req.method === "POST" && url.pathname === "/api/spec-patch") {
       try { return json(res, 200, await handleSpecPatch(await readBody(req, 8e6))); }

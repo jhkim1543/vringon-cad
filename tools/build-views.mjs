@@ -65,7 +65,19 @@ const PHOTOS = {
   "agri-hexa": "agri-hexa.jpg",
   "map-wing": "mapping-fixedwing.jpg",
   "sar-vtol": "sar-vtol.jpg",
+  "cage-inspect": "cage-inspect.png",
+  "fpv-racer": "fpv-racer.png",
+  "fire-octo": "fire-octo.png",
+  "relay-hexa": "relay-hexa.png",
 };
+
+/* The originals are JPEG and the drawn ones are PNG, and a rejected sheet fed
+   back for correction is whatever the model returned. Both image models are
+   told the media type explicitly, and a PNG announced as JPEG is rejected at
+   the far end rather than here — so it is read off the bytes, which is the one
+   source that is right for all three cases. */
+const mimeOf = (buf) =>
+  (buf.length > 8 && buf[0] === 0x89 && buf.toString("latin1", 1, 4) === "PNG" ? "image/png" : "image/jpeg");
 
 const PHOTO_DIR = "docs/assets/samples/drones";
 const MESH_DIR = "docs/assets/meshes";
@@ -129,9 +141,9 @@ NOTHING ELSE ON THE SHEET
 
 /** 1차 이미지 모델: photo (and optionally a rejected sheet) in, one sheet out. */
 async function sheetFromPrimary(photo, retry) {
-  const parts = [{ inlineData: { mimeType: "image/jpeg", data: photo.toString("base64") } }];
+  const parts = [{ inlineData: { mimeType: mimeOf(photo), data: photo.toString("base64") } }];
   if (retry) {
-    parts.push({ inlineData: { mimeType: "image/jpeg", data: retry.sheet.toString("base64") } });
+    parts.push({ inlineData: { mimeType: mimeOf(retry.sheet), data: retry.sheet.toString("base64") } });
     parts.push({ text: `${SHEET_PROMPT}\n\nThe second image is a previous attempt that was REJECTED: `
       + `${retry.note}\nProduce a corrected sheet that fixes exactly that.` });
   } else parts.push({ text: SHEET_PROMPT });
@@ -171,7 +183,8 @@ async function sheetFromFallback(photo) {
       fd.append("prompt", SHEET_PROMPT);
       fd.append("size", "1536x1024");
       fd.append("n", "1");
-      fd.append("image", new Blob([photo], { type: "image/jpeg" }), "photo.jpg");
+      const type = mimeOf(photo);
+      fd.append("image", new Blob([photo], { type }), `photo.${type === "image/png" ? "png" : "jpg"}`);
       const r = await fetch(`${FALLBACK.url}/v1/images/edits`, {
         method: "POST",
         headers: { Authorization: `Bearer ${key}` },

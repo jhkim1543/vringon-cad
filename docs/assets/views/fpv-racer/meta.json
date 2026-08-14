@@ -1,0 +1,73 @@
+{
+  "id": "fpv-racer",
+  "source": "photo",
+  "generator": "1차 이미지 모델",
+  "generated": "2026-08-14T00:44:04.126Z",
+  "photo": "docs/assets/samples/drones/fpv-racer.png",
+  "mesh": null,
+  "attempt": 2,
+  "layout": "1x4",
+  "mask_px": 850,
+  "views": {
+    "front": {
+      "w": 802,
+      "h": 476,
+      "area": 92259
+    },
+    "left": {
+      "w": 635,
+      "h": 460,
+      "area": 105212
+    },
+    "rear": {
+      "w": 737,
+      "h": 461,
+      "area": 92008
+    },
+    "right": {
+      "w": 635,
+      "h": 461,
+      "area": 106794
+    }
+  },
+  "consistency": {
+    "height_spread": 0.0344,
+    "solidity": [
+      0.739,
+      0.8554,
+      0.7753,
+      0.8587
+    ],
+    "mirror_iou": {
+      "front_rear": 0.65,
+      "left_right": 0.9102
+    },
+    "mirror_wrong_order": 0.5073,
+    "pair_width_error": {
+      "front_rear": 0.0845,
+      "left_right": 0
+    },
+    "pair_area_error": {
+      "front_rear": 0.0027,
+      "left_right": 0.0149
+    },
+    "pass": true,
+    "fail": []
+  },
+  "rejected": [
+    {
+      "attempt": 1,
+      "generator": "1차 이미지 모델",
+      "layout": null,
+      "reason": [
+        "네 장으로 나뉘지 않았습니다 (1행 3장)"
+      ],
+      "consistency": null
+    }
+  ],
+  "mesh_cross_check": {
+    "yaw_deg": 270,
+    "iou_mean": 0.5363,
+    "chamfer_mean": 0.0266
+  }
+}

@@ -31,7 +31,17 @@ const JOBS = [
   { id: "agri-hexa", img: "agri-hexa.jpg" },
   { id: "map-wing", img: "mapping-fixedwing.jpg" },
   { id: "sar-vtol", img: "sar-vtol.jpg" },
+  { id: "cage-inspect", img: "cage-inspect.png" },
+  { id: "fpv-racer", img: "fpv-racer.png" },
+  { id: "fire-octo", img: "fire-octo.png" },
+  { id: "relay-hexa", img: "relay-hexa.png" },
 ];
+
+/* The first four photographs were collected as JPEG and the ones drawn by
+   tools/gen-drone-photos.mjs arrive as PNG, so the media type is read off the
+   name rather than assumed — mislabelling a PNG as JPEG makes the upload fail
+   inside 메시 클라우드 rather than here, where the message would say so. */
+const mimeOf = (name) => (name.toLowerCase().endsWith(".png") ? "image/png" : "image/jpeg");
 
 /* Node's fetch gives up waiting for response headers at 300 seconds and
    reports it as a bare "fetch failed". 메시 클라우드 routinely runs longer than that,
@@ -77,8 +87,8 @@ for (const job of JOBS) {
 
   const t0 = Date.now();
   try {
-    const jpg = await readFile(new URL(job.img, SRC));
-    const dataUri = `data:image/jpeg;base64,${jpg.toString("base64")}`;
+    const photo = await readFile(new URL(job.img, SRC));
+    const dataUri = `data:${mimeOf(job.img)};base64,${photo.toString("base64")}`;
     const { status, buf } = await req("POST", "/api/mesh3d", {
       imageB64: dataUri, engine: "cloud", preferCloud: true,
     });
