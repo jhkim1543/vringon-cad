@@ -1,0 +1,358 @@
+{
+ "built": "2026-08-15",
+ "count": 12,
+ "samples": [
+  {
+   "id": "spacer",
+   "name": "Spacer sleeve",
+   "name_ko": "스페이서",
+   "part_class": "spacer",
+   "material": "A6061",
+   "difficulty": 1,
+   "L": 12,
+   "Dmax": 24,
+   "mass_g": 8.1,
+   "scale": 2,
+   "segments": 1,
+   "features": [],
+   "grooves": 0,
+   "bore": true,
+   "files": {
+    "golden": "golden.json",
+    "svg": "drawing.svg",
+    "png": "drawing.png",
+    "thumb": "thumb.webp",
+    "dxf": "drawing.dxf",
+    "labels": "labels.json",
+    "extracted": "extracted.json",
+    "step": "model.step",
+    "usda": "model.usda"
+   }
+  },
+  {
+   "id": "clevis-pin",
+   "name": "Clevis pin",
+   "name_ko": "클레비스 핀",
+   "part_class": "pin",
+   "material": "S45C",
+   "difficulty": 1,
+   "L": 51,
+   "Dmax": 16,
+   "mass_g": 46.4,
+   "scale": 2,
+   "segments": 2,
+   "features": [
+    "cross_hole"
+   ],
+   "grooves": 0,
+   "bore": false,
+   "files": {
+    "golden": "golden.json",
+    "svg": "drawing.svg",
+    "png": "drawing.png",
+    "thumb": "thumb.webp",
+    "dxf": "drawing.dxf",
+    "labels": "labels.json",
+    "extracted": "extracted.json",
+    "step": "model.step",
+    "usda": "model.usda"
+   }
+  },
+  {
+   "id": "bushing",
+   "name": "Plain bushing",
+   "name_ko": "부시",
+   "part_class": "bushing",
+   "material": "C3604",
+   "difficulty": 2,
+   "L": 25,
+   "Dmax": 30,
+   "mass_g": 45.4,
+   "scale": 2,
+   "segments": 1,
+   "features": [
+    "cross_hole"
+   ],
+   "grooves": 0,
+   "bore": true,
+   "files": {
+    "golden": "golden.json",
+    "svg": "drawing.svg",
+    "png": "drawing.png",
+    "thumb": "thumb.webp",
+    "dxf": "drawing.dxf",
+    "labels": "labels.json",
+    "extracted": "extracted.json",
+    "step": "model.step",
+    "usda": "model.usda"
+   }
+  },
+  {
+   "id": "flanged-bushing",
+   "name": "Flanged bushing",
+   "name_ko": "플랜지 부시",
+   "part_class": "bushing",
+   "material": "PBC2",
+   "difficulty": 2,
+   "L": 30,
+   "Dmax": 40,
+   "mass_g": 109.9,
+   "scale": 1,
+   "segments": 2,
+   "features": [],
+   "grooves": 0,
+   "bore": true,
+   "files": {
+    "golden": "golden.json",
+    "svg": "drawing.svg",
+    "png": "drawing.png",
+    "thumb": "thumb.webp",
+    "dxf": "drawing.dxf",
+    "labels": "labels.json",
+    "extracted": "extracted.json",
+    "step": "model.step",
+    "usda": "model.usda"
+   }
+  },
+  {
+   "id": "roller",
+   "name": "Roller with stub axles",
+   "name_ko": "롤러",
+   "part_class": "roller",
+   "material": "SUS304",
+   "difficulty": 3,
+   "L": 110,
+   "Dmax": 45,
+   "mass_g": 979.7,
+   "scale": 1,
+   "segments": 3,
+   "features": [
+    "center_hole",
+    "center_hole"
+   ],
+   "grooves": 2,
+   "bore": false,
+   "files": {
+    "golden": "golden.json",
+    "svg": "drawing.svg",
+    "png": "drawing.png",
+    "thumb": "thumb.webp",
+    "dxf": "drawing.dxf",
+    "labels": "labels.json",
+    "extracted": "extracted.json",
+    "step": "model.step",
+    "usda": "model.usda"
+   }
+  },
+  {
+   "id": "hex-stud",
+   "name": "Hex stepped stud",
+   "name_ko": "육각 단붙이 축",
+   "part_class": "shaft",
+   "material": "SUS303",
+   "difficulty": 3,
+   "L": 57,
+   "Dmax": 20,
+   "mass_g": 62.9,
+   "scale": 1,
+   "segments": 3,
+   "features": [
+    "hex",
+    "flat"
+   ],
+   "grooves": 0,
+   "bore": false,
+   "files": {
+    "golden": "golden.json",
+    "svg": "drawing.svg",
+    "png": "drawing.png",
+    "thumb": "thumb.webp",
+    "dxf": "drawing.dxf",
+    "labels": "labels.json",
+    "extracted": "extracted.json",
+    "step": "model.step",
+    "usda": "model.usda"
+   }
+  },
+  {
+   "id": "threaded-shaft",
+   "name": "Double-threaded shaft",
+   "name_ko": "양단 나사 축",
+   "part_class": "shaft",
+   "material": "S45C",
+   "difficulty": 3,
+   "L": 118,
+   "Dmax": 16,
+   "mass_g": 148.5,
+   "scale": 1,
+   "segments": 4,
+   "features": [
+    "cross_hole"
+   ],
+   "grooves": 0,
+   "bore": false,
+   "files": {
+    "golden": "golden.json",
+    "svg": "drawing.svg",
+    "png": "drawing.png",
+    "thumb": "thumb.webp",
+    "dxf": "drawing.dxf",
+    "labels": "labels.json",
+    "extracted": "extracted.json",
+    "step": "model.step",
+    "usda": "model.usda"
+   }
+  },
+  {
+   "id": "sleeve",
+   "name": "Stepped-bore sleeve",
+   "name_ko": "슬리브",
+   "part_class": "sleeve",
+   "material": "SUJ2",
+   "difficulty": 3,
+   "L": 60,
+   "Dmax": 40,
+   "mass_g": 281.4,
+   "scale": 1,
+   "segments": 1,
+   "features": [],
+   "grooves": 1,
+   "bore": true,
+   "files": {
+    "golden": "golden.json",
+    "svg": "drawing.svg",
+    "png": "drawing.png",
+    "thumb": "thumb.webp",
+    "dxf": "drawing.dxf",
+    "labels": "labels.json",
+    "extracted": "extracted.json",
+    "step": "model.step",
+    "usda": "model.usda"
+   }
+  },
+  {
+   "id": "taper-shaft",
+   "name": "Taper shaft with keyway",
+   "name_ko": "테이퍼 축",
+   "part_class": "shaft",
+   "material": "SCM440",
+   "difficulty": 4,
+   "L": 95,
+   "Dmax": 25,
+   "mass_g": 283.4,
+   "scale": 1,
+   "segments": 3,
+   "features": [
+    "keyway",
+    "center_hole"
+   ],
+   "grooves": 0,
+   "bore": false,
+   "files": {
+    "golden": "golden.json",
+    "svg": "drawing.svg",
+    "png": "drawing.png",
+    "thumb": "thumb.webp",
+    "dxf": "drawing.dxf",
+    "labels": "labels.json",
+    "extracted": "extracted.json",
+    "step": "model.step",
+    "usda": "model.usda"
+   }
+  },
+  {
+   "id": "motor-shaft",
+   "name": "Motor output shaft",
+   "name_ko": "모터 축",
+   "part_class": "shaft",
+   "material": "S45C",
+   "difficulty": 4,
+   "L": 205,
+   "Dmax": 20,
+   "mass_g": 366.1,
+   "scale": 0.5,
+   "segments": 6,
+   "features": [
+    "keyway",
+    "flat",
+    "center_hole",
+    "center_hole"
+   ],
+   "grooves": 1,
+   "bore": false,
+   "files": {
+    "golden": "golden.json",
+    "svg": "drawing.svg",
+    "png": "drawing.png",
+    "thumb": "thumb.webp",
+    "dxf": "drawing.dxf",
+    "labels": "labels.json",
+    "extracted": "extracted.json",
+    "step": "model.step",
+    "usda": "model.usda"
+   }
+  },
+  {
+   "id": "stepped-shaft",
+   "name": "Stepped shaft (showcase)",
+   "name_ko": "단붙이 축",
+   "part_class": "shaft",
+   "material": "S45C",
+   "difficulty": 5,
+   "L": 100,
+   "Dmax": 30,
+   "mass_g": 379,
+   "scale": 1,
+   "segments": 4,
+   "features": [
+    "keyway",
+    "center_hole",
+    "center_hole",
+    "cross_hole"
+   ],
+   "grooves": 1,
+   "bore": false,
+   "files": {
+    "golden": "golden.json",
+    "svg": "drawing.svg",
+    "png": "drawing.png",
+    "thumb": "thumb.webp",
+    "dxf": "drawing.dxf",
+    "labels": "labels.json",
+    "extracted": "extracted.json",
+    "step": "model.step",
+    "usda": "model.usda"
+   }
+  },
+  {
+   "id": "spindle",
+   "name": "Small spindle",
+   "name_ko": "스핀들",
+   "part_class": "spindle",
+   "material": "SCM415",
+   "difficulty": 5,
+   "L": 119,
+   "Dmax": 18,
+   "mass_g": 177.1,
+   "scale": 1,
+   "segments": 6,
+   "features": [
+    "keyway",
+    "center_hole"
+   ],
+   "grooves": 1,
+   "bore": false,
+   "files": {
+    "golden": "golden.json",
+    "svg": "drawing.svg",
+    "png": "drawing.png",
+    "thumb": "thumb.webp",
+    "dxf": "drawing.dxf",
+    "labels": "labels.json",
+    "extracted": "extracted.json",
+    "step": "model.step",
+    "usda": "model.usda"
+   }
+  }
+ ]
+}

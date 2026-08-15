@@ -1,0 +1,72 @@
+{
+ "dsl": "vringon-shaft/1.0",
+ "id": "bushing-50",
+ "name": "bushing",
+ "name_ko": "부시",
+ "part_class": "bushing",
+ "units": "mm",
+ "material": "S45C",
+ "drawing": {
+  "number": "VR-RB-0050",
+  "scale": "1:1",
+  "projection": "third"
+ },
+ "segments": [
+  {
+   "type": "cyl",
+   "length": 22,
+   "diameter": 14,
+   "tolerance": "h6"
+  }
+ ],
+ "transitions": [
+  {
+   "at": 0,
+   "type": "chamfer",
+   "size": 0.5
+  },
+  {
+   "at": 1,
+   "type": "chamfer",
+   "size": 0.5
+  }
+ ],
+ "grooves": [
+  {
+   "segment": 0,
+   "offset": 2.5,
+   "width": 1.1,
+   "depth": 0.2999999999999998,
+   "kind": "snap_ring"
+  }
+ ],
+ "bore": {
+  "through": true,
+  "segments": [
+   {
+    "length": 22,
+    "diameter": 10,
+    "tolerance": "H7"
+   }
+  ],
+  "chamfer_left": 0.5,
+  "chamfer_right": 0.5
+ },
+ "features": [
+  {
+   "type": "cross_hole",
+   "position": 11,
+   "diameter": 2,
+   "through": false,
+   "depth": 3,
+   "angle": 90
+  }
+ ],
+ "meta": {
+  "source": "synthetic",
+  "generator": "shaft-sampler/1.0",
+  "seed": 50,
+  "valid": true,
+  "archetype": "bushing"
+ }
+}

@@ -1,0 +1,110 @@
+{
+ "dsl": "vringon-shaft/1.0",
+ "id": "keyed-shaft-12",
+ "name": "keyed shaft",
+ "name_ko": "키홈 축",
+ "part_class": "shaft",
+ "units": "mm",
+ "material": "S45C",
+ "drawing": {
+  "number": "VR-RB-0012",
+  "scale": "1:1",
+  "projection": "third"
+ },
+ "segments": [
+  {
+   "type": "cyl",
+   "length": 20,
+   "diameter": 25,
+   "tolerance": "js6"
+  },
+  {
+   "type": "cyl",
+   "length": 50,
+   "diameter": 28,
+   "tolerance": "k6",
+   "label": "기어 자리"
+  },
+  {
+   "type": "cyl",
+   "length": 100,
+   "diameter": 30
+  },
+  {
+   "type": "cyl",
+   "length": 45,
+   "diameter": 25,
+   "roughness": "Ra 0.8"
+  },
+  {
+   "type": "cyl",
+   "length": 25,
+   "diameter": 22,
+   "tolerance": "h7",
+   "roughness": "Ra 0.8",
+   "label": "기어 자리"
+  }
+ ],
+ "transitions": [
+  {
+   "at": 0,
+   "type": "chamfer",
+   "size": 1
+  },
+  {
+   "at": 5,
+   "type": "chamfer",
+   "size": 1
+  },
+  {
+   "at": 1,
+   "type": "fillet",
+   "radius": 0.5
+  },
+  {
+   "at": 3,
+   "type": "fillet",
+   "radius": 1
+  },
+  {
+   "at": 4,
+   "type": "fillet",
+   "radius": 0.5
+  }
+ ],
+ "grooves": [],
+ "bore": null,
+ "features": [
+  {
+   "type": "keyway",
+   "segment": 1,
+   "offset": 4,
+   "length": 36,
+   "width": 8,
+   "depth": 4,
+   "kind": "parallel",
+   "standard": "DIN 6885 8×7"
+  },
+  {
+   "type": "center_hole",
+   "end": "left",
+   "form": "A",
+   "d": 2.5,
+   "standard": "DIN 332-A2.5"
+  },
+  {
+   "type": "center_hole",
+   "end": "right",
+   "form": "A",
+   "d": 2.5,
+   "standard": "DIN 332-A2.5"
+  }
+ ],
+ "meta": {
+  "source": "synthetic",
+  "generator": "shaft-sampler/1.0",
+  "seed": 12,
+  "valid": true,
+  "archetype": "keyed_shaft"
+ }
+}

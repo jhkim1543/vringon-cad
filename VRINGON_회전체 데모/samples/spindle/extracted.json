@@ -1,0 +1,328 @@
+{
+ "dsl": {
+  "name_ko": "스핀들",
+  "part_class": "spindle",
+  "material": "SCM415",
+  "segments": [
+   {
+    "type": "thread",
+    "length": 14,
+    "diameter": 12,
+    "spec": "M12x1",
+    "pitch": 1,
+    "label": "나사부"
+   },
+   {
+    "type": "cyl",
+    "length": 8,
+    "diameter": 14
+   },
+   {
+    "type": "cyl",
+    "length": 20,
+    "diameter": 15,
+    "tolerance": "j5",
+    "label": "베어링 자리"
+   },
+   {
+    "type": "cyl",
+    "length": 45,
+    "diameter": 18,
+    "label": "키홈 축부"
+   },
+   {
+    "type": "cyl",
+    "length": 20,
+    "diameter": 15,
+    "tolerance": "j5",
+    "label": "베어링 자리"
+   },
+   {
+    "type": "cyl",
+    "length": 12,
+    "diameter": 14,
+    "tolerance": "h6"
+   }
+  ],
+  "transitions": [
+   {
+    "at": 0,
+    "type": "chamfer",
+    "size": 1,
+    "angle": 45
+   },
+   {
+    "at": 1,
+    "type": "undercut",
+    "width": 3,
+    "depth": 0.75
+   },
+   {
+    "at": 2,
+    "type": "fillet",
+    "radius": 0.5
+   },
+   {
+    "at": 3,
+    "type": "fillet",
+    "radius": 0.5
+   },
+   {
+    "at": 4,
+    "type": "fillet",
+    "radius": 0.5
+   },
+   {
+    "at": 5,
+    "type": "fillet",
+    "radius": 0.5
+   },
+   {
+    "at": 6,
+    "type": "chamfer",
+    "size": 0.5,
+    "angle": 45
+   }
+  ],
+  "grooves": [
+   {
+    "segment": 5,
+    "offset": 7.9,
+    "width": 1.1,
+    "depth": 0.35,
+    "kind": "snap_ring"
+   }
+  ],
+  "bore": null,
+  "features": [
+   {
+    "type": "keyway",
+    "segment": 3,
+    "offset": 12,
+    "length": 20,
+    "width": 6,
+    "depth": 3.5,
+    "kind": "parallel"
+   },
+   {
+    "type": "center_hole",
+    "end": "right",
+    "form": "A",
+    "d": 2
+   },
+   {
+    "type": "center_hole",
+    "end": "left",
+    "form": "A",
+    "d": 2
+   }
+  ],
+  "drawing": {
+   "number": "VR-RB-012"
+  },
+  "dsl": "vringon-shaft/1.0",
+  "units": "mm",
+  "meta": {
+   "source": "extracted",
+   "provider": "primary",
+   "tier": "plan"
+  },
+  "id": "extracted"
+ },
+ "dims_read": [
+  {
+   "text": "119",
+   "kind": "overall",
+   "value": 119,
+   "where": "전체 길이"
+  },
+  {
+   "text": "14",
+   "kind": "length",
+   "value": 14,
+   "where": "좌측 첫번째 세그먼트 길이"
+  },
+  {
+   "text": "8",
+   "kind": "length",
+   "value": 8,
+   "where": "좌측 두번째 세그먼트 길이"
+  },
+  {
+   "text": "20",
+   "kind": "length",
+   "value": 20,
+   "where": "우측 ⌀15 j5 세그먼트 길이"
+  },
+  {
+   "text": "12",
+   "kind": "length",
+   "value": 12,
+   "where": "우측 끝 ⌀14 h6 세그먼트 길이"
+  },
+  {
+   "text": "20",
+   "kind": "length",
+   "value": 20,
+   "where": "키홈 길이"
+  },
+  {
+   "text": "12",
+   "kind": "position",
+   "value": 12,
+   "where": "키홈 위치"
+  },
+  {
+   "text": "M12x1",
+   "kind": "thread",
+   "value": 12,
+   "where": "좌측 끝 나사 규격"
+  },
+  {
+   "text": "⌀14",
+   "kind": "diameter",
+   "value": 14,
+   "where": "좌측 두번째 세그먼트 지름"
+  },
+  {
+   "text": "⌀15 j5",
+   "kind": "diameter",
+   "value": 15,
+   "where": "좌우 베어링 자리 지름"
+  },
+  {
+   "text": "⌀18",
+   "kind": "diameter",
+   "value": 18,
+   "where": "중앙 세그먼트 지름"
+  },
+  {
+   "text": "⌀14 h6",
+   "kind": "diameter",
+   "value": 14,
+   "where": "우측 끝 세그먼트 지름"
+  },
+  {
+   "text": "C1",
+   "kind": "chamfer",
+   "value": 1,
+   "where": "좌측 끝 모따기"
+  },
+  {
+   "text": "C0.5",
+   "kind": "chamfer",
+   "value": 0.5,
+   "where": "우측 끝 모따기"
+  },
+  {
+   "text": "R0.5",
+   "kind": "radius",
+   "value": 0.5,
+   "where": "각 단차부 필렛"
+  },
+  {
+   "text": "3x⌀10.5 (DIN 76-A)",
+   "kind": "other",
+   "value": 3,
+   "where": "나사 도피홈"
+  },
+  {
+   "text": "3",
+   "kind": "position",
+   "value": 3,
+   "where": "우측 멈춤링 홈 위치"
+  },
+  {
+   "text": "1.1",
+   "kind": "groove_width",
+   "value": 1.1,
+   "where": "우측 멈춤링 홈 폭"
+  },
+  {
+   "text": "⌀13.3",
+   "kind": "groove_diameter",
+   "value": 13.3,
+   "where": "우측 멈춤링 홈 지름"
+  },
+  {
+   "text": "6",
+   "kind": "keyway_width",
+   "value": 6,
+   "where": "키홈 폭"
+  },
+  {
+   "text": "14.5",
+   "kind": "other",
+   "value": 14.5,
+   "where": "키홈 깊이 계산용 치수"
+  },
+  {
+   "text": "센터구멍 A2 (DIN 332)",
+   "kind": "other",
+   "value": 2,
+   "where": "센터구멍 규격"
+  }
+ ],
+ "notes": [
+  "좌측 ⌀15 j5 세그먼트의 길이는 도면에 명시되지 않아 우측과 대칭 형상임을 고려하여 20으로 추정함.",
+  "중앙 ⌀18 세그먼트의 길이는 전체 길이 119에서 나머지 세그먼트 길이의 합(14+8+20+20+12=74)을 빼서 45로 계산함.",
+  "키홈의 깊이(t1)는 ⌀18 지름에서 단면도의 14.5를 빼서 3.5로 계산함.",
+  "좌측 끝면에도 센터구멍 형상이 그려져 있어 우측과 동일한 규격(A2)으로 판단하여 양쪽 모두 추가함."
+ ],
+ "confidence_self": 0.95,
+ "provider": "primary",
+ "tier": "plan",
+ "repaired": false,
+ "elapsed_ms": 74354,
+ "validation": {
+  "ok": true,
+  "errors": [],
+  "warnings": []
+ },
+ "verify": {
+  "iou": 0.9938896068139227,
+  "dims": {
+   "rate": 0.9545454545454546,
+   "matched": 21,
+   "total": 22,
+   "unmatched": [
+    "M12x1"
+   ]
+  },
+  "confidence": 0.9807301928385666
+ },
+ "evaluated": {
+  "tier": "plan",
+  "metrics": {
+   "valid": true,
+   "segment": {
+    "precision": 1,
+    "recall": 1,
+    "f1": 1
+   },
+   "feature": {
+    "precision": 0.6666666666666666,
+    "recall": 1,
+    "f1": 0.8
+   },
+   "transition": {
+    "precision": 1,
+    "recall": 1,
+    "f1": 1
+   },
+   "groove": {
+    "precision": 0,
+    "recall": 0,
+    "f1": 0
+   },
+   "dim_rate": 0.9642857142857143,
+   "dims_total": 28,
+   "iou": 0.9992131502662647,
+   "iou_abs": 0.9992131502662651,
+   "bore_ok": true,
+   "length_ok": true,
+   "exact": false
+  },
+  "date": "2026-08-15"
+ }
+}

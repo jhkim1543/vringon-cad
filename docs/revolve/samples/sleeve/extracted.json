@@ -1,0 +1,177 @@
+{
+ "dsl": {
+  "name_ko": "슬리브",
+  "part_class": "sleeve",
+  "material": "SUJ2",
+  "segments": [
+   {
+    "type": "cyl",
+    "length": 60,
+    "diameter": 40,
+    "tolerance": "h6"
+   }
+  ],
+  "transitions": [
+   {
+    "at": 0,
+    "type": "chamfer",
+    "size": 0.5,
+    "angle": 45
+   },
+   {
+    "at": 1,
+    "type": "chamfer",
+    "size": 0.5,
+    "angle": 45
+   }
+  ],
+  "grooves": [],
+  "bore": {
+   "through": true,
+   "segments": [
+    {
+     "length": 15,
+     "diameter": 30,
+     "tolerance": "H7"
+    },
+    {
+     "length": 2.4,
+     "diameter": 36.2
+    },
+    {
+     "length": 42.6,
+     "diameter": 28
+    }
+   ],
+   "chamfer_left": 0.5,
+   "chamfer_right": 0.5
+  },
+  "features": [],
+  "drawing": {
+   "number": "VR-RB-008"
+  },
+  "dsl": "vringon-shaft/1.0",
+  "units": "mm",
+  "meta": {
+   "source": "extracted",
+   "provider": "primary",
+   "tier": "plan"
+  },
+  "id": "extracted"
+ },
+ "dims_read": [
+  {
+   "text": "60",
+   "kind": "overall",
+   "value": 60,
+   "where": "전체 길이"
+  },
+  {
+   "text": "⌀40 h6",
+   "kind": "diameter",
+   "value": 40,
+   "where": "외경"
+  },
+  {
+   "text": "15",
+   "kind": "length",
+   "value": 15,
+   "where": "좌측 내경 구간 길이"
+  },
+  {
+   "text": "⌀30 H7",
+   "kind": "bore_diameter",
+   "value": 30,
+   "where": "좌측 내경"
+  },
+  {
+   "text": "2.4",
+   "kind": "length",
+   "value": 2.4,
+   "where": "내경 홈 폭"
+  },
+  {
+   "text": "⌀36.2",
+   "kind": "bore_diameter",
+   "value": 36.2,
+   "where": "내경 홈 지름"
+  },
+  {
+   "text": "⌀28",
+   "kind": "bore_diameter",
+   "value": 28,
+   "where": "우측 내경"
+  },
+  {
+   "text": "C0.5",
+   "kind": "chamfer",
+   "value": 0.5,
+   "where": "좌측 외경 모따기"
+  },
+  {
+   "text": "C0.5",
+   "kind": "chamfer",
+   "value": 0.5,
+   "where": "우측 외경 모따기"
+  }
+ ],
+ "notes": [
+  "내경에 위치한 멈춤링 홈(폭 2.4, 지름 36.2)은 외부 grooves 대신 bore의 segment로 분할하여 표현함.",
+  "우측 내경 구간의 길이는 전체 길이(60)에서 좌측 내경(15)과 홈 폭(2.4)을 뺀 42.6으로 계산함.",
+  "도면 하단의 '지시 없는 모따기 C0.5' 주서에 따라 내경 양끝 입구에도 모따기 0.5를 적용함."
+ ],
+ "confidence_self": 0.98,
+ "provider": "primary",
+ "tier": "plan",
+ "repaired": false,
+ "elapsed_ms": 28817,
+ "validation": {
+  "ok": true,
+  "errors": [],
+  "warnings": []
+ },
+ "verify": {
+  "iou": 0.9909632833304751,
+  "dims": {
+   "rate": 1,
+   "matched": 9,
+   "total": 9,
+   "unmatched": []
+  },
+  "confidence": 0.9950298058317613
+ },
+ "evaluated": {
+  "tier": "plan",
+  "metrics": {
+   "valid": true,
+   "segment": {
+    "precision": 1,
+    "recall": 1,
+    "f1": 1
+   },
+   "feature": {
+    "precision": 1,
+    "recall": 1,
+    "f1": 1
+   },
+   "transition": {
+    "precision": 1,
+    "recall": 1,
+    "f1": 1
+   },
+   "groove": {
+    "precision": 0,
+    "recall": 0,
+    "f1": 0
+   },
+   "dim_rate": 0.8333333333333334,
+   "dims_total": 12,
+   "iou": 0.9961992160883183,
+   "iou_abs": 0.9961992160883181,
+   "bore_ok": false,
+   "length_ok": true,
+   "exact": false
+  },
+  "date": "2026-08-15"
+ }
+}

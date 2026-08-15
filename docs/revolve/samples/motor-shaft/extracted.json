@@ -1,0 +1,339 @@
+{
+ "dsl": {
+  "name_ko": "모터 축",
+  "part_class": "shaft",
+  "material": "S45C",
+  "segments": [
+   {
+    "type": "cyl",
+    "length": 25,
+    "diameter": 15,
+    "tolerance": "j6"
+   },
+   {
+    "type": "cyl",
+    "length": 40,
+    "diameter": 17
+   },
+   {
+    "type": "cyl",
+    "length": 60,
+    "diameter": 20
+   },
+   {
+    "type": "cyl",
+    "length": 40,
+    "diameter": 17
+   },
+   {
+    "type": "cyl",
+    "length": 25,
+    "diameter": 15,
+    "tolerance": "j6"
+   },
+   {
+    "type": "cyl",
+    "length": 15,
+    "diameter": 12,
+    "tolerance": "h7"
+   }
+  ],
+  "transitions": [
+   {
+    "at": 0,
+    "type": "chamfer",
+    "size": 1,
+    "angle": 45
+   },
+   {
+    "at": 1,
+    "type": "fillet",
+    "radius": 0.5
+   },
+   {
+    "at": 2,
+    "type": "fillet",
+    "radius": 1
+   },
+   {
+    "at": 3,
+    "type": "fillet",
+    "radius": 1
+   },
+   {
+    "at": 4,
+    "type": "fillet",
+    "radius": 0.5
+   },
+   {
+    "at": 5,
+    "type": "fillet",
+    "radius": 0.5
+   },
+   {
+    "at": 6,
+    "type": "chamfer",
+    "size": 1,
+    "angle": 45
+   }
+  ],
+  "grooves": [
+   {
+    "segment": 4,
+    "offset": 4,
+    "width": 1.1,
+    "depth": 0.35000000000000053,
+    "kind": "snap_ring"
+   }
+  ],
+  "bore": null,
+  "features": [
+   {
+    "type": "center_hole",
+    "end": "left",
+    "form": "A",
+    "d": 2
+   },
+   {
+    "type": "center_hole",
+    "end": "right",
+    "form": "A",
+    "d": 2
+   },
+   {
+    "type": "keyway",
+    "segment": 2,
+    "offset": 15,
+    "length": 30,
+    "width": 6,
+    "depth": 3.5,
+    "kind": "parallel"
+   },
+   {
+    "type": "flat",
+    "segment": 5,
+    "offset": 1,
+    "length": 12,
+    "depth": 1.5,
+    "count": 1
+   }
+  ],
+  "drawing": {
+   "number": "VR-RB-010"
+  },
+  "dsl": "vringon-shaft/1.0",
+  "units": "mm",
+  "meta": {
+   "source": "extracted",
+   "provider": "primary",
+   "tier": "plan"
+  },
+  "id": "extracted"
+ },
+ "dims_read": [
+  {
+   "text": "205",
+   "kind": "overall",
+   "value": 205,
+   "where": "전체 길이"
+  },
+  {
+   "text": "25",
+   "kind": "length",
+   "value": 25,
+   "where": "왼쪽 첫번째 단 길이"
+  },
+  {
+   "text": "40",
+   "kind": "length",
+   "value": 40,
+   "where": "왼쪽 두번째 단 길이"
+  },
+  {
+   "text": "40",
+   "kind": "length",
+   "value": 40,
+   "where": "오른쪽 세번째 단 길이"
+  },
+  {
+   "text": "25",
+   "kind": "length",
+   "value": 25,
+   "where": "오른쪽 두번째 단 길이"
+  },
+  {
+   "text": "15",
+   "kind": "length",
+   "value": 15,
+   "where": "오른쪽 첫번째 단 길이"
+  },
+  {
+   "text": "⌀15 j6",
+   "kind": "diameter",
+   "value": 15,
+   "where": "양끝에서 두번째 단 지름"
+  },
+  {
+   "text": "⌀17",
+   "kind": "diameter",
+   "value": 17,
+   "where": "양끝에서 세번째 단 지름"
+  },
+  {
+   "text": "⌀20",
+   "kind": "diameter",
+   "value": 20,
+   "where": "가운데 단 지름"
+  },
+  {
+   "text": "⌀12 h7",
+   "kind": "diameter",
+   "value": 12,
+   "where": "오른쪽 끝 단 지름"
+  },
+  {
+   "text": "C1",
+   "kind": "chamfer",
+   "value": 1,
+   "where": "양끝 모따기"
+  },
+  {
+   "text": "R0.5",
+   "kind": "radius",
+   "value": 0.5,
+   "where": "단차 필렛"
+  },
+  {
+   "text": "R1",
+   "kind": "radius",
+   "value": 1,
+   "where": "단차 필렛"
+  },
+  {
+   "text": "15",
+   "kind": "position",
+   "value": 15,
+   "where": "키홈 위치"
+  },
+  {
+   "text": "30",
+   "kind": "length",
+   "value": 30,
+   "where": "키홈 길이"
+  },
+  {
+   "text": "6",
+   "kind": "keyway_width",
+   "value": 6,
+   "where": "키홈 폭 (단면 A-A)"
+  },
+  {
+   "text": "16.5",
+   "kind": "other",
+   "value": 16.5,
+   "where": "키홈 깊이 계산용 (단면 A-A)"
+  },
+  {
+   "text": "4",
+   "kind": "position",
+   "value": 4,
+   "where": "멈춤링 홈 위치"
+  },
+  {
+   "text": "1.1",
+   "kind": "groove_width",
+   "value": 1.1,
+   "where": "멈춤링 홈 폭"
+  },
+  {
+   "text": "⌀14.3",
+   "kind": "groove_diameter",
+   "value": 14.3,
+   "where": "멈춤링 홈 지름"
+  },
+  {
+   "text": "1",
+   "kind": "position",
+   "value": 1,
+   "where": "평면(D-cut) 위치"
+  },
+  {
+   "text": "12",
+   "kind": "length",
+   "value": 12,
+   "where": "평면(D-cut) 길이"
+  },
+  {
+   "text": "10.5",
+   "kind": "other",
+   "value": 10.5,
+   "where": "평면 깊이 계산용 (단면 B-B)"
+  },
+  {
+   "text": "센터구멍 A2 (DIN 332)",
+   "kind": "other",
+   "value": 2,
+   "where": "양끝 센터구멍"
+  }
+ ],
+ "notes": [
+  "가운데 세그먼트(⌀20)의 길이는 전체 길이(205)에서 나머지 세그먼트 길이의 합(145)을 빼서 60으로 계산함.",
+  "키홈 깊이는 단면 A-A의 치수 16.5를 이용하여 (20 - 16.5) = 3.5로 계산함.",
+  "오른쪽 끝 세그먼트(⌀12)의 평면(D-cut) 깊이는 단면 B-B의 치수 10.5를 이용하여 (12 - 10.5) = 1.5로 계산함.",
+  "평면(D-cut)의 시작 위치는 단차로부터의 거리 치수 1을 offset으로 적용함."
+ ],
+ "confidence_self": 0.98,
+ "provider": "primary",
+ "tier": "plan",
+ "repaired": false,
+ "elapsed_ms": 69705,
+ "validation": {
+  "ok": true,
+  "errors": [],
+  "warnings": []
+ },
+ "verify": {
+  "iou": 0.9846098057917985,
+  "dims": {
+   "rate": 1,
+   "matched": 24,
+   "total": 24,
+   "unmatched": []
+  },
+  "confidence": 0.9915353931854891
+ },
+ "evaluated": {
+  "tier": "plan",
+  "metrics": {
+   "valid": true,
+   "segment": {
+    "precision": 1,
+    "recall": 1,
+    "f1": 1
+   },
+   "feature": {
+    "precision": 1,
+    "recall": 1,
+    "f1": 1
+   },
+   "transition": {
+    "precision": 1,
+    "recall": 1,
+    "f1": 1
+   },
+   "groove": {
+    "precision": 1,
+    "recall": 1,
+    "f1": 1
+   },
+   "dim_rate": 1,
+   "dims_total": 29,
+   "iou": 1,
+   "iou_abs": 1,
+   "bore_ok": true,
+   "length_ok": true,
+   "exact": true
+  },
+  "date": "2026-08-15"
+ }
+}

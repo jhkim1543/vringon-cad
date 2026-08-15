@@ -1,0 +1,18 @@
+{
+  "name": "vringon-revolve-demo",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "VRINGON 회전체 — 도면 → 파라메트릭 CAD 데모 (정적 + 온프렘)",
+  "scripts": {
+    "start": "node server.mjs 8349",
+    "samples": "node tools/build-samples.mjs",
+    "dataset": "node tools/gen-dataset.mjs",
+    "eval": "node tools/eval-extract.mjs",
+    "test": "node tools/test-golden.mjs",
+    "deploy": "node tools/deploy-docs.mjs"
+  },
+  "optionalDependencies": {
+    "sharp": "^0.33.5"
+  }
+}

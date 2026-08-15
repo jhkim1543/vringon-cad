@@ -1,0 +1,6 @@
+# VRINGON 회전체 — 파이썬 실행기/검증기 (py3.10~3.12 권장; 이 저장소는 uv 로 3.12 venv 를 만들어 검증했다)
+#   uv venv --python 3.12 .venv && uv pip install --python .venv/Scripts/python.exe -r requirements.txt
+cadquery==2.8.0
+jsonschema>=4.20
+numpy>=1.26
+pillow>=10

@@ -1,0 +1,162 @@
+{
+ "dsl": {
+  "name_ko": "부시",
+  "part_class": "bushing",
+  "material": "C3604",
+  "segments": [
+   {
+    "type": "cyl",
+    "length": 25,
+    "diameter": 30,
+    "tolerance": "m6"
+   }
+  ],
+  "transitions": [
+   {
+    "at": 0,
+    "type": "chamfer",
+    "size": 0.5,
+    "angle": 45
+   },
+   {
+    "at": 1,
+    "type": "chamfer",
+    "size": 0.5,
+    "angle": 45
+   }
+  ],
+  "grooves": [],
+  "bore": {
+   "through": true,
+   "segments": [
+    {
+     "length": 25,
+     "diameter": 25,
+     "tolerance": "H7"
+    }
+   ]
+  },
+  "features": [
+   {
+    "type": "cross_hole",
+    "depth": 3.5,
+    "position": 12.5,
+    "diameter": 2.5,
+    "through": false
+   }
+  ],
+  "drawing": {
+   "number": "VR-RB-003"
+  },
+  "dsl": "vringon-shaft/1.0",
+  "units": "mm",
+  "meta": {
+   "source": "extracted",
+   "provider": "primary",
+   "tier": "plan"
+  },
+  "id": "extracted"
+ },
+ "dims_read": [
+  {
+   "text": "25",
+   "kind": "overall",
+   "value": 25,
+   "where": "전체 길이"
+  },
+  {
+   "text": "⌀30 m6",
+   "kind": "diameter",
+   "value": 30,
+   "where": "외경"
+  },
+  {
+   "text": "⌀25 H7",
+   "kind": "bore_diameter",
+   "value": 25,
+   "where": "내경"
+  },
+  {
+   "text": "C0.5",
+   "kind": "chamfer",
+   "value": 0.5,
+   "where": "왼쪽 끝 모따기"
+  },
+  {
+   "text": "C0.5",
+   "kind": "chamfer",
+   "value": 0.5,
+   "where": "오른쪽 끝 모따기"
+  },
+  {
+   "text": "12.5",
+   "kind": "position",
+   "value": 12.5,
+   "where": "횡구멍 위치"
+  },
+  {
+   "text": "⌀2.5 깊이 3.5",
+   "kind": "other",
+   "value": 2.5,
+   "where": "횡구멍"
+  }
+ ],
+ "notes": [
+  "부시 부품으로 외경 30, 내경 25 관통 보어.",
+  "횡구멍은 12.5 위치에 지름 2.5, 깊이 3.5로 막힌 구멍."
+ ],
+ "confidence_self": 1,
+ "provider": "primary",
+ "tier": "plan",
+ "repaired": false,
+ "elapsed_ms": 9678,
+ "validation": {
+  "ok": true,
+  "errors": [],
+  "warnings": []
+ },
+ "verify": {
+  "iou": 0.9975169025139291,
+  "dims": {
+   "rate": 1,
+   "matched": 7,
+   "total": 7,
+   "unmatched": []
+  },
+  "confidence": 0.998634296382661
+ },
+ "evaluated": {
+  "tier": "plan",
+  "metrics": {
+   "valid": true,
+   "segment": {
+    "precision": 1,
+    "recall": 1,
+    "f1": 1
+   },
+   "feature": {
+    "precision": 1,
+    "recall": 1,
+    "f1": 1
+   },
+   "transition": {
+    "precision": 1,
+    "recall": 1,
+    "f1": 1
+   },
+   "groove": {
+    "precision": 1,
+    "recall": 1,
+    "f1": 1
+   },
+   "dim_rate": 1,
+   "dims_total": 9,
+   "iou": 1,
+   "iou_abs": 1,
+   "bore_ok": true,
+   "length_ok": true,
+   "exact": true
+  },
+  "date": "2026-08-15"
+ }
+}

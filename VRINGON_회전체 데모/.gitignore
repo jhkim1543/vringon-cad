@@ -1,0 +1,8 @@
+node_modules/
+data/
+pipeline/.venv/
+pipeline/__pycache__/
+pipeline/tests/__pycache__/
+tools/_scratch/
+config.local.json
+*.log

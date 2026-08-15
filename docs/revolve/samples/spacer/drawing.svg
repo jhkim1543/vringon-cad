@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 297 210" width="1188" height="840" font-family="Pretendard, 'Segoe UI', Arial, sans-serif" data-vringon-dsl="spacer" data-scale="2">
+<rect width="297" height="210" fill="#FFFFFF"/>
+<g id="hatch" stroke="#111111" stroke-width="0.18" fill="none" stroke-linecap="round" stroke-linejoin="round">
+<line x1="157.732" y1="73.2" x2="160.5" y2="70.432"/>
+<line x1="154.197" y1="73.2" x2="160.5" y2="66.897"/>
+<line x1="150.661" y1="73.2" x2="158.661" y2="65.2"/>
+<line x1="147.126" y1="73.2" x2="155.126" y2="65.2"/>
+<line x1="143.59" y1="73.2" x2="151.59" y2="65.2"/>
+<line x1="140.055" y1="73.2" x2="148.055" y2="65.2"/>
+<line x1="137.01" y1="72.71" x2="144.519" y2="65.2"/>
+<line x1="136.5" y1="69.683" x2="140.983" y2="65.2"/>
+<line x1="157.732" y1="113.2" x2="160.5" y2="110.432"/>
+<line x1="154.197" y1="113.2" x2="160.5" y2="106.897"/>
+<line x1="150.661" y1="113.2" x2="158.661" y2="105.2"/>
+<line x1="147.126" y1="113.2" x2="155.126" y2="105.2"/>
+<line x1="143.59" y1="113.2" x2="151.59" y2="105.2"/>
+<line x1="140.055" y1="113.2" x2="148.055" y2="105.2"/>
+<line x1="137.01" y1="112.71" x2="144.519" y2="105.2"/>
+<line x1="136.5" y1="109.683" x2="140.983" y2="105.2"/>
+</g>
+<g id="center" stroke="#111111" stroke-width="0.18" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="8 1.5 0.5 1.5">
+<line x1="128.5" y1="89.2" x2="168.5" y2="89.2"/>
+</g>
+<g id="dim" stroke="#111111" stroke-width="0.18" fill="none" stroke-linecap="round" stroke-linejoin="round">
+<line x1="136.5" y1="114.2" x2="136.5" y2="130.2"/>
+<line x1="160.5" y1="114.2" x2="160.5" y2="130.2"/>
+<line x1="136.5" y1="128.2" x2="160.5" y2="128.2"/>
+<polygon points="136.5,128.2 139.5,127.69 139.5,128.71" fill="#111111" stroke="none"/>
+<polygon points="160.5,128.2 157.5,128.71 157.5,127.69" fill="#111111" stroke="none"/>
+<line x1="148.5" y1="113.2" x2="148.5" y2="55.2"/>
+<polygon points="148.5,113.2 147.99,110.2 149.01,110.2" fill="#111111" stroke="none"/>
+<polygon points="148.5,65.2 149.01,68.2 147.99,68.2" fill="#111111" stroke="none"/>
+<line x1="148.5" y1="105.2" x2="148.5" y2="60.2"/>
+<polygon points="148.5,105.2 147.99,102.2 149.01,102.2" fill="#111111" stroke="none"/>
+<polygon points="148.5,73.2 149.01,76.2 147.99,76.2" fill="#111111" stroke="none"/>
+<line x1="137" y1="65.7" x2="131" y2="57.7"/>
+<line x1="131" y1="57.7" x2="121.72" y2="57.7"/>
+<polygon points="137,65.7 139.208,67.794 138.392,68.406" fill="#111111" stroke="none"/>
+<line x1="160" y1="65.7" x2="166" y2="57.7"/>
+<line x1="166" y1="57.7" x2="175.28" y2="57.7"/>
+<polygon points="160,65.7 158.608,68.406 157.792,67.794" fill="#111111" stroke="none"/>
+</g>
+<g id="outline" stroke="#111111" stroke-width="0.5" fill="none" stroke-linecap="round" stroke-linejoin="round">
+<polyline points="136.5,66.2 137.5,65.2 159.5,65.2 160.5,66.2"/>
+<polyline points="136.5,112.2 137.5,113.2 159.5,113.2 160.5,112.2"/>
+<line x1="136.5" y1="72.2" x2="136.5" y2="66.2"/>
+<line x1="136.5" y1="106.2" x2="136.5" y2="112.2"/>
+<line x1="160.5" y1="72.2" x2="160.5" y2="66.2"/>
+<line x1="160.5" y1="106.2" x2="160.5" y2="112.2"/>
+<line x1="137.5" y1="73.2" x2="137.5" y2="65.2"/>
+<line x1="137.5" y1="105.2" x2="137.5" y2="113.2"/>
+<line x1="159.5" y1="73.2" x2="159.5" y2="65.2"/>
+<line x1="159.5" y1="105.2" x2="159.5" y2="113.2"/>
+<line x1="159.5" y1="73.2" x2="159.5" y2="65.2"/>
+<line x1="159.5" y1="105.2" x2="159.5" y2="113.2"/>
+<polyline points="136.5,72.2 137.5,73.2 159.5,73.2 160.5,72.2"/>
+<polyline points="136.5,106.2 137.5,105.2 159.5,105.2 160.5,106.2"/>
+</g>
+<g id="text" fill="#111111">
+<text x="148.5" y="126.4" font-size="3.5" text-anchor="middle" fill="#111111" data-role="dim">12</text>
+<text x="148.5" y="53.6" font-size="3.5" text-anchor="middle" fill="#111111" data-role="dim">⌀24</text>
+<text x="148.5" y="58.6" font-size="3.5" text-anchor="middle" fill="#111111" data-role="dim">⌀16 H8</text>
+<text x="130" y="56.3" font-size="3.5" text-anchor="end" fill="#111111" data-role="dim">C0.5</text>
+<text x="167" y="56.3" font-size="3.5" text-anchor="start" fill="#111111" data-role="dim">C0.5</text>
+</g>
+<g id="frame" stroke="#111111" stroke-width="0.5" fill="none" stroke-linecap="round" stroke-linejoin="round">
+<rect x="10" y="10" width="277" height="190"/>
+<rect x="177" y="176" width="110" height="24"/>
+<line x1="177" y1="192" x2="287" y2="192"/>
+<line x1="177" y1="184" x2="287" y2="184"/>
+<line x1="232" y1="200" x2="232" y2="184"/>
+<line x1="255" y1="184" x2="255" y2="176"/>
+<circle cx="269" cy="193.5" r="2.4"/>
+<circle cx="269" cy="193.5" r="1.2"/>
+<polyline points="274.5,196.1 281,194.9 281,192.1 274.5,190.9"/>
+</g><g id="sheet-text" fill="#111111">
+<text x="179" y="181.5" font-size="4.2" text-anchor="start" font-weight="700" data-role="title">VRINGON</text>
+<text x="257" y="181.5" font-size="2.5" text-anchor="start" font-weight="700" data-role="title">도번 VR-RB-001</text>
+<text x="179" y="189.5" font-size="2.8" text-anchor="start" font-weight="700" data-role="title">품명 스페이서</text>
+<text x="234" y="189.5" font-size="2.8" text-anchor="start" font-weight="700" data-role="title">재질 A6061</text>
+<text x="179" y="197.5" font-size="2.5" text-anchor="start" font-weight="700" data-role="title">척도 2:1</text>
+<text x="234" y="197.5" font-size="2.5" text-anchor="start" font-weight="700" data-role="title">3각법 · 단위 mm</text>
+<text x="14" y="191.8" font-size="2.6" text-anchor="start" font-weight="400" data-role="note">1. 지시 없는 모따기 C0.5</text>
+<text x="14" y="196" font-size="2.6" text-anchor="start" font-weight="400" data-role="note">2. 지시 없는 공차 KS B ISO 2768-m</text>
+</g></svg>

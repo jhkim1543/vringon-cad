@@ -1,0 +1,51 @@
+{
+  "dsl": "vringon-shaft/1.0",
+  "id": "spacer",
+  "name": "Spacer sleeve",
+  "name_ko": "스페이서",
+  "part_class": "spacer",
+  "units": "mm",
+  "material": "A6061",
+  "drawing": {
+    "number": "VR-RB-001",
+    "scale": "2:1",
+    "projection": "third"
+  },
+  "segments": [
+    {
+      "type": "cyl",
+      "length": 12,
+      "diameter": 24
+    }
+  ],
+  "transitions": [
+    {
+      "at": 0,
+      "type": "chamfer",
+      "size": 0.5
+    },
+    {
+      "at": 1,
+      "type": "chamfer",
+      "size": 0.5
+    }
+  ],
+  "grooves": [],
+  "bore": {
+    "through": true,
+    "segments": [
+      {
+        "length": 12,
+        "diameter": 16,
+        "tolerance": "H8"
+      }
+    ],
+    "chamfer_left": 0.5,
+    "chamfer_right": 0.5
+  },
+  "features": [],
+  "meta": {
+    "source": "golden",
+    "difficulty": 1
+  }
+}

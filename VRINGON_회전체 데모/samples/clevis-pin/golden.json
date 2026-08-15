@@ -1,0 +1,54 @@
+{
+  "dsl": "vringon-shaft/1.0",
+  "id": "clevis-pin",
+  "name": "Clevis pin",
+  "name_ko": "클레비스 핀",
+  "part_class": "pin",
+  "units": "mm",
+  "material": "S45C",
+  "drawing": {
+    "number": "VR-RB-002",
+    "scale": "2:1",
+    "projection": "third"
+  },
+  "segments": [
+    {
+      "type": "cyl",
+      "length": 3,
+      "diameter": 16
+    },
+    {
+      "type": "cyl",
+      "length": 48,
+      "diameter": 12,
+      "tolerance": "h11"
+    }
+  ],
+  "transitions": [
+    {
+      "at": 0,
+      "type": "chamfer",
+      "size": 0.5
+    },
+    {
+      "at": 2,
+      "type": "chamfer",
+      "size": 1
+    }
+  ],
+  "grooves": [],
+  "bore": null,
+  "features": [
+    {
+      "type": "cross_hole",
+      "position": 44,
+      "diameter": 3.2,
+      "through": true,
+      "angle": 0
+    }
+  ],
+  "meta": {
+    "source": "golden",
+    "difficulty": 1
+  }
+}

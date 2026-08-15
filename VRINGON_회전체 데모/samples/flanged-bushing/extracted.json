@@ -1,0 +1,175 @@
+{
+ "dsl": {
+  "name_ko": "플랜지 부시",
+  "part_class": "bushing",
+  "material": "PBC2",
+  "segments": [
+   {
+    "type": "cyl",
+    "length": 5,
+    "diameter": 40
+   },
+   {
+    "type": "cyl",
+    "length": 25,
+    "diameter": 30,
+    "tolerance": "n6"
+   }
+  ],
+  "transitions": [
+   {
+    "at": 0,
+    "type": "chamfer",
+    "size": 0.5,
+    "angle": 45
+   },
+   {
+    "at": 1,
+    "type": "chamfer",
+    "size": 0.5,
+    "angle": 45
+   },
+   {
+    "at": 2,
+    "type": "chamfer",
+    "size": 0.5,
+    "angle": 45
+   }
+  ],
+  "grooves": [],
+  "bore": {
+   "through": true,
+   "segments": [
+    {
+     "length": 30,
+     "diameter": 22,
+     "tolerance": "H7"
+    }
+   ],
+   "chamfer_left": 0.5,
+   "chamfer_right": 0.5
+  },
+  "features": [],
+  "drawing": {
+   "number": "VR-RB-004"
+  },
+  "dsl": "vringon-shaft/1.0",
+  "units": "mm",
+  "meta": {
+   "source": "extracted",
+   "provider": "primary",
+   "tier": "plan",
+   "repaired": true
+  },
+  "id": "extracted"
+ },
+ "dims_read": [
+  {
+   "text": "30",
+   "kind": "overall",
+   "value": 30,
+   "where": "전체 길이"
+  },
+  {
+   "text": "5",
+   "kind": "length",
+   "value": 5,
+   "where": "플랜지 길이"
+  },
+  {
+   "text": "⌀40",
+   "kind": "diameter",
+   "value": 40,
+   "where": "플랜지 외경"
+  },
+  {
+   "text": "⌀30 n6",
+   "kind": "diameter",
+   "value": 30,
+   "where": "부시 외경"
+  },
+  {
+   "text": "⌀22 H7",
+   "kind": "bore_diameter",
+   "value": 22,
+   "where": "보어 내경"
+  },
+  {
+   "text": "C0.5",
+   "kind": "chamfer",
+   "value": 0.5,
+   "where": "왼쪽 끝면 모따기"
+  },
+  {
+   "text": "C0.5",
+   "kind": "chamfer",
+   "value": 0.5,
+   "where": "단차 모따기"
+  },
+  {
+   "text": "C0.5",
+   "kind": "chamfer",
+   "value": 0.5,
+   "where": "오른쪽 끝면 모따기"
+  }
+ ],
+ "notes": [
+  "Initial logic and parameters are validated.",
+  "Added missing C0.5 chamfer at transition 1 (the step between the flange and the main body) as indicated in the drawing.",
+  "수리 라운드: 채택 (신뢰도 0.95 → 1.00)"
+ ],
+ "confidence_self": 0.99,
+ "provider": "primary",
+ "tier": "plan",
+ "repaired": true,
+ "elapsed_ms": 34810,
+ "validation": {
+  "ok": true,
+  "errors": [],
+  "warnings": []
+ },
+ "verify": {
+  "iou": 0.9947010605090589,
+  "dims": {
+   "rate": 1,
+   "matched": 8,
+   "total": 8,
+   "unmatched": []
+  },
+  "confidence": 0.9970855832799824
+ },
+ "evaluated": {
+  "tier": "plan",
+  "metrics": {
+   "valid": true,
+   "segment": {
+    "precision": 1,
+    "recall": 1,
+    "f1": 1
+   },
+   "feature": {
+    "precision": 1,
+    "recall": 1,
+    "f1": 1
+   },
+   "transition": {
+    "precision": 1,
+    "recall": 1,
+    "f1": 1
+   },
+   "groove": {
+    "precision": 1,
+    "recall": 1,
+    "f1": 1
+   },
+   "dim_rate": 1,
+   "dims_total": 10,
+   "iou": 1,
+   "iou_abs": 1,
+   "bore_ok": true,
+   "length_ok": true,
+   "exact": true
+  },
+  "date": "2026-08-15"
+ }
+}

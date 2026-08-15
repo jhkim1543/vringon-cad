@@ -62,3 +62,9 @@ node tools/scrub-assets.mjs [--check] [--dir <경로>] [--rename-opaque]
   교체 시 서버의 같은 파일만 수정 후 `tmux kill-session -t vringon` → crontab 라인 수동 실행.
 - 정적 자산·폰트·three.js 전부 자체 서빙 — 외부 CDN 없음. AI 플래너만 폴백 LLM로 나가며,
   키 제거 시 완전 폐쇄망 모드(로컬 폴백)로 동작.
+
+## 회전체 데모 — 도면 → 파라메트릭 CAD (`VRINGON_회전체 데모/`)
+축·부시·핀 같은 회전체 부품의 2D 제작 도면을 시각 AI 가 파라메트릭 DSL 로 읽고, 결정론 실행기가 3D CAD·재렌더링 검증·STEP/USD 를 만듭니다.
+- 공개 데모(정적): https://jhkim1543.github.io/vringon-cad/revolve/
+- 온프렘(실제 AI 판독 + CadQuery 해석적 STEP): `cd "VRINGON_회전체 데모" && node server.mjs 8349`
+- 설명·수치·다음 할 일: [`VRINGON_회전체 데모/HANDOFF.md`](VRINGON_회전체%20데모/HANDOFF.md)

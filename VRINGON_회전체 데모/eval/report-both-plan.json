@@ -1,0 +1,1342 @@
+{
+ "date": "2026-08-15T15:54:25.996Z",
+ "method": "both",
+ "tier": "plan",
+ "n": 12,
+ "silhouette": {
+  "n": 12,
+  "valid_rate": 1,
+  "segment_f1": 0.7120726495726496,
+  "segment_precision": 0.7093253968253969,
+  "segment_recall": 0.7152777777777778,
+  "feature_f1": 0.4222222222222222,
+  "transition_f1": 0.6620370370370371,
+  "groove_f1": 0.5833333333333334,
+  "dim_rate": 0.7343872340185862,
+  "iou": 0.9970915746254705,
+  "iou_abs": 0.9970915746254686,
+  "length_ok_rate": 1,
+  "bore_ok_rate": 0.9166666666666666,
+  "exact_rate": 0.08333333333333333
+ },
+ "server": {
+  "n": 12,
+  "valid_rate": 1,
+  "segment_f1": 1,
+  "segment_precision": 1,
+  "segment_recall": 1,
+  "feature_f1": 0.9416666666666668,
+  "transition_f1": 1,
+  "groove_f1": 0.8333333333333334,
+  "dim_rate": 0.9715163308913307,
+  "iou": 0.9996176971962152,
+  "iou_abs": 0.9996176971962152,
+  "length_ok_rate": 1,
+  "bore_ok_rate": 0.9166666666666666,
+  "exact_rate": 0.6666666666666666
+ },
+ "server_ms_mean": 39696,
+ "server_repaired": 3,
+ "calibration": [
+  {
+   "id": "spacer",
+   "confidence": 0.9957217740498003,
+   "iou_reported": 0.9922214073632734,
+   "dim_rate_reported": 1,
+   "seg_f1": 1,
+   "exact": true
+  },
+  {
+   "id": "clevis-pin",
+   "confidence": 0.9976538113370683,
+   "iou_reported": 0.9957342024310334,
+   "dim_rate_reported": 1,
+   "seg_f1": 1,
+   "exact": true
+  },
+  {
+   "id": "bushing",
+   "confidence": 0.998634296382661,
+   "iou_reported": 0.9975169025139291,
+   "dim_rate_reported": 1,
+   "seg_f1": 1,
+   "exact": true
+  },
+  {
+   "id": "flanged-bushing",
+   "confidence": 0.9970855832799824,
+   "iou_reported": 0.9947010605090589,
+   "dim_rate_reported": 1,
+   "seg_f1": 1,
+   "exact": true
+  },
+  {
+   "id": "roller",
+   "confidence": 0.9974760377017409,
+   "iou_reported": 0.9954109776395288,
+   "dim_rate_reported": 1,
+   "seg_f1": 1,
+   "exact": true
+  },
+  {
+   "id": "hex-stud",
+   "confidence": 0.9400439805599873,
+   "iou_reported": 0.988891153465711,
+   "dim_rate_reported": 0.8461538461538461,
+   "seg_f1": 1,
+   "exact": false
+  },
+  {
+   "id": "threaded-shaft",
+   "confidence": 0.9468389655372743,
+   "iou_reported": 0.9881920585526198,
+   "dim_rate_reported": 0.8666666666666667,
+   "seg_f1": 1,
+   "exact": true
+  },
+  {
+   "id": "sleeve",
+   "confidence": 0.9950298058317613,
+   "iou_reported": 0.9909632833304751,
+   "dim_rate_reported": 1,
+   "seg_f1": 1,
+   "exact": false
+  },
+  {
+   "id": "taper-shaft",
+   "confidence": 0.973455445641778,
+   "iou_reported": 0.9941614163183843,
+   "dim_rate_reported": 0.9333333333333333,
+   "seg_f1": 1,
+   "exact": false
+  },
+  {
+   "id": "motor-shaft",
+   "confidence": 0.9915353931854891,
+   "iou_reported": 0.9846098057917985,
+   "dim_rate_reported": 1,
+   "seg_f1": 1,
+   "exact": true
+  },
+  {
+   "id": "stepped-shaft",
+   "confidence": 0.982369689380555,
+   "iou_reported": 0.9944600412979789,
+   "dim_rate_reported": 0.9583333333333334,
+   "seg_f1": 1,
+   "exact": true
+  },
+  {
+   "id": "spindle",
+   "confidence": 0.9807301928385666,
+   "iou_reported": 0.9938896068139227,
+   "dim_rate_reported": 0.9545454545454546,
+   "seg_f1": 1,
+   "exact": false
+  }
+ ],
+ "rows": [
+  {
+   "id": "spacer",
+   "kind": "golden",
+   "L": 12,
+   "archetype": "spacer",
+   "silhouette": {
+    "ms": 109,
+    "metrics": {
+     "valid": true,
+     "segment": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "feature": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "transition": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "groove": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "dim_rate": 1,
+     "dims_total": 7,
+     "iou": 0.9916521797202268,
+     "iou_abs": 0.9916521797202245,
+     "bore_ok": true,
+     "length_ok": true,
+     "exact": true
+    },
+    "self": {
+     "valid": true,
+     "errors": [],
+     "warnings": [],
+     "iou": 0.9992615401177583,
+     "dims": null,
+     "confidence": 0.9993751493304108,
+     "verdict": "pass"
+    }
+   },
+   "server": {
+    "ms": 9563,
+    "provider": "primary",
+    "repaired": false,
+    "valid": true,
+    "verify": {
+     "iou": 0.9922214073632734,
+     "dims": {
+      "rate": 1,
+      "matched": 5,
+      "total": 5,
+      "unmatched": []
+     },
+     "confidence": 0.9957217740498003
+    },
+    "metrics": {
+     "valid": true,
+     "segment": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "feature": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "transition": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "groove": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "dim_rate": 1,
+     "dims_total": 7,
+     "iou": 1,
+     "iou_abs": 1,
+     "bore_ok": true,
+     "length_ok": true,
+     "exact": true
+    },
+    "notes": [
+     "The part is a simple spacer with a through bore.",
+     "Outer diameter is 24, bore diameter is 16 H8.",
+     "Both ends have a C0.5 chamfer on the outer edge.",
+     "Bore chamfers are not explicitly dimensioned, assuming none or covered by general tolerance."
+    ]
+   }
+  },
+  {
+   "id": "clevis-pin",
+   "kind": "golden",
+   "L": 51,
+   "archetype": "pin",
+   "silhouette": {
+    "ms": 133,
+    "metrics": {
+     "valid": true,
+     "segment": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "feature": {
+      "precision": 0,
+      "recall": 0,
+      "f1": 0
+     },
+     "transition": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "groove": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "dim_rate": 0.8888888888888888,
+     "dims_total": 9,
+     "iou": 1,
+     "iou_abs": 1,
+     "bore_ok": true,
+     "length_ok": true,
+     "exact": false
+    },
+    "self": {
+     "valid": true,
+     "errors": [],
+     "warnings": [],
+     "iou": 0.9957342024310334,
+     "dims": null,
+     "confidence": 0.9963904789801051,
+     "verdict": "pass"
+    }
+   },
+   "server": {
+    "ms": 9312,
+    "provider": "primary",
+    "repaired": false,
+    "valid": true,
+    "verify": {
+     "iou": 0.9957342024310334,
+     "dims": {
+      "rate": 1,
+      "matched": 8,
+      "total": 8,
+      "unmatched": []
+     },
+     "confidence": 0.9976538113370683
+    },
+    "metrics": {
+     "valid": true,
+     "segment": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "feature": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "transition": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "groove": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "dim_rate": 1,
+     "dims_total": 9,
+     "iou": 1,
+     "iou_abs": 1,
+     "bore_ok": true,
+     "length_ok": true,
+     "exact": true
+    },
+    "notes": [
+     "Overall length is 51. First segment length is 3. Second segment length is 51 - 3 = 48.",
+     "Cross hole position is 7 from the right end. Total length is 51, so position from left is 51 - 7 = 44."
+    ]
+   }
+  },
+  {
+   "id": "bushing",
+   "kind": "golden",
+   "L": 25,
+   "archetype": "bushing",
+   "silhouette": {
+    "ms": 81,
+    "metrics": {
+     "valid": true,
+     "segment": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "feature": {
+      "precision": 0,
+      "recall": 0,
+      "f1": 0
+     },
+     "transition": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "groove": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "dim_rate": 0.7777777777777778,
+     "dims_total": 9,
+     "iou": 0.9966644429619896,
+     "iou_abs": 0.9966644429619675,
+     "bore_ok": true,
+     "length_ok": true,
+     "exact": false
+    },
+    "self": {
+     "valid": true,
+     "errors": [],
+     "warnings": [],
+     "iou": 0.9990906218721873,
+     "dims": null,
+     "confidence": 0.9992305261995431,
+     "verdict": "pass"
+    }
+   },
+   "server": {
+    "ms": 9734,
+    "provider": "primary",
+    "repaired": false,
+    "valid": true,
+    "verify": {
+     "iou": 0.9975169025139291,
+     "dims": {
+      "rate": 1,
+      "matched": 7,
+      "total": 7,
+      "unmatched": []
+     },
+     "confidence": 0.998634296382661
+    },
+    "metrics": {
+     "valid": true,
+     "segment": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "feature": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "transition": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "groove": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "dim_rate": 1,
+     "dims_total": 9,
+     "iou": 1,
+     "iou_abs": 1,
+     "bore_ok": true,
+     "length_ok": true,
+     "exact": true
+    },
+    "notes": [
+     "부시 부품으로 외경 30, 내경 25 관통 보어.",
+     "횡구멍은 12.5 위치에 지름 2.5, 깊이 3.5로 막힌 구멍."
+    ]
+   }
+  },
+  {
+   "id": "flanged-bushing",
+   "kind": "golden",
+   "L": 30,
+   "archetype": "bushing",
+   "silhouette": {
+    "ms": 110,
+    "metrics": {
+     "valid": true,
+     "segment": {
+      "precision": 0.5,
+      "recall": 0.5,
+      "f1": 0.5
+     },
+     "feature": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "transition": {
+      "precision": 1,
+      "recall": 0.6666666666666666,
+      "f1": 0.8
+     },
+     "groove": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "dim_rate": 0.7,
+     "dims_total": 10,
+     "iou": 0.9947609239573685,
+     "iou_abs": 0.9947609239573685,
+     "bore_ok": false,
+     "length_ok": true,
+     "exact": false
+    },
+    "self": {
+     "valid": true,
+     "errors": [],
+     "warnings": [],
+     "iou": 0.9894908784419321,
+     "dims": null,
+     "confidence": 0.9911076663739424,
+     "verdict": "pass"
+    }
+   },
+   "server": {
+    "ms": 34851,
+    "provider": "primary",
+    "repaired": true,
+    "valid": true,
+    "verify": {
+     "iou": 0.9947010605090589,
+     "dims": {
+      "rate": 1,
+      "matched": 8,
+      "total": 8,
+      "unmatched": []
+     },
+     "confidence": 0.9970855832799824
+    },
+    "metrics": {
+     "valid": true,
+     "segment": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "feature": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "transition": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "groove": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "dim_rate": 1,
+     "dims_total": 10,
+     "iou": 1,
+     "iou_abs": 1,
+     "bore_ok": true,
+     "length_ok": true,
+     "exact": true
+    },
+    "notes": [
+     "Initial logic and parameters are validated.",
+     "Added missing C0.5 chamfer at transition 1 (the step between the flange and the main body) as indicated in the drawing.",
+     "수리 라운드: 채택 (신뢰도 0.95 → 1.00)"
+    ]
+   }
+  },
+  {
+   "id": "roller",
+   "kind": "golden",
+   "L": 110,
+   "archetype": "roller",
+   "silhouette": {
+    "ms": 79,
+    "metrics": {
+     "valid": true,
+     "segment": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "feature": {
+      "precision": 0,
+      "recall": 0,
+      "f1": 0
+     },
+     "transition": {
+      "precision": 0.6666666666666666,
+      "recall": 0.6666666666666666,
+      "f1": 0.6666666666666666
+     },
+     "groove": {
+      "precision": 0,
+      "recall": 0,
+      "f1": 0
+     },
+     "dim_rate": 0.7368421052631579,
+     "dims_total": 19,
+     "iou": 0.9992050072497081,
+     "iou_abs": 0.999205007249708,
+     "bore_ok": true,
+     "length_ok": true,
+     "exact": false
+    },
+    "self": {
+     "valid": true,
+     "errors": [],
+     "warnings": [],
+     "iou": 0.9955257151476509,
+     "dims": null,
+     "confidence": 0.9962140666633968,
+     "verdict": "pass"
+    }
+   },
+   "server": {
+    "ms": 30330,
+    "provider": "primary",
+    "repaired": false,
+    "valid": true,
+    "verify": {
+     "iou": 0.9954109776395288,
+     "dims": {
+      "rate": 1,
+      "matched": 19,
+      "total": 19,
+      "unmatched": []
+     },
+     "confidence": 0.9974760377017409
+    },
+    "metrics": {
+     "valid": true,
+     "segment": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "feature": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "transition": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "groove": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "dim_rate": 1,
+     "dims_total": 19,
+     "iou": 1,
+     "iou_abs": 1,
+     "bore_ok": true,
+     "length_ok": true,
+     "exact": true
+    },
+    "notes": [
+     "가운데 세그먼트의 길이는 전체 길이 110에서 양쪽 세그먼트 길이 20을 각각 빼서 70으로 계산함.",
+     "오른쪽 홈의 위치는 오른쪽 끝면에서 홈의 오른쪽 벽까지 6이므로, 왼쪽 기준 offset은 20 - 6 - 1.3 = 12.7로 환산함."
+    ]
+   }
+  },
+  {
+   "id": "hex-stud",
+   "kind": "golden",
+   "L": 57,
+   "archetype": "shaft",
+   "silhouette": {
+    "ms": 94,
+    "metrics": {
+     "valid": true,
+     "segment": {
+      "precision": 0.6666666666666666,
+      "recall": 0.6666666666666666,
+      "f1": 0.6666666666666666
+     },
+     "feature": {
+      "precision": 0,
+      "recall": 0,
+      "f1": 0
+     },
+     "transition": {
+      "precision": 0.6666666666666666,
+      "recall": 0.6666666666666666,
+      "f1": 0.6666666666666666
+     },
+     "groove": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "dim_rate": 0.6153846153846154,
+     "dims_total": 13,
+     "iou": 0.9995338495208784,
+     "iou_abs": 0.9995338495208785,
+     "bore_ok": true,
+     "length_ok": true,
+     "exact": false
+    },
+    "self": {
+     "valid": true,
+     "errors": [],
+     "warnings": [],
+     "iou": 0.98844107855167,
+     "dims": null,
+     "confidence": 0.9902193741591054,
+     "verdict": "pass"
+    }
+   },
+   "server": {
+    "ms": 74724,
+    "provider": "primary",
+    "repaired": true,
+    "valid": true,
+    "verify": {
+     "iou": 0.988891153465711,
+     "dims": {
+      "rate": 0.8461538461538461,
+      "matched": 11,
+      "total": 13,
+      "unmatched": [
+       "M10",
+       "5"
+      ]
+     },
+     "confidence": 0.9400439805599873
+    },
+    "metrics": {
+     "valid": true,
+     "segment": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "feature": {
+      "precision": 0.5,
+      "recall": 0.5,
+      "f1": 0.5
+     },
+     "transition": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "groove": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "dim_rate": 0.9230769230769231,
+     "dims_total": 13,
+     "iou": 1,
+     "iou_abs": 1,
+     "bore_ok": true,
+     "length_ok": true,
+     "exact": false
+    },
+    "notes": [
+     "이전 답변에서 평면(flat)의 깊이를 1.5로, 개수를 1로 잘못 계산했습니다. 단면도 B-B를 보면 원통의 양면이 깎인 형태(count: 2)이며, 두 평면 사이의 거리가 10.5이므로 한쪽 깊이는 (12 - 10.5) / 2 = 0.75가 맞습니다.",
+     "치수 '5'는 가운데 세그먼트에서 평면 피처가 시작되는 위치(offset)입니다. 검증기가 이를 cross_hole 등의 position으로 오해하지 않도록 dims_read에서 kind를 'other'로 명시했습니다.",
+     "치수 'M10'은 오른쪽 세그먼트의 나사 호칭경으로, DSL의 thread 피처(spec: 'M10')에 올바르게 반영되어 있으며 dims_read에도 명확히 추가했습니다.",
+     "수리 라운드: 채택 (신뢰도 0.94 → 0.94)"
+    ]
+   }
+  },
+  {
+   "id": "threaded-shaft",
+   "kind": "golden",
+   "L": 118,
+   "archetype": "shaft",
+   "silhouette": {
+    "ms": 97,
+    "metrics": {
+     "valid": true,
+     "segment": {
+      "precision": 0.5,
+      "recall": 0.5,
+      "f1": 0.5
+     },
+     "feature": {
+      "precision": 0,
+      "recall": 0,
+      "f1": 0
+     },
+     "transition": {
+      "precision": 0.6,
+      "recall": 0.6,
+      "f1": 0.6
+     },
+     "groove": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "dim_rate": 0.7222222222222222,
+     "dims_total": 18,
+     "iou": 0.9964380010271501,
+     "iou_abs": 0.9964380010271507,
+     "bore_ok": true,
+     "length_ok": true,
+     "exact": false
+    },
+    "self": {
+     "valid": true,
+     "errors": [],
+     "warnings": [],
+     "iou": 0.9889313826287893,
+     "dims": null,
+     "confidence": 0.9906342468397449,
+     "verdict": "pass"
+    }
+   },
+   "server": {
+    "ms": 59099,
+    "provider": "primary",
+    "repaired": true,
+    "valid": true,
+    "verify": {
+     "iou": 0.9881920585526198,
+     "dims": {
+      "rate": 0.8666666666666667,
+      "matched": 13,
+      "total": 15,
+      "unmatched": [
+       "M12",
+       "M12x1.25"
+      ]
+     },
+     "confidence": 0.9468389655372743
+    },
+    "metrics": {
+     "valid": true,
+     "segment": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "feature": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "transition": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "groove": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "dim_rate": 1,
+     "dims_total": 18,
+     "iou": 1,
+     "iou_abs": 1,
+     "bore_ok": true,
+     "length_ok": true,
+     "exact": true
+    },
+    "notes": [
+     "검증기 피드백을 반영하여 spec 필드에 M12, M12x1.25를 정확히 기입하고 dims_read와 일치시킴.",
+     "전체 길이 118에서 각 세그먼트 길이를 계산함 (20, 60, 20, 18).",
+     "크로스홀 위치는 오른쪽 끝에서 28이므로 왼쪽 기준 90으로 계산함.",
+     "수리 라운드: 채택 (신뢰도 0.95 → 0.95)"
+    ]
+   }
+  },
+  {
+   "id": "sleeve",
+   "kind": "golden",
+   "L": 60,
+   "archetype": "sleeve",
+   "silhouette": {
+    "ms": 128,
+    "metrics": {
+     "valid": true,
+     "segment": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "feature": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "transition": {
+      "precision": 0,
+      "recall": 0,
+      "f1": 0
+     },
+     "groove": {
+      "precision": 0,
+      "recall": 0,
+      "f1": 0
+     },
+     "dim_rate": 0.6666666666666666,
+     "dims_total": 12,
+     "iou": 0.9986902135766571,
+     "iou_abs": 0.9986902135766571,
+     "bore_ok": true,
+     "length_ok": true,
+     "exact": false
+    },
+    "self": {
+     "valid": true,
+     "errors": [],
+     "warnings": [],
+     "iou": 0.9934519555332845,
+     "dims": null,
+     "confidence": 0.9944593469897023,
+     "verdict": "pass"
+    }
+   },
+   "server": {
+    "ms": 28903,
+    "provider": "primary",
+    "repaired": false,
+    "valid": true,
+    "verify": {
+     "iou": 0.9909632833304751,
+     "dims": {
+      "rate": 1,
+      "matched": 9,
+      "total": 9,
+      "unmatched": []
+     },
+     "confidence": 0.9950298058317613
+    },
+    "metrics": {
+     "valid": true,
+     "segment": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "feature": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "transition": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "groove": {
+      "precision": 0,
+      "recall": 0,
+      "f1": 0
+     },
+     "dim_rate": 0.8333333333333334,
+     "dims_total": 12,
+     "iou": 0.9961992160883183,
+     "iou_abs": 0.9961992160883181,
+     "bore_ok": false,
+     "length_ok": true,
+     "exact": false
+    },
+    "notes": [
+     "내경에 위치한 멈춤링 홈(폭 2.4, 지름 36.2)은 외부 grooves 대신 bore의 segment로 분할하여 표현함.",
+     "우측 내경 구간의 길이는 전체 길이(60)에서 좌측 내경(15)과 홈 폭(2.4)을 뺀 42.6으로 계산함.",
+     "도면 하단의 '지시 없는 모따기 C0.5' 주서에 따라 내경 양끝 입구에도 모따기 0.5를 적용함."
+    ]
+   }
+  },
+  {
+   "id": "taper-shaft",
+   "kind": "golden",
+   "L": 95,
+   "archetype": "shaft",
+   "silhouette": {
+    "ms": 76,
+    "metrics": {
+     "valid": true,
+     "segment": {
+      "precision": 0.6666666666666666,
+      "recall": 0.6666666666666666,
+      "f1": 0.6666666666666666
+     },
+     "feature": {
+      "precision": 1,
+      "recall": 0.5,
+      "f1": 0.6666666666666666
+     },
+     "transition": {
+      "precision": 0.6666666666666666,
+      "recall": 0.6666666666666666,
+      "f1": 0.6666666666666666
+     },
+     "groove": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "dim_rate": 0.8125,
+     "dims_total": 16,
+     "iou": 0.999111034735444,
+     "iou_abs": 0.9991110347354454,
+     "bore_ok": true,
+     "length_ok": true,
+     "exact": false
+    },
+    "self": {
+     "valid": true,
+     "errors": [],
+     "warnings": [],
+     "iou": 0.9943500690043425,
+     "dims": null,
+     "confidence": 0.9952192891575207,
+     "verdict": "pass"
+    }
+   },
+   "server": {
+    "ms": 23089,
+    "provider": "primary",
+    "repaired": false,
+    "valid": true,
+    "verify": {
+     "iou": 0.9941614163183843,
+     "dims": {
+      "rate": 0.9333333333333333,
+      "matched": 14,
+      "total": 15,
+      "unmatched": [
+       "M16×1.5"
+      ]
+     },
+     "confidence": 0.973455445641778
+    },
+    "metrics": {
+     "valid": true,
+     "segment": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "feature": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "transition": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "groove": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "dim_rate": 0.9375,
+     "dims_total": 16,
+     "iou": 1,
+     "iou_abs": 1,
+     "bore_ok": true,
+     "length_ok": true,
+     "exact": false
+    },
+    "notes": [
+     "첫 번째 세그먼트 길이는 전체 길이(95)에서 나머지 세그먼트 길이(40, 20)를 빼서 35mm로 계산함.",
+     "키홈 깊이는 세그먼트 지름(25)에서 단면도 치수(21)를 빼서 4mm로 계산함.",
+     "도피홈 깊이는 나사 호칭경(16)에서 홈 지름(13.8)을 뺀 후 2로 나누어 1.1mm로 계산함."
+    ]
+   }
+  },
+  {
+   "id": "motor-shaft",
+   "kind": "golden",
+   "L": 205,
+   "archetype": "shaft",
+   "silhouette": {
+    "ms": 92,
+    "metrics": {
+     "valid": true,
+     "segment": {
+      "precision": 0,
+      "recall": 0,
+      "f1": 0
+     },
+     "feature": {
+      "precision": 1,
+      "recall": 0.25,
+      "f1": 0.4
+     },
+     "transition": {
+      "precision": 1,
+      "recall": 0.2857142857142857,
+      "f1": 0.4444444444444445
+     },
+     "groove": {
+      "precision": 0,
+      "recall": 0,
+      "f1": 0
+     },
+     "dim_rate": 0.41379310344827586,
+     "dims_total": 29,
+     "iou": 0.9930889139195633,
+     "iou_abs": 0.9930889139195632,
+     "bore_ok": true,
+     "length_ok": true,
+     "exact": false
+    },
+    "self": {
+     "valid": true,
+     "errors": [],
+     "warnings": [],
+     "iou": 0.9797833898227424,
+     "dims": null,
+     "confidence": 0.9828936375423205,
+     "verdict": "pass"
+    }
+   },
+   "server": {
+    "ms": 69802,
+    "provider": "primary",
+    "repaired": false,
+    "valid": true,
+    "verify": {
+     "iou": 0.9846098057917985,
+     "dims": {
+      "rate": 1,
+      "matched": 24,
+      "total": 24,
+      "unmatched": []
+     },
+     "confidence": 0.9915353931854891
+    },
+    "metrics": {
+     "valid": true,
+     "segment": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "feature": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "transition": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "groove": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "dim_rate": 1,
+     "dims_total": 29,
+     "iou": 1,
+     "iou_abs": 1,
+     "bore_ok": true,
+     "length_ok": true,
+     "exact": true
+    },
+    "notes": [
+     "가운데 세그먼트(⌀20)의 길이는 전체 길이(205)에서 나머지 세그먼트 길이의 합(145)을 빼서 60으로 계산함.",
+     "키홈 깊이는 단면 A-A의 치수 16.5를 이용하여 (20 - 16.5) = 3.5로 계산함.",
+     "오른쪽 끝 세그먼트(⌀12)의 평면(D-cut) 깊이는 단면 B-B의 치수 10.5를 이용하여 (12 - 10.5) = 1.5로 계산함.",
+     "평면(D-cut)의 시작 위치는 단차로부터의 거리 치수 1을 offset으로 적용함."
+    ]
+   }
+  },
+  {
+   "id": "stepped-shaft",
+   "kind": "golden",
+   "L": 100,
+   "archetype": "shaft",
+   "silhouette": {
+    "ms": 197,
+    "metrics": {
+     "valid": true,
+     "segment": {
+      "precision": 0.75,
+      "recall": 0.75,
+      "f1": 0.75
+     },
+     "feature": {
+      "precision": 0.5,
+      "recall": 0.25,
+      "f1": 0.3333333333333333
+     },
+     "transition": {
+      "precision": 0.6,
+      "recall": 0.6,
+      "f1": 0.6
+     },
+     "groove": {
+      "precision": 0,
+      "recall": 0,
+      "f1": 0
+     },
+     "dim_rate": 0.8,
+     "dims_total": 25,
+     "iou": 0.9987246707571322,
+     "iou_abs": 0.9987246707571323,
+     "bore_ok": true,
+     "length_ok": true,
+     "exact": false
+    },
+    "self": {
+     "valid": true,
+     "errors": [],
+     "warnings": [],
+     "iou": 0.9946197553667352,
+     "dims": null,
+     "confidence": 0.9954474853103144,
+     "verdict": "pass"
+    }
+   },
+   "server": {
+    "ms": 52490,
+    "provider": "primary",
+    "repaired": false,
+    "valid": true,
+    "verify": {
+     "iou": 0.9944600412979789,
+     "dims": {
+      "rate": 0.9583333333333334,
+      "matched": 23,
+      "total": 24,
+      "unmatched": [
+       "M20×1.5"
+      ]
+     },
+     "confidence": 0.982369689380555
+    },
+    "metrics": {
+     "valid": true,
+     "segment": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "feature": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "transition": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "groove": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "dim_rate": 1,
+     "dims_total": 25,
+     "iou": 1,
+     "iou_abs": 1,
+     "bore_ok": true,
+     "length_ok": true,
+     "exact": true
+    },
+    "notes": [
+     "중간 원통 세그먼트(세그먼트 2)의 길이는 전체 길이 100에서 나머지 세그먼트 길이(30, 10, 20)를 빼서 40으로 계산함.",
+     "키홈의 위치는 왼쪽 끝에서 50 떨어진 횡구멍 중심으로부터 왼쪽으로 5 떨어진 곳이 키홈의 왼쪽 끝이므로, 키홈의 절대 위치는 45, 해당 세그먼트(시작위치 30) 내의 offset은 15로 계산함.",
+     "키홈의 깊이는 단면도 A-A의 치수 26을 바탕으로 세그먼트 지름 30에서 빼서 4로 계산함."
+    ]
+   }
+  },
+  {
+   "id": "spindle",
+   "kind": "golden",
+   "L": 119,
+   "archetype": "spindle",
+   "silhouette": {
+    "ms": 147,
+    "metrics": {
+     "valid": true,
+     "segment": {
+      "precision": 0.42857142857142855,
+      "recall": 0.5,
+      "f1": 0.4615384615384615
+     },
+     "feature": {
+      "precision": 1,
+      "recall": 0.5,
+      "f1": 0.6666666666666666
+     },
+     "transition": {
+      "precision": 0.6,
+      "recall": 0.42857142857142855,
+      "f1": 0.5
+     },
+     "groove": {
+      "precision": 0,
+      "recall": 0,
+      "f1": 0
+     },
+     "dim_rate": 0.6785714285714286,
+     "dims_total": 28,
+     "iou": 0.9972296580795257,
+     "iou_abs": 0.9972296580795257,
+     "bore_ok": true,
+     "length_ok": true,
+     "exact": false
+    },
+    "self": {
+     "valid": true,
+     "errors": [],
+     "warnings": [],
+     "iou": 0.9925179824836905,
+     "dims": null,
+     "confidence": 0.9936690621015842,
+     "verdict": "pass"
+    }
+   },
+   "server": {
+    "ms": 74454,
+    "provider": "primary",
+    "repaired": false,
+    "valid": true,
+    "verify": {
+     "iou": 0.9938896068139227,
+     "dims": {
+      "rate": 0.9545454545454546,
+      "matched": 21,
+      "total": 22,
+      "unmatched": [
+       "M12x1"
+      ]
+     },
+     "confidence": 0.9807301928385666
+    },
+    "metrics": {
+     "valid": true,
+     "segment": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "feature": {
+      "precision": 0.6666666666666666,
+      "recall": 1,
+      "f1": 0.8
+     },
+     "transition": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "groove": {
+      "precision": 0,
+      "recall": 0,
+      "f1": 0
+     },
+     "dim_rate": 0.9642857142857143,
+     "dims_total": 28,
+     "iou": 0.9992131502662647,
+     "iou_abs": 0.9992131502662651,
+     "bore_ok": true,
+     "length_ok": true,
+     "exact": false
+    },
+    "notes": [
+     "좌측 ⌀15 j5 세그먼트의 길이는 도면에 명시되지 않아 우측과 대칭 형상임을 고려하여 20으로 추정함.",
+     "중앙 ⌀18 세그먼트의 길이는 전체 길이 119에서 나머지 세그먼트 길이의 합(14+8+20+20+12=74)을 빼서 45로 계산함.",
+     "키홈의 깊이(t1)는 ⌀18 지름에서 단면도의 14.5를 빼서 3.5로 계산함.",
+     "좌측 끝면에도 센터구멍 형상이 그려져 있어 우측과 동일한 규격(A2)으로 판단하여 양쪽 모두 추가함."
+    ]
+   }
+  }
+ ]
+}

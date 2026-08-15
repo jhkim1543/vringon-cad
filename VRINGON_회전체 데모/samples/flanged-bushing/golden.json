@@ -1,0 +1,62 @@
+{
+  "dsl": "vringon-shaft/1.0",
+  "id": "flanged-bushing",
+  "name": "Flanged bushing",
+  "name_ko": "플랜지 부시",
+  "part_class": "bushing",
+  "units": "mm",
+  "material": "PBC2",
+  "drawing": {
+    "number": "VR-RB-004",
+    "scale": "2:1",
+    "projection": "third"
+  },
+  "segments": [
+    {
+      "type": "cyl",
+      "length": 5,
+      "diameter": 40
+    },
+    {
+      "type": "cyl",
+      "length": 25,
+      "diameter": 30,
+      "tolerance": "n6"
+    }
+  ],
+  "transitions": [
+    {
+      "at": 0,
+      "type": "chamfer",
+      "size": 0.5
+    },
+    {
+      "at": 1,
+      "type": "chamfer",
+      "size": 0.5
+    },
+    {
+      "at": 2,
+      "type": "chamfer",
+      "size": 0.5
+    }
+  ],
+  "grooves": [],
+  "bore": {
+    "through": true,
+    "segments": [
+      {
+        "length": 30,
+        "diameter": 22,
+        "tolerance": "H7"
+      }
+    ],
+    "chamfer_left": 0.5,
+    "chamfer_right": 0.5
+  },
+  "features": [],
+  "meta": {
+    "source": "golden",
+    "difficulty": 2
+  }
+}

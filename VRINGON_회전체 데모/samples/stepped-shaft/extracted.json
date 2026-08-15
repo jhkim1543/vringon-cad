@@ -1,0 +1,321 @@
+{
+ "dsl": {
+  "name_ko": "단붙이 축",
+  "part_class": "shaft",
+  "material": "S45C",
+  "segments": [
+   {
+    "type": "cyl",
+    "length": 30,
+    "diameter": 20,
+    "tolerance": "h6"
+   },
+   {
+    "type": "cyl",
+    "length": 40,
+    "diameter": 30
+   },
+   {
+    "type": "taper",
+    "length": 10,
+    "d_start": 30,
+    "d_end": 25
+   },
+   {
+    "type": "thread",
+    "length": 20,
+    "diameter": 20,
+    "spec": "M20x1.5",
+    "pitch": 1.5
+   }
+  ],
+  "transitions": [
+   {
+    "at": 0,
+    "type": "chamfer",
+    "size": 1,
+    "angle": 45
+   },
+   {
+    "at": 1,
+    "type": "fillet",
+    "radius": 1.5
+   },
+   {
+    "at": 1,
+    "type": "chamfer",
+    "size": 1,
+    "angle": 45
+   },
+   {
+    "at": 3,
+    "type": "undercut",
+    "width": 4.5,
+    "depth": 1.1
+   },
+   {
+    "at": 4,
+    "type": "chamfer",
+    "size": 1.5,
+    "angle": 45
+   }
+  ],
+  "grooves": [
+   {
+    "segment": 1,
+    "offset": 10,
+    "width": 1.6,
+    "depth": 0.7,
+    "kind": "generic"
+   }
+  ],
+  "bore": null,
+  "features": [
+   {
+    "type": "center_hole",
+    "end": "left",
+    "form": "A",
+    "d": 2.5
+   },
+   {
+    "type": "center_hole",
+    "end": "right",
+    "form": "A",
+    "d": 2
+   },
+   {
+    "type": "cross_hole",
+    "position": 50,
+    "diameter": 4,
+    "through": true
+   },
+   {
+    "type": "keyway",
+    "segment": 1,
+    "offset": 15,
+    "length": 20,
+    "width": 8,
+    "depth": 4,
+    "kind": "parallel"
+   }
+  ],
+  "drawing": {
+   "number": "VR-RB-011"
+  },
+  "dsl": "vringon-shaft/1.0",
+  "units": "mm",
+  "meta": {
+   "source": "extracted",
+   "provider": "primary",
+   "tier": "plan"
+  },
+  "id": "extracted"
+ },
+ "dims_read": [
+  {
+   "text": "30",
+   "kind": "length",
+   "value": 30,
+   "where": "segment 1 length"
+  },
+  {
+   "text": "100",
+   "kind": "overall",
+   "value": 100,
+   "where": "overall length"
+  },
+  {
+   "text": "10",
+   "kind": "length",
+   "value": 10,
+   "where": "segment 3 length"
+  },
+  {
+   "text": "20",
+   "kind": "length",
+   "value": 20,
+   "where": "segment 4 length"
+  },
+  {
+   "text": "50",
+   "kind": "position",
+   "value": 50,
+   "where": "cross hole position"
+  },
+  {
+   "text": "10",
+   "kind": "position",
+   "value": 10,
+   "where": "groove offset"
+  },
+  {
+   "text": "1.6",
+   "kind": "groove_width",
+   "value": 1.6,
+   "where": "groove width"
+  },
+  {
+   "text": "20",
+   "kind": "length",
+   "value": 20,
+   "where": "keyway length"
+  },
+  {
+   "text": "5",
+   "kind": "position",
+   "value": 5,
+   "where": "keyway left edge to cross hole"
+  },
+  {
+   "text": "⌀20 h6",
+   "kind": "diameter",
+   "value": 20,
+   "where": "segment 1 diameter"
+  },
+  {
+   "text": "R1.5",
+   "kind": "radius",
+   "value": 1.5,
+   "where": "fillet at step 1"
+  },
+  {
+   "text": "C1",
+   "kind": "chamfer",
+   "value": 1,
+   "where": "chamfer at step 1"
+  },
+  {
+   "text": "C1",
+   "kind": "chamfer",
+   "value": 1,
+   "where": "left end chamfer"
+  },
+  {
+   "text": "⌀30",
+   "kind": "diameter",
+   "value": 30,
+   "where": "segment 2 diameter"
+  },
+  {
+   "text": "⌀28.6",
+   "kind": "groove_diameter",
+   "value": 28.6,
+   "where": "groove diameter"
+  },
+  {
+   "text": "4.5×⌀17.8 (DIN 76-A)",
+   "kind": "other",
+   "value": 4.5,
+   "where": "undercut at step 3"
+  },
+  {
+   "text": "⌀4 관통",
+   "kind": "diameter",
+   "value": 4,
+   "where": "cross hole diameter"
+  },
+  {
+   "text": "⌀25",
+   "kind": "diameter",
+   "value": 25,
+   "where": "segment 3 end diameter"
+  },
+  {
+   "text": "M20×1.5",
+   "kind": "thread",
+   "value": 20,
+   "where": "segment 4 thread"
+  },
+  {
+   "text": "C1.5",
+   "kind": "chamfer",
+   "value": 1.5,
+   "where": "right end chamfer"
+  },
+  {
+   "text": "센터구멍 A2.5 (DIN 332)",
+   "kind": "other",
+   "value": 2.5,
+   "where": "left center hole"
+  },
+  {
+   "text": "센터구멍 A2 (DIN 332)",
+   "kind": "other",
+   "value": 2,
+   "where": "right center hole"
+  },
+  {
+   "text": "8",
+   "kind": "keyway_width",
+   "value": 8,
+   "where": "keyway width"
+  },
+  {
+   "text": "26",
+   "kind": "other",
+   "value": 26,
+   "where": "keyway depth reference"
+  }
+ ],
+ "notes": [
+  "중간 원통 세그먼트(세그먼트 2)의 길이는 전체 길이 100에서 나머지 세그먼트 길이(30, 10, 20)를 빼서 40으로 계산함.",
+  "키홈의 위치는 왼쪽 끝에서 50 떨어진 횡구멍 중심으로부터 왼쪽으로 5 떨어진 곳이 키홈의 왼쪽 끝이므로, 키홈의 절대 위치는 45, 해당 세그먼트(시작위치 30) 내의 offset은 15로 계산함.",
+  "키홈의 깊이는 단면도 A-A의 치수 26을 바탕으로 세그먼트 지름 30에서 빼서 4로 계산함."
+ ],
+ "confidence_self": 0.98,
+ "provider": "primary",
+ "tier": "plan",
+ "repaired": false,
+ "elapsed_ms": 52392,
+ "validation": {
+  "ok": true,
+  "errors": [],
+  "warnings": []
+ },
+ "verify": {
+  "iou": 0.9944600412979789,
+  "dims": {
+   "rate": 0.9583333333333334,
+   "matched": 23,
+   "total": 24,
+   "unmatched": [
+    "M20×1.5"
+   ]
+  },
+  "confidence": 0.982369689380555
+ },
+ "evaluated": {
+  "tier": "plan",
+  "metrics": {
+   "valid": true,
+   "segment": {
+    "precision": 1,
+    "recall": 1,
+    "f1": 1
+   },
+   "feature": {
+    "precision": 1,
+    "recall": 1,
+    "f1": 1
+   },
+   "transition": {
+    "precision": 1,
+    "recall": 1,
+    "f1": 1
+   },
+   "groove": {
+    "precision": 1,
+    "recall": 1,
+    "f1": 1
+   },
+   "dim_rate": 1,
+   "dims_total": 25,
+   "iou": 1,
+   "iou_abs": 1,
+   "bore_ok": true,
+   "length_ok": true,
+   "exact": true
+  },
+  "date": "2026-08-15"
+ }
+}

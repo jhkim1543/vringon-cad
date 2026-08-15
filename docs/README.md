@@ -14,3 +14,8 @@
 바뀌는 부분을 시연합니다. 그 컴파일러(`js/spec-cad.js`)는 운영 데모와 같은 파일입니다.
 
 전체 파이프라인은 온프레미스 서버에서 돌아갑니다.
+
+## 회전체 데모 (`revolve/`)
+회전체(축·부시·핀) 도면 → 파라메트릭 DSL → 3D CAD → 검증 → STEP/USD 데모의 정적 사본입니다.
+https://jhkim1543.github.io/vringon-cad/revolve/ — 원본은 저장소의 `VRINGON_회전체 데모/` 폴더이며,
+`node tools/deploy-docs.mjs` 가 이 사본을 만듭니다(손으로 고치지 않음).

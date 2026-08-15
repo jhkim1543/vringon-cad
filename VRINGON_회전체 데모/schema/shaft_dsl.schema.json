@@ -1,0 +1,511 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://vringon.ai/schema/shaft_dsl.schema.json",
+  "title": "VRINGON 회전체 DSL",
+  "description": "회전체 부품 하나. 세그먼트(축 방향 외형) + 전이(모서리) + 홈 + 보어(내경) + 비축대칭 피처.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "dsl",
+    "segments"
+  ],
+  "properties": {
+    "dsl": {
+      "type": "string",
+      "description": "DSL 버전 태그. 항상 'vringon-shaft/1.0'.",
+      "const": "vringon-shaft/1.0"
+    },
+    "id": {
+      "type": "string",
+      "description": "슬러그 식별자 (예: stepped-shaft-01)."
+    },
+    "name": {
+      "type": "string",
+      "description": "영문 부품명."
+    },
+    "name_ko": {
+      "type": "string",
+      "description": "한글 부품명."
+    },
+    "part_class": {
+      "type": "string",
+      "description": "부품 분류.",
+      "enum": [
+        "shaft",
+        "bushing",
+        "pin",
+        "roller",
+        "spacer",
+        "flange",
+        "sleeve",
+        "spindle",
+        "other"
+      ]
+    },
+    "units": {
+      "type": "string",
+      "description": "길이 단위. mm 고정.",
+      "enum": [
+        "mm"
+      ]
+    },
+    "material": {
+      "type": "string",
+      "description": "재질 (예: S45C, SUS304, A6061)."
+    },
+    "drawing": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "도면 메타 (표제란).",
+      "properties": {
+        "number": {
+          "type": "string",
+          "description": "도번."
+        },
+        "scale": {
+          "type": "string",
+          "description": "척도 (예: 1:1)."
+        },
+        "projection": {
+          "type": "string",
+          "description": "투상법.",
+          "enum": [
+            "third",
+            "first"
+          ]
+        },
+        "notes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "일반 주기."
+        }
+      }
+    },
+    "segments": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 24,
+      "description": "왼쪽부터 오른쪽으로 이어지는 외형 세그먼트. 길이의 합이 전체 길이.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "type",
+          "length"
+        ],
+        "properties": {
+          "type": {
+            "type": "string",
+            "description": "cyl=원통, taper=테이퍼(원추), thread=수나사(호칭경=diameter).",
+            "enum": [
+              "cyl",
+              "taper",
+              "thread"
+            ]
+          },
+          "length": {
+            "type": "number",
+            "exclusiveMinimum": 0,
+            "description": "축 방향 길이 (mm)."
+          },
+          "diameter": {
+            "type": "number",
+            "exclusiveMinimum": 0,
+            "description": "cyl·thread 의 지름 (mm). thread 는 호칭경(바깥지름)."
+          },
+          "d_start": {
+            "type": "number",
+            "exclusiveMinimum": 0,
+            "description": "taper 시작(왼쪽) 지름 (mm)."
+          },
+          "d_end": {
+            "type": "number",
+            "exclusiveMinimum": 0,
+            "description": "taper 끝(오른쪽) 지름 (mm)."
+          },
+          "spec": {
+            "type": "string",
+            "description": "thread 호칭 (예: M20x1.5, M12). 피치 생략 시 보통나사."
+          },
+          "pitch": {
+            "type": "number",
+            "exclusiveMinimum": 0,
+            "description": "thread 피치 (mm). spec 에서 유도되면 생략 가능."
+          },
+          "hand": {
+            "type": "string",
+            "description": "나사 방향.",
+            "enum": [
+              "right",
+              "left"
+            ]
+          },
+          "tolerance": {
+            "type": "string",
+            "description": "치수 공차 표기 (예: h6, k6, ±0.05, -0.013/-0.028)."
+          },
+          "roughness": {
+            "type": "string",
+            "description": "표면 거칠기 표기 (예: Ra 0.8)."
+          },
+          "label": {
+            "type": "string",
+            "description": "용도 라벨 (예: 베어링 자리, 기어 자리)."
+          }
+        }
+      }
+    },
+    "transitions": {
+      "type": "array",
+      "maxItems": 48,
+      "description": "경계(끝면·단차)의 모서리 처리. at=0 왼쪽 끝, at=n 오른쪽 끝, at=k 는 세그먼트 k-1|k 단차.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "at",
+          "type"
+        ],
+        "properties": {
+          "at": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "경계 번호."
+          },
+          "type": {
+            "type": "string",
+            "description": "chamfer=볼록 모서리 모따기, fillet=단차 오목 모서리 필렛, round=볼록 모서리 라운드, undercut=단차 도피홈.",
+            "enum": [
+              "chamfer",
+              "fillet",
+              "round",
+              "undercut"
+            ]
+          },
+          "size": {
+            "type": "number",
+            "exclusiveMinimum": 0,
+            "description": "chamfer 축 방향 길이 C (mm)."
+          },
+          "angle": {
+            "type": "number",
+            "description": "chamfer 각도(축 기준, 도). 기본 45.",
+            "minimum": 5,
+            "maximum": 85
+          },
+          "radius": {
+            "type": "number",
+            "exclusiveMinimum": 0,
+            "description": "fillet·round 반경 R (mm)."
+          },
+          "width": {
+            "type": "number",
+            "exclusiveMinimum": 0,
+            "description": "undercut 폭 (mm)."
+          },
+          "depth": {
+            "type": "number",
+            "exclusiveMinimum": 0,
+            "description": "undercut 깊이 (mm, 반경 방향)."
+          },
+          "standard": {
+            "type": "string",
+            "description": "규격 표기 (예: DIN 76-A, DIN 509-E)."
+          }
+        }
+      }
+    },
+    "grooves": {
+      "type": "array",
+      "maxItems": 24,
+      "description": "세그먼트 안의 환형 홈 (멈춤링 홈·오링 홈 등). 회전 대칭.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "segment",
+          "offset",
+          "width",
+          "depth"
+        ],
+        "properties": {
+          "segment": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "세그먼트 인덱스."
+          },
+          "offset": {
+            "type": "number",
+            "description": "세그먼트 왼쪽 시작에서 홈 왼쪽 벽까지 (mm).",
+            "minimum": 0
+          },
+          "width": {
+            "type": "number",
+            "exclusiveMinimum": 0,
+            "description": "홈 폭 (mm)."
+          },
+          "depth": {
+            "type": "number",
+            "exclusiveMinimum": 0,
+            "description": "홈 깊이 (mm, 반경 방향)."
+          },
+          "kind": {
+            "type": "string",
+            "description": "홈 종류.",
+            "enum": [
+              "snap_ring",
+              "relief",
+              "o_ring",
+              "generic"
+            ]
+          },
+          "corner_radius": {
+            "type": "number",
+            "description": "홈 바닥 모서리 R (mm).",
+            "minimum": 0
+          },
+          "standard": {
+            "type": "string",
+            "description": "규격 표기 (예: DIN 471 ⌀19×1.3)."
+          }
+        }
+      }
+    },
+    "bore": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": false,
+      "required": [
+        "segments"
+      ],
+      "description": "축 중심 보어(내경). 없으면 null. through 면 세그먼트 길이 합 = 전체 길이.",
+      "properties": {
+        "through": {
+          "type": "boolean",
+          "description": "관통 여부."
+        },
+        "from": {
+          "type": "string",
+          "description": "막힌 보어의 시작 끝면.",
+          "enum": [
+            "left",
+            "right"
+          ]
+        },
+        "segments": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 12,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "length",
+              "diameter"
+            ],
+            "properties": {
+              "length": {
+                "type": "number",
+                "exclusiveMinimum": 0,
+                "description": "보어 세그먼트 길이 (mm)."
+              },
+              "diameter": {
+                "type": "number",
+                "exclusiveMinimum": 0,
+                "description": "보어 지름 (mm)."
+              },
+              "tolerance": {
+                "type": "string",
+                "description": "공차 표기 (예: H7)."
+              },
+              "thread": {
+                "type": "string",
+                "description": "암나사 호칭 (예: M8). 있으면 이 보어 세그먼트가 탭 구멍."
+              }
+            }
+          }
+        },
+        "chamfer_left": {
+          "type": "number",
+          "description": "왼쪽 입구 모따기 C (mm).",
+          "minimum": 0
+        },
+        "chamfer_right": {
+          "type": "number",
+          "description": "오른쪽 입구 모따기 C (mm).",
+          "minimum": 0
+        }
+      }
+    },
+    "features": {
+      "type": "array",
+      "maxItems": 24,
+      "description": "비축대칭·국부 피처. type 에 따라 쓰는 필드가 다르다.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "type"
+        ],
+        "properties": {
+          "type": {
+            "type": "string",
+            "description": "keyway=키홈, center_hole=센터구멍, cross_hole=횡구멍, flat=평면가공(D컷), hex=육각, knurl=널링.",
+            "enum": [
+              "keyway",
+              "center_hole",
+              "cross_hole",
+              "flat",
+              "hex",
+              "knurl"
+            ]
+          },
+          "segment": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "keyway·flat·hex·knurl 이 놓이는 세그먼트."
+          },
+          "offset": {
+            "type": "number",
+            "description": "세그먼트 시작에서 피처 시작까지 (mm).",
+            "minimum": 0
+          },
+          "length": {
+            "type": "number",
+            "exclusiveMinimum": 0,
+            "description": "keyway·flat·knurl 길이 (mm)."
+          },
+          "width": {
+            "type": "number",
+            "exclusiveMinimum": 0,
+            "description": "keyway 폭 b (mm)."
+          },
+          "depth": {
+            "type": "number",
+            "exclusiveMinimum": 0,
+            "description": "keyway 깊이 t1 · flat 깊이 (mm)."
+          },
+          "angle": {
+            "type": "number",
+            "description": "둘레 각도 (도). 0=정면(+Z), 90=위(+Y).",
+            "minimum": 0,
+            "maximum": 360
+          },
+          "kind": {
+            "type": "string",
+            "description": "keyway 형식.",
+            "enum": [
+              "parallel",
+              "woodruff"
+            ]
+          },
+          "end": {
+            "type": "string",
+            "description": "center_hole 이 있는 끝면.",
+            "enum": [
+              "left",
+              "right"
+            ]
+          },
+          "form": {
+            "type": "string",
+            "description": "center_hole 형식 (DIN 332).",
+            "enum": [
+              "A",
+              "B",
+              "R"
+            ]
+          },
+          "d": {
+            "type": "number",
+            "exclusiveMinimum": 0,
+            "description": "center_hole 파일럿 지름 (mm)."
+          },
+          "position": {
+            "type": "number",
+            "description": "cross_hole 중심의 x 위치 (왼쪽 끝 기준, mm).",
+            "minimum": 0
+          },
+          "diameter": {
+            "type": "number",
+            "exclusiveMinimum": 0,
+            "description": "cross_hole 지름 (mm)."
+          },
+          "through": {
+            "type": "boolean",
+            "description": "cross_hole 관통 여부."
+          },
+          "count": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2,
+            "description": "flat 개수 (2=마주보는 두 면)."
+          },
+          "across_flats": {
+            "type": "number",
+            "exclusiveMinimum": 0,
+            "description": "hex 대변 거리 (mm)."
+          },
+          "pitch": {
+            "type": "number",
+            "exclusiveMinimum": 0,
+            "description": "knurl 피치 (mm)."
+          },
+          "pattern": {
+            "type": "string",
+            "description": "knurl 무늬.",
+            "enum": [
+              "straight",
+              "diamond"
+            ]
+          },
+          "standard": {
+            "type": "string",
+            "description": "규격 표기 (예: DIN 6885 8×7, DIN 332-A2.5)."
+          }
+        }
+      }
+    },
+    "meta": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "출처·신뢰도 등 메타. 기하에 영향 없음.",
+      "properties": {
+        "source": {
+          "type": "string",
+          "description": "golden | synthetic | extracted | edited"
+        },
+        "confidence": {
+          "type": "number",
+          "description": "판독 신뢰도 0~1.",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "notes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "generator": {
+          "type": "string",
+          "description": "생성 도구/버전."
+        },
+        "seed": {
+          "type": "integer"
+        },
+        "archetype": {
+          "type": "string",
+          "description": "샘플러 아키타입."
+        },
+        "valid": {
+          "type": "boolean"
+        }
+      }
+    }
+  }
+}

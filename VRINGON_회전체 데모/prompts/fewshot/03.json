@@ -1,0 +1,83 @@
+{
+ "dsl": "vringon-shaft/1.0",
+ "id": "stepped-shaft-56",
+ "name": "stepped shaft",
+ "name_ko": "단붙이 축",
+ "part_class": "shaft",
+ "units": "mm",
+ "material": "SUS303",
+ "drawing": {
+  "number": "VR-RB-0056",
+  "scale": "1:1",
+  "projection": "third"
+ },
+ "segments": [
+  {
+   "type": "cyl",
+   "length": 40,
+   "diameter": 32,
+   "label": "풀리 자리"
+  },
+  {
+   "type": "cyl",
+   "length": 95,
+   "diameter": 35,
+   "tolerance": "h7"
+  },
+  {
+   "type": "thread",
+   "length": 53,
+   "diameter": 30,
+   "spec": "M30",
+   "pitch": 3.5
+  }
+ ],
+ "transitions": [
+  {
+   "at": 2,
+   "type": "undercut",
+   "width": 10.5,
+   "depth": 2.625,
+   "standard": "DIN 76-A"
+  },
+  {
+   "at": 3,
+   "type": "chamfer",
+   "size": 3.5
+  },
+  {
+   "at": 0,
+   "type": "chamfer",
+   "size": 1.5
+  },
+  {
+   "at": 1,
+   "type": "fillet",
+   "radius": 0.5
+  },
+  {
+   "at": 2,
+   "type": "chamfer",
+   "size": 1
+  }
+ ],
+ "grooves": [
+  {
+   "segment": 0,
+   "offset": 10.5,
+   "width": 1.6,
+   "depth": 0.8499999999999996,
+   "kind": "snap_ring",
+   "standard": "DIN 471 ⌀30.3×1.6"
+  }
+ ],
+ "bore": null,
+ "features": [],
+ "meta": {
+  "source": "synthetic",
+  "generator": "shaft-sampler/1.0",
+  "seed": 56,
+  "valid": true,
+  "archetype": "stepped_shaft"
+ }
+}

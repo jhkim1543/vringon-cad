@@ -1,0 +1,61 @@
+{
+  "dsl": "vringon-shaft/1.0",
+  "id": "bushing",
+  "name": "Plain bushing",
+  "name_ko": "부시",
+  "part_class": "bushing",
+  "units": "mm",
+  "material": "C3604",
+  "drawing": {
+    "number": "VR-RB-003",
+    "scale": "2:1",
+    "projection": "third"
+  },
+  "segments": [
+    {
+      "type": "cyl",
+      "length": 25,
+      "diameter": 30,
+      "tolerance": "m6"
+    }
+  ],
+  "transitions": [
+    {
+      "at": 0,
+      "type": "chamfer",
+      "size": 0.5
+    },
+    {
+      "at": 1,
+      "type": "chamfer",
+      "size": 0.5
+    }
+  ],
+  "grooves": [],
+  "bore": {
+    "through": true,
+    "segments": [
+      {
+        "length": 25,
+        "diameter": 25,
+        "tolerance": "H7"
+      }
+    ],
+    "chamfer_left": 0.5,
+    "chamfer_right": 0.5
+  },
+  "features": [
+    {
+      "type": "cross_hole",
+      "position": 12.5,
+      "diameter": 2.5,
+      "through": false,
+      "depth": 3.5,
+      "angle": 90
+    }
+  ],
+  "meta": {
+    "source": "golden",
+    "difficulty": 2
+  }
+}

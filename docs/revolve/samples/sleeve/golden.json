@@ -1,0 +1,65 @@
+{
+  "dsl": "vringon-shaft/1.0",
+  "id": "sleeve",
+  "name": "Stepped-bore sleeve",
+  "name_ko": "슬리브",
+  "part_class": "sleeve",
+  "units": "mm",
+  "material": "SUJ2",
+  "drawing": {
+    "number": "VR-RB-008",
+    "scale": "1:1",
+    "projection": "third"
+  },
+  "segments": [
+    {
+      "type": "cyl",
+      "length": 60,
+      "diameter": 40,
+      "tolerance": "h6"
+    }
+  ],
+  "transitions": [
+    {
+      "at": 0,
+      "type": "chamfer",
+      "size": 0.5
+    },
+    {
+      "at": 1,
+      "type": "chamfer",
+      "size": 0.5
+    }
+  ],
+  "grooves": [
+    {
+      "segment": 0,
+      "offset": 15,
+      "width": 2.4,
+      "depth": 1.9,
+      "kind": "o_ring",
+      "corner_radius": 0.2
+    }
+  ],
+  "bore": {
+    "through": true,
+    "segments": [
+      {
+        "length": 20,
+        "diameter": 30,
+        "tolerance": "H7"
+      },
+      {
+        "length": 40,
+        "diameter": 28
+      }
+    ],
+    "chamfer_left": 0.5,
+    "chamfer_right": 0.5
+  },
+  "features": [],
+  "meta": {
+    "source": "golden",
+    "difficulty": 3
+  }
+}

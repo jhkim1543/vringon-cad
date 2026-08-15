@@ -1,0 +1,218 @@
+{
+ "dsl": {
+  "name_ko": "육각 단붙이 축",
+  "part_class": "shaft",
+  "material": "SUS303",
+  "segments": [
+   {
+    "type": "cyl",
+    "length": 15,
+    "diameter": 20
+   },
+   {
+    "type": "cyl",
+    "length": 30,
+    "diameter": 12,
+    "tolerance": "h6"
+   },
+   {
+    "type": "thread",
+    "length": 12,
+    "diameter": 10,
+    "spec": "M10",
+    "pitch": 1.5
+   }
+  ],
+  "transitions": [
+   {
+    "at": 0,
+    "type": "chamfer",
+    "size": 1,
+    "angle": 45
+   },
+   {
+    "at": 1,
+    "type": "fillet",
+    "radius": 1
+   },
+   {
+    "at": 3,
+    "type": "chamfer",
+    "size": 1.5,
+    "angle": 45
+   }
+  ],
+  "grooves": [],
+  "bore": null,
+  "features": [
+   {
+    "type": "hex",
+    "across_flats": 17,
+    "segment": 0
+   },
+   {
+    "type": "flat",
+    "segment": 1,
+    "offset": 5,
+    "length": 12,
+    "depth": 0.75,
+    "count": 2
+   }
+  ],
+  "drawing": {
+   "number": "VR-RB-006"
+  },
+  "dsl": "vringon-shaft/1.0",
+  "units": "mm",
+  "meta": {
+   "source": "extracted",
+   "provider": "primary",
+   "tier": "plan",
+   "repaired": true
+  },
+  "id": "extracted"
+ },
+ "dims_read": [
+  {
+   "text": "15",
+   "kind": "length",
+   "value": 15,
+   "where": "왼쪽 육각 세그먼트 길이"
+  },
+  {
+   "text": "57",
+   "kind": "overall",
+   "value": 57,
+   "where": "전체 길이"
+  },
+  {
+   "text": "⌀20",
+   "kind": "diameter",
+   "value": 20,
+   "where": "왼쪽 세그먼트 지름"
+  },
+  {
+   "text": "⌀12 h6",
+   "kind": "diameter",
+   "value": 12,
+   "where": "가운데 세그먼트 지름"
+  },
+  {
+   "text": "12",
+   "kind": "length",
+   "value": 12,
+   "where": "가운데 세그먼트 평면 피처 길이"
+  },
+  {
+   "text": "12",
+   "kind": "length",
+   "value": 12,
+   "where": "오른쪽 나사 세그먼트 길이"
+  },
+  {
+   "text": "C1",
+   "kind": "chamfer",
+   "value": 1,
+   "where": "왼쪽 끝 모따기"
+  },
+  {
+   "text": "C1.5",
+   "kind": "chamfer",
+   "value": 1.5,
+   "where": "오른쪽 끝 모따기"
+  },
+  {
+   "text": "R1",
+   "kind": "radius",
+   "value": 1,
+   "where": "단차 필렛"
+  },
+  {
+   "text": "M10",
+   "kind": "thread",
+   "value": 10,
+   "where": "오른쪽 나사 호칭경"
+  },
+  {
+   "text": "17",
+   "kind": "other",
+   "value": 17,
+   "where": "단면 A-A 육각 대변"
+  },
+  {
+   "text": "10.5",
+   "kind": "other",
+   "value": 10.5,
+   "where": "단면 B-B 평면 폭"
+  },
+  {
+   "text": "5",
+   "kind": "other",
+   "value": 5,
+   "where": "평면 피처 오프셋"
+  }
+ ],
+ "notes": [
+  "이전 답변에서 평면(flat)의 깊이를 1.5로, 개수를 1로 잘못 계산했습니다. 단면도 B-B를 보면 원통의 양면이 깎인 형태(count: 2)이며, 두 평면 사이의 거리가 10.5이므로 한쪽 깊이는 (12 - 10.5) / 2 = 0.75가 맞습니다.",
+  "치수 '5'는 가운데 세그먼트에서 평면 피처가 시작되는 위치(offset)입니다. 검증기가 이를 cross_hole 등의 position으로 오해하지 않도록 dims_read에서 kind를 'other'로 명시했습니다.",
+  "치수 'M10'은 오른쪽 세그먼트의 나사 호칭경으로, DSL의 thread 피처(spec: 'M10')에 올바르게 반영되어 있으며 dims_read에도 명확히 추가했습니다.",
+  "수리 라운드: 채택 (신뢰도 0.94 → 0.94)"
+ ],
+ "confidence_self": 0.99,
+ "provider": "primary",
+ "tier": "plan",
+ "repaired": true,
+ "elapsed_ms": 74628,
+ "validation": {
+  "ok": true,
+  "errors": [],
+  "warnings": []
+ },
+ "verify": {
+  "iou": 0.988891153465711,
+  "dims": {
+   "rate": 0.8461538461538461,
+   "matched": 11,
+   "total": 13,
+   "unmatched": [
+    "M10",
+    "5"
+   ]
+  },
+  "confidence": 0.9400439805599873
+ },
+ "evaluated": {
+  "tier": "plan",
+  "metrics": {
+   "valid": true,
+   "segment": {
+    "precision": 1,
+    "recall": 1,
+    "f1": 1
+   },
+   "feature": {
+    "precision": 0.5,
+    "recall": 0.5,
+    "f1": 0.5
+   },
+   "transition": {
+    "precision": 1,
+    "recall": 1,
+    "f1": 1
+   },
+   "groove": {
+    "precision": 1,
+    "recall": 1,
+    "f1": 1
+   },
+   "dim_rate": 0.9230769230769231,
+   "dims_total": 13,
+   "iou": 1,
+   "iou_abs": 1,
+   "bore_ok": true,
+   "length_ok": true,
+   "exact": false
+  },
+  "date": "2026-08-15"
+ }
+}

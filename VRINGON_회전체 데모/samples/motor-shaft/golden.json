@@ -1,0 +1,137 @@
+{
+  "dsl": "vringon-shaft/1.0",
+  "id": "motor-shaft",
+  "name": "Motor output shaft",
+  "name_ko": "모터 축",
+  "part_class": "shaft",
+  "units": "mm",
+  "material": "S45C",
+  "drawing": {
+    "number": "VR-RB-010",
+    "scale": "1:1",
+    "projection": "third"
+  },
+  "segments": [
+    {
+      "type": "cyl",
+      "length": 25,
+      "diameter": 15,
+      "tolerance": "j6",
+      "label": "베어링 자리"
+    },
+    {
+      "type": "cyl",
+      "length": 40,
+      "diameter": 17
+    },
+    {
+      "type": "cyl",
+      "length": 60,
+      "diameter": 20,
+      "label": "로터 자리"
+    },
+    {
+      "type": "cyl",
+      "length": 40,
+      "diameter": 17
+    },
+    {
+      "type": "cyl",
+      "length": 25,
+      "diameter": 15,
+      "tolerance": "j6",
+      "label": "베어링 자리"
+    },
+    {
+      "type": "cyl",
+      "length": 15,
+      "diameter": 12,
+      "tolerance": "h7",
+      "label": "출력 축"
+    }
+  ],
+  "transitions": [
+    {
+      "at": 0,
+      "type": "chamfer",
+      "size": 1
+    },
+    {
+      "at": 6,
+      "type": "chamfer",
+      "size": 1
+    },
+    {
+      "at": 1,
+      "type": "fillet",
+      "radius": 0.5
+    },
+    {
+      "at": 2,
+      "type": "fillet",
+      "radius": 1
+    },
+    {
+      "at": 3,
+      "type": "fillet",
+      "radius": 1
+    },
+    {
+      "at": 4,
+      "type": "fillet",
+      "radius": 0.5
+    },
+    {
+      "at": 5,
+      "type": "fillet",
+      "radius": 0.5
+    }
+  ],
+  "grooves": [
+    {
+      "segment": 4,
+      "offset": 4,
+      "width": 1.1,
+      "depth": 0.35,
+      "kind": "snap_ring",
+      "standard": "DIN 471 ⌀14.3×1.1"
+    }
+  ],
+  "bore": null,
+  "features": [
+    {
+      "type": "keyway",
+      "segment": 2,
+      "offset": 15,
+      "length": 30,
+      "width": 6,
+      "depth": 3.5,
+      "kind": "parallel",
+      "standard": "DIN 6885 6×6"
+    },
+    {
+      "type": "flat",
+      "segment": 5,
+      "offset": 2,
+      "length": 12,
+      "depth": 1.5,
+      "count": 1
+    },
+    {
+      "type": "center_hole",
+      "end": "left",
+      "form": "A",
+      "d": 2
+    },
+    {
+      "type": "center_hole",
+      "end": "right",
+      "form": "A",
+      "d": 2
+    }
+  ],
+  "meta": {
+    "source": "golden",
+    "difficulty": 4
+  }
+}

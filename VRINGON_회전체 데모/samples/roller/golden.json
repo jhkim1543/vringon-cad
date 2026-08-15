@@ -1,0 +1,105 @@
+{
+  "dsl": "vringon-shaft/1.0",
+  "id": "roller",
+  "name": "Roller with stub axles",
+  "name_ko": "롤러",
+  "part_class": "roller",
+  "units": "mm",
+  "material": "SUS304",
+  "drawing": {
+    "number": "VR-RB-005",
+    "scale": "1:1",
+    "projection": "third"
+  },
+  "segments": [
+    {
+      "type": "cyl",
+      "length": 20,
+      "diameter": 20,
+      "tolerance": "h6",
+      "label": "베어링 자리"
+    },
+    {
+      "type": "cyl",
+      "length": 70,
+      "diameter": 45,
+      "roughness": "Ra 0.8"
+    },
+    {
+      "type": "cyl",
+      "length": 20,
+      "diameter": 20,
+      "tolerance": "h6",
+      "label": "베어링 자리"
+    }
+  ],
+  "transitions": [
+    {
+      "at": 0,
+      "type": "chamfer",
+      "size": 1.5
+    },
+    {
+      "at": 3,
+      "type": "chamfer",
+      "size": 1.5
+    },
+    {
+      "at": 1,
+      "type": "fillet",
+      "radius": 1.5
+    },
+    {
+      "at": 2,
+      "type": "fillet",
+      "radius": 1.5
+    },
+    {
+      "at": 1,
+      "type": "chamfer",
+      "size": 1
+    },
+    {
+      "at": 2,
+      "type": "chamfer",
+      "size": 1
+    }
+  ],
+  "grooves": [
+    {
+      "segment": 0,
+      "offset": 6,
+      "width": 1.3,
+      "depth": 0.5,
+      "kind": "snap_ring",
+      "standard": "DIN 471 ⌀19×1.3"
+    },
+    {
+      "segment": 2,
+      "offset": 12.7,
+      "width": 1.3,
+      "depth": 0.5,
+      "kind": "snap_ring",
+      "standard": "DIN 471 ⌀19×1.3"
+    }
+  ],
+  "bore": null,
+  "features": [
+    {
+      "type": "center_hole",
+      "end": "left",
+      "form": "A",
+      "d": 2
+    },
+    {
+      "type": "center_hole",
+      "end": "right",
+      "form": "A",
+      "d": 2
+    }
+  ],
+  "meta": {
+    "source": "golden",
+    "difficulty": 3
+  }
+}

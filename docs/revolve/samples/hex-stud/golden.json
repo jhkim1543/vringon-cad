@@ -1,0 +1,72 @@
+{
+  "dsl": "vringon-shaft/1.0",
+  "id": "hex-stud",
+  "name": "Hex stepped stud",
+  "name_ko": "육각 단붙이 축",
+  "part_class": "shaft",
+  "units": "mm",
+  "material": "SUS303",
+  "drawing": {
+    "number": "VR-RB-006",
+    "scale": "2:1",
+    "projection": "third"
+  },
+  "segments": [
+    {
+      "type": "cyl",
+      "length": 15,
+      "diameter": 20
+    },
+    {
+      "type": "cyl",
+      "length": 30,
+      "diameter": 12,
+      "tolerance": "h6"
+    },
+    {
+      "type": "thread",
+      "length": 12,
+      "diameter": 10,
+      "spec": "M10",
+      "pitch": 1.5
+    }
+  ],
+  "transitions": [
+    {
+      "at": 0,
+      "type": "chamfer",
+      "size": 1
+    },
+    {
+      "at": 1,
+      "type": "fillet",
+      "radius": 1
+    },
+    {
+      "at": 3,
+      "type": "chamfer",
+      "size": 1.5
+    }
+  ],
+  "grooves": [],
+  "bore": null,
+  "features": [
+    {
+      "type": "hex",
+      "segment": 0,
+      "across_flats": 17
+    },
+    {
+      "type": "flat",
+      "segment": 1,
+      "offset": 5,
+      "length": 12,
+      "depth": 1.5,
+      "count": 1
+    }
+  ],
+  "meta": {
+    "source": "golden",
+    "difficulty": 3
+  }
+}

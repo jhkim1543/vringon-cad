@@ -1,0 +1,117 @@
+{
+  "dsl": "vringon-shaft/1.0",
+  "id": "stepped-shaft",
+  "name": "Stepped shaft (showcase)",
+  "name_ko": "단붙이 축",
+  "part_class": "shaft",
+  "units": "mm",
+  "material": "S45C",
+  "drawing": {
+    "number": "VR-RB-011",
+    "scale": "1:1",
+    "projection": "third"
+  },
+  "segments": [
+    {
+      "type": "cyl",
+      "length": 30,
+      "diameter": 20,
+      "tolerance": "h6",
+      "label": "베어링 자리"
+    },
+    {
+      "type": "cyl",
+      "length": 40,
+      "diameter": 30,
+      "label": "기어 자리"
+    },
+    {
+      "type": "taper",
+      "length": 10,
+      "d_start": 30,
+      "d_end": 25
+    },
+    {
+      "type": "thread",
+      "length": 20,
+      "diameter": 20,
+      "spec": "M20x1.5",
+      "pitch": 1.5
+    }
+  ],
+  "transitions": [
+    {
+      "at": 0,
+      "type": "chamfer",
+      "size": 1
+    },
+    {
+      "at": 1,
+      "type": "fillet",
+      "radius": 1.5
+    },
+    {
+      "at": 1,
+      "type": "chamfer",
+      "size": 1
+    },
+    {
+      "at": 3,
+      "type": "undercut",
+      "width": 4.5,
+      "depth": 1.1,
+      "standard": "DIN 76-A"
+    },
+    {
+      "at": 4,
+      "type": "chamfer",
+      "size": 1.5
+    }
+  ],
+  "grooves": [
+    {
+      "segment": 1,
+      "offset": 10,
+      "width": 1.6,
+      "depth": 0.7,
+      "kind": "snap_ring",
+      "standard": "DIN 471 ⌀28.6×1.6"
+    }
+  ],
+  "bore": null,
+  "features": [
+    {
+      "type": "keyway",
+      "segment": 1,
+      "offset": 15,
+      "length": 20,
+      "width": 8,
+      "depth": 4,
+      "kind": "parallel",
+      "standard": "DIN 6885 8×7"
+    },
+    {
+      "type": "center_hole",
+      "end": "left",
+      "form": "A",
+      "d": 2.5
+    },
+    {
+      "type": "center_hole",
+      "end": "right",
+      "form": "A",
+      "d": 2
+    },
+    {
+      "type": "cross_hole",
+      "position": 50,
+      "diameter": 4,
+      "through": true,
+      "angle": 0
+    }
+  ],
+  "meta": {
+    "source": "golden",
+    "difficulty": 5
+  }
+}
