@@ -1,4 +1,4 @@
-/* Strip upstream vendor identity out of generated binary assets.
+/* Strip upstream supplier identity out of generated binary assets.
 
    Meshes and photos arrive from external services that stamp their own brand
    into the file: a GLB carries asset.generator plus material/mesh/node names,
@@ -6,41 +6,40 @@
    is visible in an editor, so a text grep over the repo reports zero while the
    committed binary still names the supplier — which is exactly how four new
    meshes and four new photos reached a release branch with the brand intact.
-   This runs as a gate before committing generated assets.
 
-   The GLB edit is a same-length byte substitution on purpose. A GLB stores the
-   JSON chunk length in its header and pads that chunk to a four-byte boundary,
-   so changing the number of bytes means rewriting two lengths and the padding.
-   The searched token and its replacement are both five bytes, so the
-   substitution touches no offset and cannot corrupt the container. The
-   replacement matches the four meshes scrubbed before this tool existed.
+   The second miss was narrower and worse. Only the files already committed were
+   ever cleaned; the server writes a new mesh into generated/ on every run, and
+   that path was never covered. A live demo showed the supplier's node name in
+   the part list while every committed file was spotless. generated/ is in the
+   scan list now, and the same scrub runs inside the server at write time
+   (glb-sanitize.mjs) so this tool is the safety net rather than the only net.
+
+   GLB scrubbing is delegated to glb-sanitize.mjs, which rebuilds the JSON chunk
+   rather than swapping bytes — that is what allows a branded node name to be
+   replaced by a readable part name instead of another opaque token.
 
    The PNG edit drops whole ancillary chunks. IHDR/IDAT/IEND are untouched, so
    the decoded image is identical pixel for pixel and any silhouette or
    similarity number measured from it stays valid.
 
-   node tools/scrub-assets.mjs [--check]
+   node tools/scrub-assets.mjs [--check] [--dir <path>] [--rename-opaque]
+     --check          report without writing (exit 1 if anything is dirty)
+     --dir            scrub one directory instead of the built-in list; used to
+                      clean the on-prem generated/ tree over ssh
+     --rename-opaque  also replace node names that are machine ids, which is
+                      what the old byte-swap scrub left behind in the meshes it
+                      cleaned. Off by default: it rewrites files that contain no
+                      supplier name at all, so it should be a deliberate run.
 */
 import { readdir, readFile, writeFile } from "node:fs/promises";
+import { findVendorTokens, sanitizeMeshBytes, glbPartNames } from "../glb-sanitize.mjs";
 
 const ROOT = new URL("../", import.meta.url);
-const CHECK_ONLY = process.argv.includes("--check");
-
-/* Lowercase tokens that must never appear in a committed asset. Kept as raw
-   bytes rather than a spelled-out name so this file does not itself become the
-   grep hit it is meant to prevent. */
-const TOKENS = ["747269706f", "67656d696e69", "6f70656e6169", "6770742d34"]
-  .map((h) => Buffer.from(h, "hex").toString("latin1"));
-
-/* Same byte length as the token it replaces — see header. Hex-encoded for the
-   same reason as TOKENS: spelling it out would make this file the grep hit. */
-const GLB_FROM = Buffer.from("747269706f", "hex").toString("latin1");
-const GLB_TO = "vmesh";
-
-const findTokens = (buf) => {
-  const hay = buf.toString("latin1").toLowerCase();
-  return TOKENS.filter((t) => hay.includes(t));
-};
+const argv = process.argv.slice(2);
+const CHECK_ONLY = argv.includes("--check");
+const dirArg = argv.indexOf("--dir");
+const ONE_DIR = dirArg !== -1 ? argv[dirArg + 1] : null;
+const RENAME_OPAQUE = argv.includes("--rename-opaque");
 
 /* PNG chunks that only ever carry metadata. Pixel chunks are never candidates
    for removal, so a scrub can not alter the image. */
@@ -59,78 +58,78 @@ function scrubPng(buf) {
     const chunk = buf.subarray(off, end);
     /* Only drop a metadata chunk that actually names a vendor; an unrelated
        tEXt caption is somebody's content and not ours to delete. */
-    if (PNG_META.has(type) && findTokens(chunk).length) dropped.push(`${type}(${len}B)`);
+    if (PNG_META.has(type) && findVendorTokens(chunk).length) dropped.push(`${type}(${len}B)`);
     else keep.push(chunk);
     off = end;
     if (type === "IEND") break;
   }
-  return dropped.length ? { buf: Buffer.concat(keep), dropped } : null;
+  return dropped.length ? { buf: Buffer.concat(keep), notes: dropped } : null;
 }
 
-function scrubGlb(buf) {
-  const hay = buf.toString("latin1");
-  if (!hay.toLowerCase().includes(GLB_FROM)) return null;
-  const before = buf.length;
-  /* Case-insensitive so a capitalised spelling is caught too, while the
-     replacement keeps the original byte count. */
-  const out = Buffer.from(
-    hay.replace(new RegExp(GLB_FROM, "gi"), (m) =>
-      m[0] === m[0].toUpperCase() ? GLB_TO[0].toUpperCase() + GLB_TO.slice(1) : GLB_TO,
-    ),
-    "latin1",
-  );
-  if (out.length !== before) throw new Error(`GLB 길이가 변했습니다 ${before} -> ${out.length}`);
-  /* A GLB whose JSON chunk no longer parses is worse than a branded one. */
-  const jsonLen = out.readUInt32LE(12);
-  JSON.parse(out.toString("utf8", 20, 20 + jsonLen).replace(/\0+$/, "").trim());
-  return { buf: out };
-}
+/* generated/ first: it is the one the server writes to, so a stale file there
+   is the difference between a clean repo and a branded demo. */
+const DIRS = ONE_DIR
+  ? [ONE_DIR]
+  : ["generated/", "docs/assets/meshes/", "docs/assets/samples/drones/", "docs/assets/views/", "assets/"];
 
-const DIRS = ["docs/assets/meshes/", "docs/assets/samples/drones/", "docs/assets/views/"];
 let changed = 0;
 let remaining = 0;
+let scanned = 0;
 
 for (const dir of DIRS) {
+  const base = ONE_DIR ? new URL(`file://${dir.replace(/\\/g, "/").replace(/\/?$/, "/")}`) : new URL(dir, ROOT);
   let names = [];
   try {
-    names = await readdir(new URL(dir, ROOT), { recursive: true });
+    names = await readdir(base, { recursive: true });
   } catch {
     continue;
   }
   for (const name of names.sort()) {
-    if (!/\.(glb|png|jpe?g)$/i.test(name)) continue;
-    const url = new URL(dir + name.replace(/\\/g, "/"), ROOT);
+    if (!/\.(glb|gltf|png|jpe?g)$/i.test(name)) continue;
+    const url = new URL(name.replace(/\\/g, "/"), base);
     const buf = await readFile(url);
-    if (!findTokens(buf).length) continue;
+    scanned++;
+    const isGlb = /\.glb$/i.test(name);
+    /* A clean file is skipped, except that --rename-opaque is explicitly about
+       files that are already clean and still unreadable. */
+    if (!findVendorTokens(buf).length && !(isGlb && RENAME_OPAQUE)) continue;
 
-    const res = /\.glb$/i.test(name) ? scrubGlb(buf) : scrubPng(buf);
-    const label = dir + name;
+    const label = (ONE_DIR ? "" : dir) + name;
+    let res = null;
+    try {
+      res = isGlb ? sanitizeMeshBytes(buf, { renameOpaque: RENAME_OPAQUE }) : scrubPng(buf);
+      if (res && isGlb && !res.notes.length) continue; // nothing to do
+    } catch (e) {
+      console.log(`  실패   ${label} — ${e.message}`);
+      remaining++;
+      continue;
+    }
     if (!res) {
       console.log(`  남음   ${label} — 자동 제거 대상 아님`);
       remaining++;
       continue;
     }
-    const left = findTokens(res.buf);
-    if (left.length) {
+    if (findVendorTokens(res.buf).length) {
       console.log(`  남음   ${label} — 제거 후에도 공급사명이 있습니다`);
       remaining++;
       continue;
     }
     if (CHECK_ONLY) {
-      console.log(`  검출   ${label}${res.dropped ? " — " + res.dropped.join(" ") : ""}`);
+      console.log(`  검출   ${label} — ${res.notes.join(" | ") || "공급사명 포함"}`);
       remaining++;
       continue;
     }
     await writeFile(url, res.buf);
-    const note = res.dropped ? ` (${res.dropped.join(" ")} 제거)` : "";
-    console.log(`  세척   ${label}${note}  ${buf.length} -> ${res.buf.length}B`);
     changed++;
+    const parts = /\.glb$/i.test(name) ? ` 파트=${JSON.stringify(glbPartNames(res.buf))}` : "";
+    console.log(`  세척   ${label}  ${buf.length} -> ${res.buf.length}B${parts}`);
+    for (const n of res.notes) console.log(`           ${n}`);
   }
 }
 
 if (CHECK_ONLY) {
-  console.log(remaining ? `\n공급사명이 남은 파일 ${remaining}개` : "\n생성 자산에 공급사명 0건.");
+  console.log(remaining ? `\n${scanned}개 검사, 공급사명이 남은 파일 ${remaining}개` : `\n${scanned}개 검사, 생성 자산에 공급사명 0건.`);
   process.exit(remaining ? 1 : 0);
 }
-console.log(`\n${changed}개 파일을 세척했습니다.${remaining ? ` 손대지 못한 파일 ${remaining}개.` : ""}`);
+console.log(`\n${scanned}개 검사, ${changed}개 세척.${remaining ? ` 손대지 못한 파일 ${remaining}개.` : ""}`);
 process.exit(remaining ? 1 : 0);

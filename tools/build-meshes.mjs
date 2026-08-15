@@ -13,7 +13,7 @@
 */
 import { writeFile, mkdir, readFile, stat } from "node:fs/promises";
 import { request as httpRequest } from "node:http";
-import { basename } from "node:path";
+import { findVendorTokens, sanitizeMeshBytes, glbPartNames } from "../glb-sanitize.mjs";
 
 const argv = process.argv.slice(2);
 const API = argv.find((a) => a.startsWith("http")) || "http://61.107.200.148:8347";
@@ -97,10 +97,23 @@ for (const job of JOBS) {
 
     const dl = await req("GET", j.url);
     if (dl.status !== 200 || dl.buf.length < 1000) throw new Error(`다운로드 실패 ${dl.status}`);
-    await writeFile(dest, dl.buf);
-    manifest[job.id] = { file: `${job.id}.glb`, bytes: dl.buf.length };
-    console.log(`${j.engine} · ${(dl.buf.length / 1048576).toFixed(1)}MB · `
-      + `${((Date.now() - t0) / 1000).toFixed(0)}초 · ${basename(j.url)}`);
+
+    /* The server scrubs before it writes, so this should already be clean. It
+       is re-checked here because this is the tool whose output gets committed:
+       if the server side ever regresses, the alternative to catching it now is
+       shipping a supplier's name in a release binary, which has happened. A
+       warning rather than a failure — the mesh cost real credits, and refusing
+       to save it would throw that away over something we can fix in place. */
+    let out = dl.buf;
+    if (findVendorTokens(out).length) {
+      const s = sanitizeMeshBytes(out, { renameOpaque: true });
+      out = s.buf;
+      console.log(`\n  경고: 서버가 공급사명을 남겼습니다 — 여기서 세척했습니다 (${s.notes.length}건). server.mjs 확인 필요\n  `);
+    }
+    await writeFile(dest, out);
+    manifest[job.id] = { file: `${job.id}.glb`, bytes: out.length };
+    console.log(`${j.engine} · ${(out.length / 1048576).toFixed(1)}MB · `
+      + `${((Date.now() - t0) / 1000).toFixed(0)}초 · 파트 ${JSON.stringify(glbPartNames(out))}`);
   } catch (e) {
     console.log(`실패 — ${e.message}`);
   }

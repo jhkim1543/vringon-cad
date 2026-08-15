@@ -11,6 +11,7 @@ import { makeAssetStore, assetSummary, searchAssets } from "./asset-store.mjs";
 import { REPRESENTATION, BUILDER_VALUES, validateSpec } from "./spec-validate.mjs";
 import { PROGRAM_SPEC, PROGRAM_EXAMPLE } from "./js/program-spec.js";
 import { BASE_RECIPES, FEATURE_RECIPES, recipeContract } from "./js/recipes.js";
+import { sanitizeMeshBytes, scrubResponse, findVendorTokens } from "./glb-sanitize.mjs";
 
 const rootDir = fileURLToPath(new URL(".", import.meta.url));
 const port = Number(process.argv[2] || 8347);
@@ -499,6 +500,30 @@ const MESH_CLOUD_KEY = process.env.MESH_CLOUD_API_KEY || cfg.meshCloud?.apiKey |
    When it is up we never leave the machine; 메시 클라우드 stays as the cloud fallback. */
 const LOCAL_MESH_URL = process.env.LOCAL_MESH_URL || cfg.localMesh?.url || "http://127.0.0.1:8348";
 
+/* The one door every generated mesh goes through on its way to disk.
+
+   A mesh that comes back from an outside service is stamped with that
+   service's brand inside the glTF: asset.generator, and a node name that the
+   workbench prints verbatim in the part list. Scrubbing the copies already
+   committed to the repository missed this entirely, because this path writes a
+   brand-new file on every run — so the demo showed a supplier's name in the
+   part panel while a text grep over the repository reported zero.
+
+   Both mesh engines funnel through here so that a third engine added later
+   cannot reintroduce the leak by forgetting to call the scrubber. */
+async function writeGeneratedMesh(glb, name, event) {
+  /* renameOpaque as well: both engines name their single node after the job id,
+     so without it the part list reads as a UUID even once the brand is gone. */
+  const clean = sanitizeMeshBytes(glb, { renameOpaque: true });
+  if (clean.notes.length) {
+    console.log(`[mesh-scrub] ${name} (${clean.mode}) ${clean.notes.length}건 — ${clean.notes.join(" | ")}`);
+  }
+  await mkdir(join(rootDir, "generated"), { recursive: true });
+  await writeFile(join(rootDir, "generated", name), clean.buf);
+  await logEvent("mesh3d", { ...event, bytes: clean.buf.length, scrubbed: clean.notes.length });
+  return { url: `/generated/${name}`, bytes: clean.buf.length };
+}
+
 async function tryLocalMesh(image) {
   // 4s, not 1.5s: CUDA context init alone can outlast a tight probe, and a
   // timeout here silently sends paying traffic to the cloud instead
@@ -514,11 +539,9 @@ async function tryLocalMesh(image) {
   const j = await r.json();
   if (!j.ok || !j.glbB64) throw new Error(j.error || "local mesh failed");
   const glb = Buffer.from(j.glbB64, "base64");
-  await mkdir(join(rootDir, "generated"), { recursive: true });
   const name = `mesh_local_${Date.now().toString(36)}.glb`;
-  await writeFile(join(rootDir, "generated", name), glb);
-  await logEvent("mesh3d", { engine: "trellis-local", bytes: glb.length });
-  return { ok: true, url: `/generated/${name}`, bytes: glb.length, engine: "local" };
+  const saved = await writeGeneratedMesh(glb, name, { engine: "trellis-local" });
+  return { ok: true, url: saved.url, bytes: saved.bytes, engine: "local" };
 }
 
 // every network hop is labelled: a bare "fetch failed" tells us nothing about
@@ -649,11 +672,9 @@ async function cloudCollect(taskId, tag = "") {
       await new Promise((res) => setTimeout(res, 1500 * attempt));
     }
   }
-  await mkdir(join(rootDir, "generated"), { recursive: true });
   const name = `mesh_${taskId.replace(/[^\w-]/g, "").slice(0, 40)}.glb`;
-  await writeFile(join(rootDir, "generated", name), glb);
-  await logEvent("mesh3d", { taskId, tag, bytes: glb.length, ms: Date.now() - t0 });
-  return { ok: true, url: `/generated/${name}`, bytes: glb.length, engine: "cloud", sec: Math.round((Date.now() - t0) / 1000) };
+  const saved = await writeGeneratedMesh(glb, name, { taskId, tag, ms: Date.now() - t0 });
+  return { ok: true, url: saved.url, bytes: saved.bytes, engine: "cloud", sec: Math.round((Date.now() - t0) / 1000) };
 }
 
 /* Vision review loop — the img2threejs quality gate. The design brain looks
@@ -1210,9 +1231,28 @@ async function readBody(req, limit = 16e6) {
   if (over) throw new Error(`요청 본문이 ${Math.round(limit / 1e6)}MB 한도를 넘었습니다`);
   try { return JSON.parse(raw || "{}"); } catch { return {}; }
 }
+/* Last gate before any JSON leaves the process.
+
+   The handlers all end in `catch (e) => { error: e.message }`, and an upstream
+   failure writes its own message: a DNS or TLS error names the host it could
+   not reach, which is the supplier's domain. Nobody would write that string
+   deliberately, so no amount of reviewing handler code finds it — the only
+   reliable place to catch it is the single function that serialises responses.
+
+   The scrub runs only when a token is actually present, so the ordinary
+   response pays one substring scan and nothing else. Encoded payloads are left
+   untouched by scrubResponse, so a chance match inside base64 can survive; that
+   is logged rather than patched, because damaging an image to remove a
+   coincidence would be the worse trade. */
 const json = (res, code, obj) => {
+  let body = JSON.stringify(obj);
+  if (findVendorTokens(body).length) {
+    body = JSON.stringify(scrubResponse(obj));
+    const left = findVendorTokens(body);
+    console.warn(`[api-scrub] 응답에서 공급사명을 제거했습니다${left.length ? ` (인코딩 구간 ${left.length}건 잔존)` : ""}`);
+  }
   res.writeHead(code, { "Content-Type": "application/json; charset=utf-8" });
-  res.end(JSON.stringify(obj));
+  res.end(body);
 };
 
 /* ============================================================
@@ -2452,6 +2492,36 @@ function contactGaps(spec) {
   }];
 }
 
+/* Diagnostics for the repair loop. The rounds are the longest and least
+   predictable part of a run, and until now the log recorded only that they
+   happened — not which error_code went in, which came out, or whether the
+   round's output was kept at all. Counting by code is what tells those apart.
+   Log-only: nothing here changes what the pipeline does. */
+function codeTally(list) {
+  const t = {};
+  for (const e of list || []) t[e.error_code || "?"] = (t[e.error_code || "?"] || 0) + 1;
+  return t;
+}
+
+/* Two of the checks collapse many faults into one error object: every missing
+   inventory item is one DETAIL_ITEM_MISSING, and any number of detached groups
+   is one ASSEMBLY_DISCONNECTED. errors.length therefore cannot see a round that
+   fixed eight of twelve missing parts. This reads the real counts back out of
+   the message so the diagnostics can. Log-only. */
+function granularWeight(list) {
+  let n = 0;
+  for (const e of list || []) {
+    if (e.error_code === "DETAIL_ITEM_MISSING") {
+      const m = /없습니다: (.*?)\. 각각을/s.exec(e.required_fix || "");
+      n += m ? m[1].split(",").length : 1;
+    } else if (e.error_code === "ASSEMBLY_DISCONNECTED") {
+      const m = /조립체가 (\d+)덩어리/.exec(e.required_fix || "");
+      n += m ? Number(m[1]) - 1 : 1;
+    } else n += 1;
+  }
+  return n;
+}
+
 /* Inventory items the spec failed to realise. Matching is loose on purpose —
    "살포 노즐"과 "노즐 4구"는 같은 물건이다 — so only genuinely absent hardware
    comes back as an error for the repair rounds. */
@@ -2459,11 +2529,23 @@ function inventoryGaps(spec, inventory) {
   if (!inventory?.length) return [];
   const norm = (s) => String(s || "").toLowerCase().replace(/[\s()·,+~\-–—]/g, "");
   const partText = norm((spec.parts || []).map((p) => `${p.name || ""} ${p.display_name_ko || ""}`).join(" "));
+  /* The specification prompt grants exactly one exemption — LED and fasteners
+     may be folded into a neighbouring part — so reporting them here contradicts
+     the instruction the specification was written under, and the repair round
+     is then asked to undo something it was told it could do. */
+  const EXEMPT = /led|파스너|퀵릴리즈|볼트|나사|스크류|리벳/i;
   const missing = inventory.filter((x) => {
-    const keys = norm(x.name_ko).split(/[·/]/).filter((k) => k.length >= 2);
-    const key = keys[0] || norm(x.name_ko);
+    const raw = String(x.name_ko || "");
+    if (EXEMPT.test(raw)) return false;
+    /* Split on the separators BEFORE normalising. norm() deletes "·", so the
+       old split never fired: "캐노피·셸" was matched as the single token
+       "캐노피셸" against a specification whose part is named "캐노피", and came
+       back as a missing part that was sitting right there. Alternatives listed
+       with · or / are names for one thing, so any of them counts. */
+    const keys = raw.split(/[·/]/).map(norm).filter((k) => k.length >= 2);
+    if (!keys.length) keys.push(norm(raw));
     // 앞 4글자 매칭이면 같은 부품으로 본다 ("살포탱크주입구캡" vs "살포탱크")
-    return key && !partText.includes(key.slice(0, Math.min(4, key.length)));
+    return !keys.some((k) => partText.includes(k.slice(0, Math.min(4, k.length))));
   });
   if (!missing.length) return [];
   return [{
@@ -2956,8 +3038,11 @@ async function runSpecJson(body, job) {
               const k = String(x.name_ko || "").replace(/\s/g, "").slice(0, 4);
               if (k && !merged.has(k)) merged.set(k, x);
             }
+            const before = new Set(inventory.map((x) => x.name_ko));
             if (merged.size > inventory.length) inventory = [...merged.values()].slice(0, 22);
             console.log(`[drone-inventory] 재조사 후 ${inventory.length}개`);
+            // diagnostics: which names the recheck actually contributed
+            console.log(`[inv-diag] added=${JSON.stringify(inventory.filter((x) => !before.has(x.name_ko)).map((x) => x.name_ko))}`);
           } catch (e) { console.error("[drone-inventory] 재조사 실패:", e.message); }
         }
       } catch (e) { console.error("[drone-inventory] 실패, 인벤토리 없이 진행:", e.message); }
@@ -3038,8 +3123,12 @@ async function runSpecJson(body, job) {
     normalizeStrutRadius(spec);
     jobStage(job, "validate", "치수·간섭·조립을 검증하는 중", "로터 간섭, 파트 접촉, 인벤토리 누락을 훑습니다");
     let errors = [...validateSpec(spec, { hasMesh: !!meshInfo }), ...inventoryGaps(spec, inventory), ...contactGaps(spec)];
+    console.log(`[repair-diag] parts=${(spec.parts || []).length} inv=${inventory?.length || 0}`
+      + ` initial=${JSON.stringify(codeTally(errors))} weight=${granularWeight(errors)}`);
+    for (const e of errors) if (e.error_code === "DETAIL_ITEM_MISSING") console.log(`[repair-diag] missing ${e.required_fix.slice(0, 300)}`);
     for (let round = 0; round < 2 && errors.length; round++) {
       jobStage(job, "repair", `검증 지적 ${errors.length}건을 수정하는 중`, `수정 ${round + 1}회차 / 최대 2회`);
+      const t0 = Date.now();
       try {
         const fixed = await callLLM([
           ...dmessages,
@@ -3050,10 +3139,15 @@ async function runSpecJson(body, job) {
         groundProvenance(fixed, !!image);
         normalizeStrutRadius(fixed);
         const after = [...validateSpec(fixed, { hasMesh: !!meshInfo }), ...inventoryGaps(fixed, inventory), ...contactGaps(fixed)];
+        console.log(`[repair-diag] round=${round + 1} ms=${Date.now() - t0} kept=${after.length < errors.length}`
+          + ` parts=${(spec.parts || []).length}->${(fixed.parts || []).length}`
+          + ` n=${errors.length}->${after.length} weight=${granularWeight(errors)}->${granularWeight(after)}`
+          + ` in=${JSON.stringify(codeTally(errors))} out=${JSON.stringify(codeTally(after))}`);
+        for (const e of after) if (e.error_code === "DETAIL_ITEM_MISSING") console.log(`[repair-diag] r${round + 1} still-missing ${e.required_fix.slice(0, 300)}`);
         if (after.length >= errors.length) break;
         const ext = spec.external_classifications;
         spec = fixed; spec.external_classifications = ext; errors = after;
-      } catch (e) { console.error("[drone-spec] repair failed:", e.message); break; }
+      } catch (e) { console.error(`[repair-diag] round=${round + 1} ms=${Date.now() - t0} threw`); console.error("[drone-spec] repair failed:", e.message); break; }
     }
     jobStage(job, "finish", "사양서를 정리하는 중", null);
     await logEvent("drone_spec", {
