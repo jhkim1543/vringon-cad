@@ -14,6 +14,7 @@
      dismantles itself.
    - partFields()/applyPartField(): raw per-part dimensions for direct editing.
    ========================================================================== */
+import { loftAxis } from "./mesh-loft.js?v=9ac70d99";
 
 const NAME = (p) => `${p.name || ""} ${p.display_name_ko || ""}`;
 const isArm = (p) => /암(?!레스트)|arm|boom|붐/i.test(NAME(p));
@@ -33,6 +34,45 @@ function scaleProfile(g, kx, ky) {
       if (s.radius) s.radius *= Math.max(kx, ky);
     }
   }
+}
+
+/* A LOFT part reads only its axial length from size_mm; both cross-section
+   extents come from loft_sections (w_mm/h_mm per station). So a size_mm edit
+   on its own moves nothing across the axis — the W slider on a fuselage that
+   lofts front-to-back did not change the picture at all. Every size_mm edit
+   therefore brings the stations along, by the same ratio the box changed by,
+   which is what applyComponent in drone-catalog already does when it rewrites
+   the stations for a swapped part; the two paths must agree.
+
+   `before` is size_mm as it stood before the edit. It matters twice: the ratio
+   is measured against it, and it names the axis the stations were written
+   across. The axis is derived from the box (loftAxis, the one place that rule
+   lives), so an edit can hand the closest-matching pair of extents to another
+   axis and the builder then stacks the same stations along a new direction.
+   No ratio carries a profile across that change (nor across an extent that
+   was zero); what still holds is that size_mm is the world box, so the
+   stations are fitted to the new cross extents instead. Stations map as
+   [w, h, d] minus the axis, in that order: w_mm is the lower-indexed
+   remaining extent, h_mm the other. */
+function syncLoftSections(g, before) {
+  const secs = Array.isArray(g.loft_sections) ? g.loft_sections : [];
+  if (!secs.length || !g.size_mm) return;
+  const now = g.size_mm, was = before || {};
+  const ext = (s, a) => Number(s["whd"[a]]) || 0;
+  const a0 = loftAxis(was), a1 = loftAxis(now);
+  const keys = [["w_mm", "w"], ["h_mm", "h"]];   // the builder accepts either spelling
+  [0, 1, 2].filter((a) => a !== a1).forEach((a, i) => {
+    let k = 1;
+    if (a0 === a1 && ext(was, a) > 0) {
+      k = ext(now, a) / ext(was, a);
+    } else {
+      const peak = Math.max(0, ...secs.map((s) => Number(s[keys[i][0]] ?? s[keys[i][1]]) || 0));
+      if (peak > 0 && ext(now, a) > 0) k = ext(now, a) / peak;
+    }
+    // a non-positive extent has no section to draw; leave the stations alone
+    if (!(k > 0) || k === 1 || !Number.isFinite(k)) return;
+    for (const s of secs) for (const key of keys[i]) if (Number.isFinite(s[key])) s[key] *= k;
+  });
 }
 
 /* --------------------------------------------------------------- knobs */
@@ -62,13 +102,14 @@ export function applyParameter(spec, paramId, value) {
         touched.push(p.part_id);
         if (isArm(p)) {
           // arm length follows the ring: tip at the motor, root at the body
-          const g = p.geometry, long = Math.max(g.size_mm.w, g.size_mm.d) || 1;
+          const g = p.geometry, long = Math.max(g.size_mm.w, g.size_mm.d) || 1, before = { ...g.size_mm };
           const body = parts.find(isBody);
           const rootR = body ? Math.max(body.geometry?.size_mm?.w || 0, body.geometry?.size_mm?.d || 0) / 2 : value / 8;
           const newLen = Math.max(30, value / 2 - rootR + 20);
           const k = newLen / long;
           if (g.size_mm.w >= g.size_mm.d) g.size_mm.w = newLen; else g.size_mm.d = newLen;
           scaleProfile(g, g.plane === "FRONT" && g.size_mm.w >= g.size_mm.d ? k : k, 1);
+          syncLoftSections(g, before);
         }
       }
     }
@@ -76,27 +117,30 @@ export function applyParameter(spec, paramId, value) {
   } else if (id.includes("rotor_diameter") || id.includes("rotor.diameter")) {
     for (const p of parts) {
       if (isRotorDisk(p) && inScope(p)) {
-        const g = p.geometry, k = value / (Math.max(g.size_mm.w, g.size_mm.d) || 1);
+        const g = p.geometry, k = value / (Math.max(g.size_mm.w, g.size_mm.d) || 1), before = { ...g.size_mm };
         g.size_mm.w = value; g.size_mm.d = value;
         scaleProfile(g, k, k);
+        syncLoftSections(g, before);
         touched.push(p.part_id);
       }
     }
   } else if (id.includes("arm_length")) {
     for (const p of parts) {
       if (isArm(p) && inScope(p)) {
-        const g = p.geometry, long = Math.max(g.size_mm.w, g.size_mm.d) || 1, k = value / long;
+        const g = p.geometry, long = Math.max(g.size_mm.w, g.size_mm.d) || 1, k = value / long, before = { ...g.size_mm };
         if (g.size_mm.w >= g.size_mm.d) g.size_mm.w = value; else g.size_mm.d = value;
         scaleProfile(g, k, 1);
+        syncLoftSections(g, before);
         touched.push(p.part_id);
       }
     }
   } else if (id.includes("wingspan") || id.includes("wing_span")) {
     for (const p of parts) {
       if (isWing(p) && inScope(p)) {
-        const g = p.geometry, k = value / (g.size_mm.w || 1);
+        const g = p.geometry, k = value / (g.size_mm.w || 1), before = { ...g.size_mm };
         g.size_mm.w = value;
         scaleProfile(g, k, 1);
+        syncLoftSections(g, before);
         touched.push(p.part_id);
       }
     }
@@ -104,9 +148,10 @@ export function applyParameter(spec, paramId, value) {
   } else if (id.includes("gear") && id.includes("height")) {
     for (const p of parts) {
       if (isGear(p) && inScope(p)) {
-        const g = p.geometry, k = value / (g.size_mm.h || 1);
+        const g = p.geometry, k = value / (g.size_mm.h || 1), before = { ...g.size_mm };
         g.size_mm.h = value;
         scaleProfile(g, 1, k);
+        syncLoftSections(g, before);
         touched.push(p.part_id);
       }
     }
@@ -116,9 +161,10 @@ export function applyParameter(spec, paramId, value) {
         const g = p.geometry;
         const axis = id.includes("height") ? "h" : id.includes("width") ? "w" : id.includes("length") ? "d" : null;
         if (axis) {
-          const k = value / (g.size_mm[axis] || 1);
+          const k = value / (g.size_mm[axis] || 1), before = { ...g.size_mm };
           g.size_mm[axis] = value;
           scaleProfile(g, axis === "h" ? 1 : k, axis === "h" ? k : 1);
+          syncLoftSections(g, before);
           touched.push(p.part_id);
         }
       }
@@ -127,10 +173,11 @@ export function applyParameter(spec, paramId, value) {
     /* unknown knob with explicit targets: scale the long axis uniformly */
     for (const p of parts) {
       if (pm.affects.includes(p.part_id)) {
-        const g = p.geometry;
+        const g = p.geometry, was = { ...g.size_mm };
         const k = value / (before || Math.max(g.size_mm.w, g.size_mm.h, g.size_mm.d) || 1);
         g.size_mm.w *= k; g.size_mm.h *= k; g.size_mm.d *= k;
         scaleProfile(g, k, k);
+        syncLoftSections(g, was);
         touched.push(p.part_id);
       }
     }
@@ -165,6 +212,7 @@ export function applyPartField(spec, partId, key, value) {
   const [a, b] = key.split(".");
   if (!g[a]) g[a] = {};
   const prev = g[a][b];
+  const before = a === "size_mm" ? { ...g[a] } : null;
   g[a][b] = value;
   /* Dimension edits keep the authored profile in step, else the size check
      the server enforces is broken by the first slider touch. */
@@ -175,5 +223,8 @@ export function applyPartField(spec, partId, key, value) {
     const ky = (b === "h" && plane !== "TOP") || (b === "d" && plane === "TOP") ? k : 1;
     if (kx !== 1 || ky !== 1) scaleProfile(g, kx, ky);
   }
+  /* And the loft stations, for the same reason: an edit across the loft axis
+     is invisible until they follow. See syncLoftSections. */
+  if (before) syncLoftSections(g, before);
   return true;
 }

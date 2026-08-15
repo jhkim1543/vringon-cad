@@ -16,7 +16,7 @@
    the original, only ever produces a derived asset alongside it.
    ========================================================================== */
 import * as THREE from "three";
-import { worldTris, surfaceSamples, eigenSym3 } from "./robot.js?v=396db0bf";
+import { worldTris, surfaceSamples, eigenSym3 } from "./robot.js?v=9ac70d99";
 
 /* ---------------------------------------------------------------- origins
    The only admissible provenances. CATEGORY_FALLBACK, CATALOG_GUESS,

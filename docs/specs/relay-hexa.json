@@ -80,13 +80,13 @@
         "plane": "FRONT",
         "size_mm": {
           "w": 280,
-          "h": 71,
+          "h": 82,
           "d": 280
         },
         "center_mm": {
           "x": -7,
-          "y": 315,
-          "z": 6
+          "y": 316,
+          "z": 7
         },
         "outer_profile": [
           {
@@ -389,13 +389,13 @@
         "plane": "TOP",
         "size_mm": {
           "w": 284,
-          "h": 10,
+          "h": 15,
           "d": 284
         },
         "center_mm": {
           "x": -8,
           "y": 315,
-          "z": 10
+          "z": 6
         },
         "outer_profile": null,
         "inner_profile": null,
@@ -692,7 +692,6 @@
         ],
         "corner_radius_mm": null,
         "repeat": null,
-        "loft_sections": null,
         "rotation_deg": null,
         "airfoil": null
       },
@@ -800,7 +799,17 @@
         "rotation_deg": null,
         "airfoil": null
       },
-      "dimensions": [],
+      "dimensions": [
+        {
+          "name": "wheelbase",
+          "value": 900,
+          "unit": "mm",
+          "precision": "EXACT",
+          "provenance": "USER_PROVIDED",
+          "confidence": 1,
+          "requires_confirmation": false
+        }
+      ],
       "features": [],
       "material_id": "mat_black_metal",
       "confidence": 0.95
@@ -906,13 +915,13 @@
         "builder": "CYLINDER",
         "plane": "TOP",
         "size_mm": {
-          "w": 16,
-          "h": 220,
-          "d": 16
+          "w": 18,
+          "h": 340,
+          "d": 18
         },
         "center_mm": {
           "x": 0,
-          "y": 167,
+          "y": 31,
           "z": 0
         },
         "outer_profile": null,
@@ -922,14 +931,13 @@
           "pattern": "MIRROR_PAIR",
           "count": 2,
           "radius_mm": null,
-          "spacing_mm": 160,
+          "spacing_mm": 380,
           "start_angle_deg": null
         },
-        "loft_sections": null,
         "rotation_deg": {
           "x": 0,
           "y": 0,
-          "z": -20
+          "z": 25
         },
         "airfoil": null
       },
@@ -959,7 +967,7 @@
         },
         "center_mm": {
           "x": 0,
-          "y": 64,
+          "y": -52,
           "z": 0
         },
         "outer_profile": null,
@@ -969,10 +977,9 @@
           "pattern": "MIRROR_PAIR",
           "count": 2,
           "radius_mm": null,
-          "spacing_mm": 310,
+          "spacing_mm": 488,
           "start_angle_deg": null
         },
-        "loft_sections": null,
         "rotation_deg": null,
         "airfoil": null
       },
@@ -1033,13 +1040,13 @@
         "builder": "ROUNDED_BOX",
         "plane": "FRONT",
         "size_mm": {
-          "w": 181,
+          "w": 204,
           "h": 100,
-          "d": 137
+          "d": 156
         },
         "center_mm": {
-          "x": 0,
-          "y": 203,
+          "x": -1,
+          "y": 163,
           "z": 0
         },
         "outer_profile": null,
@@ -1083,7 +1090,6 @@
         "inner_profile": null,
         "corner_radius_mm": null,
         "repeat": null,
-        "loft_sections": null,
         "rotation_deg": null,
         "airfoil": null
       },
@@ -1107,20 +1113,19 @@
         "builder": "CYLINDER",
         "plane": "TOP",
         "size_mm": {
-          "w": 14,
-          "h": 118,
-          "d": 15
+          "w": 15,
+          "h": 200,
+          "d": 16
         },
         "center_mm": {
           "x": 0,
-          "y": 370,
+          "y": 415,
           "z": 0
         },
         "outer_profile": null,
         "inner_profile": null,
         "corner_radius_mm": null,
         "repeat": null,
-        "loft_sections": null,
         "rotation_deg": null,
         "airfoil": null
       },
@@ -1141,54 +1146,22 @@
       "editable": true,
       "locked_characteristics": [],
       "geometry": {
-        "builder": "LOFT",
+        "builder": "BOX",
         "plane": "FRONT",
         "size_mm": {
-          "w": 38,
-          "h": 24,
-          "d": 34
+          "w": 50,
+          "h": 50,
+          "d": 50
         },
         "center_mm": {
-          "x": -1,
-          "y": 480,
-          "z": 1
+          "x": 0,
+          "y": 540,
+          "z": 0
         },
         "outer_profile": null,
         "inner_profile": null,
         "corner_radius_mm": null,
         "repeat": null,
-        "loft_sections": [
-          {
-            "at_pct": 6,
-            "w_mm": 24,
-            "h_mm": 32,
-            "fill": 0.66
-          },
-          {
-            "at_pct": 44,
-            "w_mm": 24,
-            "h_mm": 33,
-            "fill": 0.6
-          },
-          {
-            "at_pct": 56,
-            "w_mm": 24,
-            "h_mm": 31,
-            "fill": 0.61
-          },
-          {
-            "at_pct": 69,
-            "w_mm": 21,
-            "h_mm": 30,
-            "fill": 0.68
-          },
-          {
-            "at_pct": 94,
-            "w_mm": 16,
-            "h_mm": 34,
-            "fill": 0.77
-          }
-        ],
         "rotation_deg": null,
         "airfoil": null
       },
@@ -1212,20 +1185,19 @@
         "builder": "BOX",
         "plane": "FRONT",
         "size_mm": {
-          "w": 22,
-          "h": 33,
-          "d": 24
+          "w": 50,
+          "h": 50,
+          "d": 50
         },
         "center_mm": {
-          "x": -4,
-          "y": 520,
-          "z": 4
+          "x": 0,
+          "y": 602,
+          "z": 0
         },
         "outer_profile": null,
         "inner_profile": null,
         "corner_radius_mm": null,
         "repeat": null,
-        "loft_sections": null,
         "rotation_deg": null,
         "airfoil": null
       },
@@ -1249,20 +1221,19 @@
         "builder": "CYLINDER",
         "plane": "TOP",
         "size_mm": {
-          "w": 12,
-          "h": 105,
-          "d": 11
+          "w": 13,
+          "h": 300,
+          "d": 12
         },
         "center_mm": {
           "x": 0,
-          "y": 587,
-          "z": -1
+          "y": 715,
+          "z": 0
         },
         "outer_profile": null,
         "inner_profile": null,
         "corner_radius_mm": null,
         "repeat": null,
-        "loft_sections": null,
         "rotation_deg": null,
         "airfoil": null
       },
@@ -1336,7 +1307,6 @@
         "inner_profile": null,
         "corner_radius_mm": null,
         "repeat": null,
-        "loft_sections": null,
         "rotation_deg": null,
         "airfoil": null
       },

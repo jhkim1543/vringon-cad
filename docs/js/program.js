@@ -11,9 +11,9 @@ import * as THREE from "three";
 import {
   roundedBox, plate, lathe, chamferCyl, loft, gear, bolt, tube, rib,
   gemGeometry, GEM_SHAPES, GEM_CUTS, meshOf, makeMaterial,
-} from "./geometry.js?v=396db0bf";
-import { MATERIAL_KEYS } from "./catalog.js?v=396db0bf";
-import { measureInterior } from "./measure.js?v=396db0bf";
+} from "./geometry.js?v=9ac70d99";
+import { MATERIAL_KEYS } from "./catalog.js?v=9ac70d99";
+import { measureInterior } from "./measure.js?v=9ac70d99";
 
 /* ---------------------------------------------------------------- expressions
    numbers · parameter names · + - * / % ( ) · unary minus
@@ -450,4 +450,4 @@ export function programSims(program, params) {
   return out;
 }
 
-export { PROGRAM_SPEC, PROGRAM_EXAMPLE } from "./program-spec.js?v=396db0bf";
+export { PROGRAM_SPEC, PROGRAM_EXAMPLE } from "./program-spec.js?v=9ac70d99";

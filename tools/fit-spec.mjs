@@ -191,10 +191,11 @@ function makeKnobs(spec, opts) {
     }
 
     /* Only where the author already said the part tilts. Turning rotation on
-       everywhere is a flag, because a rotated part leaves size_mm as its own
-       pre-tilt box and js/mesh-loft.js refineFromMesh skips it from then on —
-       winning a point of IoU by making eighteen parts permanently unmeasurable
-       is not a trade this tool makes on its own. */
+       everywhere is a flag: a tilt is a statement about the design, not a
+       fitting knob, and a point of IoU won by leaning eighteen parts the
+       author drew upright is not a trade this tool makes on its own. (A
+       rotated part is still measured — js/mesh-loft.js refineFromMesh reads
+       it in its own frame — so measurability is no longer the reason.) */
     const authored = g.rotation_deg && ["x", "y", "z"].some((a) => g.rotation_deg[a]);
     if (authored || opts.rotateAll) {
       for (const a of ["x", "y", "z"]) {

@@ -203,15 +203,31 @@ section("좌표 측정은 이 두 필드를 덮어쓰지 않는다");
   const base = refineFromMesh(load(id), mesh);
   ok(base.authored.length === 0, `기존 사양서는 건너뛴 파트 0개 (측정 ${base.measured.length})`);
 
+  /* A rotated part used to be skipped outright, because a world-axis reading
+     of a tilted solid is always larger than its size_mm (the box BEFORE the
+     tilt) and re-measuring inflated it every run. It is now measured in its
+     own frame instead: the angle stays as authored, and the reading comes out
+     the same as for the untilted part — not the world box. Read the part
+     untilted first so there is a number to compare against. */
   const spec = load(id);
   const target = spec.parts.find((p) => base.measured.some((m) => m.startsWith(p.display_name_ko || p.part_id)));
-  const before = JSON.stringify(target.geometry.size_mm), builder = target.geometry.builder;
+  const plainSpec = load(id);
+  const plain = plainSpec.parts.find((p) => p.part_id === target.part_id);
+  refineFromMesh(plainSpec, mesh);
+  const label = target.display_name_ko || target.part_id;
   target.geometry.rotation_deg = { x: 0, y: 0, z: 8 };
   const after = refineFromMesh(spec, mesh);
-  ok(JSON.stringify(target.geometry.size_mm) === before && target.geometry.builder === builder,
-    `회전한 파트의 size_mm·builder 불변 (${builder} ${before}) — 월드 박스로 부풀지 않는다`);
-  ok(after.authored.some((s) => s.includes("회전")), `건너뛴 사실이 보고된다: ${after.authored.join(", ")}`);
-  ok(after.measured.length === base.measured.length - 1, "나머지 파트는 그대로 측정된다");
+  const rot = target.geometry.rotation_deg;
+  ok(rot.x === 0 && rot.y === 0 && rot.z === 8, `회전각은 측정이 덮지 않는다 (z ${rot.z}°)`);
+  const sz = target.geometry.size_mm, ref = plain.geometry.size_mm;
+  const near = (a, b) => Math.abs(a - b) <= Math.max(3, b * 0.03);
+  const th = 8 * Math.PI / 180;
+  const worldW = ref.w * Math.cos(th) + ref.h * Math.sin(th), worldH = ref.w * Math.sin(th) + ref.h * Math.cos(th);
+  ok(near(sz.w, ref.w) && near(sz.h, ref.h) && near(sz.d, ref.d) && sz.w < worldW - 3 && sz.h < worldH - 3,
+    `회전한 파트는 자기 좌표계로 읽힌다 ${sz.w}×${sz.h}×${sz.d} ≈ 무회전 ${ref.w}×${ref.h}×${ref.d} — 월드 박스(${worldW.toFixed(0)}×${worldH.toFixed(0)})로 부풀지 않는다`);
+  ok(after.measured.some((s) => s.startsWith(label) && s.includes("회전")) && !after.authored.some((s) => s.startsWith(label)),
+    `회전 파트도 측정되고 그 사실이 표시된다: ${after.measured.find((s) => s.startsWith(label))}`);
+  ok(after.measured.length === base.measured.length, "나머지 파트는 그대로 측정된다");
 
   const spec2 = load(id);
   const wing = spec2.parts.find((p) => p.geometry?.plane === "TOP" && p.geometry?.builder === "EXTRUDE_2D");

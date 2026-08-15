@@ -11,7 +11,7 @@
    so instead of inventing it.
    ========================================================================== */
 import * as THREE from "three";
-import { createFlightModel } from "./drone-6dof.js?v=396db0bf";
+import { createFlightModel } from "./drone-6dof.js?v=9ac70d99";
 
 /* "로터 암", "모터 마운트", "프로펠러 가드" all contain rotor words and none of
    them should spin. Membership means: named like a rotor AND not named like the

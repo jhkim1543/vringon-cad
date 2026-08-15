@@ -1412,12 +1412,12 @@
       "editable": true,
       "locked_characteristics": [],
       "geometry": {
-        "builder": "LOFT",
+        "builder": "CYLINDER",
         "plane": "FRONT",
         "size_mm": {
-          "w": 27,
-          "h": 5,
-          "d": 79
+          "w": 35,
+          "h": 35,
+          "d": 40
         },
         "center_mm": {
           "x": 0,
@@ -1427,39 +1427,7 @@
         "outer_profile": null,
         "inner_profile": null,
         "corner_radius_mm": null,
-        "repeat": null,
-        "loft_sections": [
-          {
-            "at_pct": 6,
-            "w_mm": 19,
-            "h_mm": 5,
-            "fill": 0.76
-          },
-          {
-            "at_pct": 19,
-            "w_mm": 22,
-            "h_mm": 5,
-            "fill": 0.73
-          },
-          {
-            "at_pct": 31,
-            "w_mm": 25,
-            "h_mm": 5,
-            "fill": 0.76
-          },
-          {
-            "at_pct": 44,
-            "w_mm": 27,
-            "h_mm": 4,
-            "fill": 0.76
-          },
-          {
-            "at_pct": 56,
-            "w_mm": 27,
-            "h_mm": 2,
-            "fill": 0.69
-          }
-        ]
+        "repeat": null
       },
       "dimensions": [],
       "features": [],

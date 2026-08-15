@@ -190,6 +190,108 @@ function firstInstanceCenter(g) {
   return [c.x || 0, c.y || 0, c.z || 0];
 }
 
+/* ------------------------------------------------------------ part frames
+
+   A part with rotation_deg is measured in its own frame, not the world's. Its
+   size_mm is the box BEFORE the tilt — the compiler builds every part
+   axis-aligned and turns it afterwards — so the world-axis extent of the
+   tilted solid is the wrong number to write there: always larger, larger
+   again on every run, and a tilted box read through a world-aligned mask
+   scrapes in whatever neighbour the mask overlaps. That is why rotated parts
+   used to be skipped, and skipping had its own cost: an antenna the mesh
+   plainly contradicted kept its authored length and dragged the silhouette
+   height with it.
+
+   Turning the mesh into the part's frame instead makes the declared box a
+   tight, correctly aligned mask, and everything read inside it — extents,
+   centre offset, loft sections — is already expressed the way size_mm and
+   loft_sections are written. The angle itself is not measured; it stays as
+   authored. Every guard the world-frame path applies (ratio window, box
+   agreement as the net widens) applies unchanged, because the same loop runs
+   on the turned points.
+
+   The frame is the one instanceXform() in spec-to-code builds, composed the
+   same way: rotation_deg as an XYZ Euler in the part's own frame first, then
+   the placement. A MIRROR_PAIR hinges on the mirror plane rather than each
+   copy's own centre, so its position moves with the tilt; a CIRCULAR ring
+   adds the placement yaw after the tilt. Only the first instance is measured,
+   as for every repeated part. (spec-cad's radial-strut normalisation, which
+   re-yaws and re-seats a rod on a ring, is not replicated here — the
+   unrotated path does not see it either.) */
+
+const DEG = Math.PI / 180;
+
+/* Rx·Ry·Rz, the matrix three.js builds for an "XYZ" Euler — the order the
+   compiler uses. Columns are the part's axes expressed in the world. */
+function eulerXYZ(rot) {
+  const a = Math.cos((rot.x || 0) * DEG), b = Math.sin((rot.x || 0) * DEG);
+  const c = Math.cos((rot.y || 0) * DEG), d = Math.sin((rot.y || 0) * DEG);
+  const e = Math.cos((rot.z || 0) * DEG), f = Math.sin((rot.z || 0) * DEG);
+  return [
+    [c * e, -c * f, d],
+    [a * f + b * e * d, a * e - b * f * d, -b * c],
+    [b * f - a * e * d, b * e + a * f * d, a * c],
+  ];
+}
+
+function rotY(t) {
+  const c = Math.cos(t), s = Math.sin(t);
+  return [[c, 0, s], [0, 1, 0], [-s, 0, c]];
+}
+
+const matMul = (A, B) => A.map((row) => [0, 1, 2].map((j) => row[0] * B[0][j] + row[1] * B[1][j] + row[2] * B[2][j]));
+/* local → world */
+const apply = (M, v) => M.map((row) => row[0] * v[0] + row[1] * v[1] + row[2] * v[2]);
+
+/**
+ * Where the first instance of a rotated part sits and how it is turned, in
+ * spec millimetres: {pos, R} with world = R·local + pos. Null for a part
+ * without rotation, which is measured in the world frame as before.
+ */
+function partFrame(g) {
+  const rot = g.rotation_deg;
+  if (!rot || !(rot.x || rot.y || rot.z)) return null;
+  let R = eulerXYZ(rot);
+  const c = g.center_mm || {};
+  const rep = g.repeat;
+  let pos = firstInstanceCenter(g);
+  if (rep && rep.count > 1 && rep.pattern === "MIRROR_PAIR") {
+    /* The hinge is the mirror plane: the copy's offset along x is swung by
+       its own rotation, so a canted leg's root moves in and its foot out. */
+    const off = rep.spacing_mm ? rep.spacing_mm / 2 : Math.abs(c.x || 0);
+    const h = apply(R, [off, 0, 0]);
+    pos = [h[0], h[1] + (c.y || 0), h[2] + (c.z || 0)];
+  } else if (rep && rep.count > 1 && rep.pattern === "CIRCULAR") {
+    /* Placement yaw carries the already-tilted part around the ring; the
+       first instance sits at compass angle start_angle_deg, the same phi
+       firstInstanceCenter uses. */
+    const a0 = (Number(rep.start_angle_deg) || 0) * DEG;
+    R = matMul(rotY(-(Math.PI / 2 - a0)), R);
+  }
+  return { pos, R };
+}
+
+/* The mesh in a rotated part's own frame, in millimetres: each point goes
+   through the per-axis fit into spec mm, then through the inverse rotation.
+   The fit is anisotropic and the rotation is not, so the two cannot be
+   folded into one scale — the millimetre step has to happen first. In this
+   frame the declared centre is the origin and one unit is one millimetre. */
+function localFrame(mesh, mb, sb, specSize, { pos, R }) {
+  const n = mesh.count, src = mesh.positions;
+  const positions = new Float64Array(n * 3);
+  for (let i = 0; i < n; i++) {
+    const x = ((src[i * 3] - mb.lo[0]) / mb.size[0]) * specSize[0] + sb.lo[0] - pos[0];
+    const y = ((src[i * 3 + 1] - mb.lo[1]) / mb.size[1]) * specSize[1] + sb.lo[1] - pos[1];
+    const z = ((src[i * 3 + 2] - mb.lo[2]) / mb.size[2]) * specSize[2] + sb.lo[2] - pos[2];
+    // Rᵀ·v — the inverse of a rotation is its transpose
+    positions[i * 3] = R[0][0] * x + R[1][0] * y + R[2][0] * z;
+    positions[i * 3 + 1] = R[0][1] * x + R[1][1] * y + R[2][1] * z;
+    positions[i * 3 + 2] = R[0][2] * x + R[1][2] * y + R[2][2] * z;
+  }
+  const same = (v) => v;
+  return { positions, count: n, toFrame: same, toMm: same, perMm: [1, 1, 1] };
+}
+
 /* Every place one part is drawn, with its half-extent, in spec millimetres.
    specBounds needs it to size the whole assembly and the heading search needs
    it to know where the specification thinks its mass is; deriving the ring
@@ -368,9 +470,11 @@ export function meshYaw(spec, mesh) {
  *
  * Returns { measured, internal, authored }: parts read off the mesh, parts the
  * mesh cannot see, and parts whose specification already states the shape more
- * precisely than a bounding box can (rotation_deg, airfoil, or a catalogue
- * component the user chose) and which are therefore left alone. All three are
- * reported; none is a failure.
+ * precisely than a bounding box can (airfoil, or a catalogue component the
+ * user chose) and which are therefore left alone. All three are reported; none
+ * is a failure. A part with rotation_deg is measured like any other, but in
+ * its own frame — see the part-frames section above — and its entry in
+ * `measured` is marked 회전.
  */
 export function refineFromMesh(spec, mesh) {
   const measured = [], internal = [], authored = [];
@@ -390,28 +494,28 @@ export function refineFromMesh(spec, mesh) {
   // spec mm → mesh units, per axis
   const toMesh = (mm, a) => ((mm - sb.lo[a]) / specSize[a]) * mb.size[a] + mb.lo[a];
   const perMm = [0, 1, 2].map((a) => mb.size[a] / specSize[a]);
+  // mesh units → spec mm, per axis
+  const toMm = (v, a) => ((v - mb.lo[a]) / mb.size[a]) * specSize[a] + sb.lo[a];
+
+  /* Everything below reads the mesh through a frame: the points, how a
+     millimetre maps into their units and back. An unrotated part uses the
+     mesh as it is; a rotated part gets the same mesh turned into its own
+     frame (localFrame), and the loop cannot tell the difference — which is
+     the point, since the guards have to be the same guards. */
+  const worldFrame = { positions: mesh.positions, count: mesh.count, toFrame: toMesh, toMm, perMm };
 
   for (const part of spec.parts || []) {
     const g = part.geometry;
     const label = part.display_name_ko || part.part_id;
     if (!g || !g.size_mm || !g.center_mm) continue;
 
-    /* Two kinds of part own their own dimensions and must not be measured.
-       Everything this function writes — size_mm, and a switch to LOFT — is
-       exactly what they encode, so a measurement here is not a refinement but
-       a deletion.
-
-       A rotated part's size_mm is its box BEFORE the rotation, while the
-       reading below is a world-axis extent of a tilted solid, which is always
-       larger. Snapping one onto the other inflates the part every time the
-       measurement runs, and the tilt then multiplies the error.
-
-       An aerofoil's thickness is chord × thickness_pct, not size_mm.h, and
-       switching its builder to LOFT would replace the generated section with
-       eight measured boxes — the plank the section was added to get rid of. */
-    const owns = (g.rotation_deg && (g.rotation_deg.x || g.rotation_deg.y || g.rotation_deg.z))
-      ? "회전" : (g.airfoil && g.airfoil.thickness_pct > 0) ? "에어포일" : null;
-    if (owns) { authored.push(`${label}(${owns})`); continue; }
+    /* An aerofoil owns its own dimensions and must not be measured. Its
+       thickness is chord × thickness_pct, not size_mm.h, and switching its
+       builder to LOFT would replace the generated section with eight measured
+       boxes — the plank the section was added to get rid of. Everything this
+       function writes — size_mm, and a switch to LOFT — is exactly what the
+       field encodes, so a measurement here is not a refinement but a deletion. */
+    if (g.airfoil && g.airfoil.thickness_pct > 0) { authored.push(`${label}(에어포일)`); continue; }
 
     /* A part the user picked out of the component catalogue is not a guess to
        be improved on. The entry carries the real dimensions of a real part and
@@ -440,12 +544,18 @@ export function refineFromMesh(spec, mesh) {
     if (part.visibility === "OCCLUDED") { internal.push(`${label}(가려짐)`); continue; }
 
     const sz = g.size_mm;
-    const ctr = firstInstanceCenter(g);
+    const dims = [sz.w, sz.h, sz.d];
+
+    /* Which frame the box lives in. A rotated part is read through the mesh
+       turned into its own frame, where its declared centre is the origin and
+       the box is axis-aligned again; everything else reads the mesh as it is. */
+    const pf = partFrame(g);
+    const frame = pf ? localFrame(mesh, mb, sb, specSize, pf) : worldFrame;
+    const ctr = pf ? [0, 0, 0] : firstInstanceCenter(g);
 
     /* A little slack around the declared box: the author's placement is an
        estimate, and a box that is a few millimetres off would otherwise miss
        the very surface it is meant to describe. */
-    const dims = [sz.w, sz.h, sz.d];
     let box = null, n = 0, lo = null, hi = null;
     /* Widen the net until the part is found. A thin tail surface or a rotor
        disc is only a few millimetres through, so a placement that is off by
@@ -460,12 +570,13 @@ export function refineFromMesh(spec, mesh) {
       for (let a = 0; a < 3; a++) {
         // thin axes need absolute slack, not proportional: 8% of 4mm is nothing
         const half = (dims[a] / 2) * (1 + pad) + Math.max(...dims) * pad * 0.06;
-        box.min[a] = toMesh(ctr[a] - half, a);
-        box.max[a] = toMesh(ctr[a] + half, a);
+        box.min[a] = frame.toFrame(ctr[a] - half, a);
+        box.max[a] = frame.toFrame(ctr[a] + half, a);
       }
       n = 0; lo = [Infinity, Infinity, Infinity]; hi = [-Infinity, -Infinity, -Infinity];
-      for (let i = 0; i < mesh.count; i++) {
-        const x = mesh.positions[i * 3], y = mesh.positions[i * 3 + 1], z = mesh.positions[i * 3 + 2];
+      const pts = frame.positions;
+      for (let i = 0; i < frame.count; i++) {
+        const x = pts[i * 3], y = pts[i * 3 + 1], z = pts[i * 3 + 2];
         if (x < box.min[0] || x > box.max[0] || y < box.min[1] || y > box.max[1]
           || z < box.min[2] || z > box.max[2]) continue;
         if (x < lo[0]) lo[0] = x; if (x > hi[0]) hi[0] = x;
@@ -489,7 +600,7 @@ export function refineFromMesh(spec, mesh) {
          widens the net around the reading it had just written, each pass took
          in more of the airframe: 60×30×100 declared, 145 long after one run,
          232 after the next. */
-      if (pi > 0 && boxAgreement(lo, hi, ctr, dims, mb, sb, specSize) <= 1 / (1 + pad)) {
+      if (pi > 0 && boxAgreement(lo, hi, ctr, dims, frame.toMm) <= 1 / (1 + pad)) {
         n = 0; continue;
       }
       break;
@@ -500,7 +611,7 @@ export function refineFromMesh(spec, mesh) {
        taken, never a wholesale move: the author placed the part for reasons the
        mesh cannot see (a battery bay's clearance, an arm's ring radius), and the
        measurement is here to sharpen that placement, not overrule it. */
-    const meas = [0, 1, 2].map((a) => (hi[a] - lo[a]) / perMm[a]);
+    const meas = [0, 1, 2].map((a) => (hi[a] - lo[a]) / frame.perMm[a]);
     const keys = ["w", "h", "d"];
     for (let a = 0; a < 3; a++) {
       const before = dims[a];
@@ -511,11 +622,24 @@ export function refineFromMesh(spec, mesh) {
     }
     if (!g.repeat || !(g.repeat.count > 1)) {
       // singletons can also have their centre corrected along each axis
+      const shift = [0, 0, 0];
       for (let a = 0; a < 3; a++) {
         if (!(meas[a] > 0.5)) continue;
-        const mid = ((lo[a] + hi[a]) / 2 - mb.lo[a]) / mb.size[a] * specSize[a] + sb.lo[a];
+        const mid = frame.toMm((lo[a] + hi[a]) / 2, a);
         const key = ["x", "y", "z"][a];
-        if (Math.abs(mid - ctr[a]) <= dims[a] * 0.5) g.center_mm[key] = Math.round(mid);
+        if (Math.abs(mid - ctr[a]) > dims[a] * 0.5) continue;
+        if (pf) shift[a] = mid; else g.center_mm[key] = Math.round(mid);
+      }
+      /* In the part's own frame the accepted offsets run along its own axes,
+         so they go back through the rotation before they move the world
+         centre — a tilted antenna found lower along its length slides along
+         the tilt, not straight down. */
+      if (pf && (shift[0] || shift[1] || shift[2])) {
+        const w = apply(pf.R, shift);
+        for (let a = 0; a < 3; a++) {
+          const key = ["x", "y", "z"][a];
+          g.center_mm[key] = Math.round((g.center_mm[key] || 0) + w[a]);
+        }
       }
     }
 
@@ -528,13 +652,13 @@ export function refineFromMesh(spec, mesh) {
        axes of the same part. */
     const ax = loftAxis(g.size_mm);
     const cross = [0, 1, 2].filter((a) => a !== ax);
-    const raw = measureSections(mesh, box, g.size_mm, 8, ax);
-    let mode = "치수";
+    const raw = measureSections(frame, box, g.size_mm, 8, ax);
+    let mode = pf ? "회전·치수" : "치수";
     if (raw && sectionsVary(raw) && !NEVER_LOFT.test(label)) {
       const sections = raw.map((x) => ({
         at_pct: x.at_pct,
-        w_mm: Math.max(1, Math.round(x.w / perMm[cross[0]])),
-        h_mm: Math.max(1, Math.round(x.h / perMm[cross[1]])),
+        w_mm: Math.max(1, Math.round(x.w / frame.perMm[cross[0]])),
+        h_mm: Math.max(1, Math.round(x.h / frame.perMm[cross[1]])),
         fill: Math.round(x.fill * 100) / 100,
       }));
       const wide = Math.max(...sections.map((x) => x.w_mm));
@@ -551,8 +675,8 @@ export function refineFromMesh(spec, mesh) {
         g.loft_sections = sections;
         sz[keys[cross[0]]] = wide;
         sz[keys[cross[1]]] = tall;
-        mode = sections.length + "단면";
-      } else mode = "치수(단면 기각)";
+        mode = (pf ? "회전·" : "") + sections.length + "단면";
+      } else mode = (pf ? "회전·" : "") + "치수(단면 기각)";
     }
     measured.push(label + "(" + mode + ")");
   }
@@ -579,12 +703,13 @@ const PADS = [0.12, 0.4, 0.9];
 
 /* Overlap of the capture with the declared box, axis by axis, as intersection
    over union of the two intervals; the worst axis is the score. It answers one
-   question — is what came back shaped and placed like what was asked for. */
-function boxAgreement(lo, hi, ctr, dims, mb, sb, specSize) {
+   question — is what came back shaped and placed like what was asked for.
+   `toMm` brings the capture from the frame's units into the millimetres the
+   declaration is written in. */
+function boxAgreement(lo, hi, ctr, dims, toMm) {
   let worst = 1;
   for (let a = 0; a < 3; a++) {
-    const toMm = (v) => ((v - mb.lo[a]) / mb.size[a]) * specSize[a] + sb.lo[a];
-    const cl = toMm(lo[a]), ch = toMm(hi[a]);
+    const cl = toMm(lo[a], a), ch = toMm(hi[a], a);
     const dl = ctr[a] - dims[a] / 2, dh = ctr[a] + dims[a] / 2;
     const uni = Math.max(ch, dh) - Math.min(cl, dl);
     const v = uni > 0 ? Math.max(0, Math.min(ch, dh) - Math.max(cl, dl)) / uni : 0;
