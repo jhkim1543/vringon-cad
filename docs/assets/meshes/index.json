@@ -1,34 +1,34 @@
 {
   "inspect-quad": {
     "file": "inspect-quad.glb",
-    "bytes": 12424420
+    "bytes": 12424356
   },
   "agri-hexa": {
     "file": "agri-hexa.glb",
-    "bytes": 9618044
+    "bytes": 9617972
   },
   "map-wing": {
     "file": "map-wing.glb",
-    "bytes": 3098624
+    "bytes": 3098560
   },
   "sar-vtol": {
     "file": "sar-vtol.glb",
-    "bytes": 9269524
+    "bytes": 9269452
   },
   "cage-inspect": {
     "file": "cage-inspect.glb",
-    "bytes": 15120152
+    "bytes": 15120092
   },
   "fpv-racer": {
     "file": "fpv-racer.glb",
-    "bytes": 8223836
+    "bytes": 8223768
   },
   "fire-octo": {
     "file": "fire-octo.glb",
-    "bytes": 12687772
+    "bytes": 12687700
   },
   "relay-hexa": {
     "file": "relay-hexa.glb",
-    "bytes": 6834604
+    "bytes": 6834536
   }
 }

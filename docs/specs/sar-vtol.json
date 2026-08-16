@@ -425,6 +425,117 @@
       "confidence": 0.9
     },
     {
+      "part_id": "part_nose_cap",
+      "parent_part_id": "part_fuselage",
+      "name": "nose_cap_orange",
+      "display_name_ko": "주황 노즈 캡",
+      "semantic_role": "SHELL",
+      "visibility": "VISIBLE",
+      "representation_strategy": "PRIMITIVE",
+      "representation_reason": "동체 전방 주황 노즈 캡",
+      "editable": true,
+      "locked_characteristics": [],
+      "geometry": {
+        "builder": "SPHERE",
+        "plane": "FRONT",
+        "size_mm": {
+          "w": 200,
+          "h": 180,
+          "d": 400
+        },
+        "center_mm": {
+          "x": 0,
+          "y": 352,
+          "z": 660
+        },
+        "outer_profile": null,
+        "inner_profile": null,
+        "corner_radius_mm": null,
+        "repeat": null,
+        "loft_sections": null,
+        "rotation_deg": null,
+        "airfoil": null
+      },
+      "dimensions": [],
+      "features": [],
+      "material_id": "mat_accent_orange",
+      "confidence": 0.7
+    },
+    {
+      "part_id": "part_canopy",
+      "parent_part_id": "part_fuselage",
+      "name": "canopy_shell",
+      "display_name_ko": "캐노피·셸",
+      "semantic_role": "SHELL",
+      "visibility": "VISIBLE",
+      "representation_strategy": "PRIMITIVE",
+      "representation_reason": "동체 전방 상부의 캐노피 융기",
+      "editable": true,
+      "locked_characteristics": [],
+      "geometry": {
+        "builder": "LOFT",
+        "plane": "SIDE",
+        "size_mm": {
+          "w": 150,
+          "h": 50,
+          "d": 420
+        },
+        "center_mm": {
+          "x": 0,
+          "y": 465,
+          "z": 250
+        },
+        "outer_profile": null,
+        "inner_profile": null,
+        "corner_radius_mm": null,
+        "repeat": null,
+        "loft_sections": null,
+        "rotation_deg": null,
+        "airfoil": null
+      },
+      "dimensions": [],
+      "features": [],
+      "material_id": "mat_plastic_white",
+      "confidence": 0.7
+    },
+    {
+      "part_id": "part_split_line",
+      "parent_part_id": "part_fuselage",
+      "name": "body_split_line",
+      "display_name_ko": "기체 상판/하판 분리선",
+      "semantic_role": "SHELL",
+      "visibility": "VISIBLE",
+      "representation_strategy": "PRIMITIVE",
+      "representation_reason": "동체 중간 높이의 상하판 패널 분리선",
+      "editable": true,
+      "locked_characteristics": [],
+      "geometry": {
+        "builder": "BOX",
+        "plane": "TOP",
+        "size_mm": {
+          "w": 472,
+          "h": 4,
+          "d": 1100
+        },
+        "center_mm": {
+          "x": 0,
+          "y": 356,
+          "z": 50
+        },
+        "outer_profile": null,
+        "inner_profile": null,
+        "corner_radius_mm": null,
+        "repeat": null,
+        "loft_sections": null,
+        "rotation_deg": null,
+        "airfoil": null
+      },
+      "dimensions": [],
+      "features": [],
+      "material_id": "mat_carbon_black",
+      "confidence": 0.7
+    },
+    {
       "part_id": "part_main_wing",
       "parent_part_id": "part_fuselage",
       "name": "main_wing",
@@ -1798,6 +1909,18 @@
       "provenance": "IMAGE_OBSERVED",
       "confidence": 0.95,
       "requires_confirmation": false
+    },
+    {
+      "material_class": "PLASTIC",
+      "material_subtype": "Polycarbonate",
+      "finish": "MATTE",
+      "metalness": 0,
+      "roughness": 0.5,
+      "provenance": "IMAGE_OBSERVED",
+      "confidence": 0.8,
+      "requires_confirmation": false,
+      "material_id": "mat_accent_orange",
+      "base_color_hex": "#E56D1C"
     }
   ],
   "parameters": [

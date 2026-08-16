@@ -1,0 +1,1479 @@
+{
+  "reference": "views",
+  "grid": 128,
+  "weights": {
+    "composition": 0.3,
+    "proportion": 0.25,
+    "layout": 0.2,
+    "silhouette": 0.15,
+    "appearance": 0.1
+  },
+  "generated": "2026-08-16T01:25:46.790Z",
+  "samples": {
+    "inspect-quad": {
+      "reference": "views(photo)",
+      "photo": "docs/assets/samples/drones/inspection-quad.jpg",
+      "layers": {
+        "silhouette": {
+          "score": 0.5274,
+          "iou": {
+            "front": 0.5183,
+            "left": 0.5322,
+            "rear": 0.5265,
+            "right": 0.5328,
+            "mean": 0.5274
+          },
+          "chamfer": 0.0381,
+          "yaw_deg": 180
+        },
+        "proportion": {
+          "score": 0.8455,
+          "axis": {
+            "x": 1,
+            "y": 0.8389,
+            "z": 0.8739
+          },
+          "aspect": {
+            "front": 0.857,
+            "left": 0.7203,
+            "rear": 0.8422,
+            "right": 0.7275
+          }
+        },
+        "layout": {
+          "score": 0.7906,
+          "views": {
+            "front": {
+              "col": 0.7953,
+              "row": 0.7946,
+              "cell": 0.791,
+              "centroid_shift": 0.0325
+            },
+            "left": {
+              "col": 0.8092,
+              "row": 0.8267,
+              "cell": 0.7201,
+              "centroid_shift": 0.0135
+            },
+            "rear": {
+              "col": 0.7998,
+              "row": 0.7997,
+              "cell": 0.7944,
+              "centroid_shift": 0.0321
+            },
+            "right": {
+              "col": 0.8102,
+              "row": 0.825,
+              "cell": 0.721,
+              "centroid_shift": 0.0131
+            }
+          }
+        },
+        "appearance": {
+          "score": 0.8016,
+          "photo_background": "#cac5bf",
+          "photo_foreground_fraction": 0.3737,
+          "photo_colors": [
+            {
+              "hex": "#1a1310",
+              "weight": 0.2051
+            },
+            {
+              "hex": "#ded7d1",
+              "weight": 0.1586
+            },
+            {
+              "hex": "#96887f",
+              "weight": 0.1408
+            },
+            {
+              "hex": "#41362f",
+              "weight": 0.1235
+            },
+            {
+              "hex": "#9c3a0c",
+              "weight": 0.122
+            },
+            {
+              "hex": "#6f635c",
+              "weight": 0.0939
+            },
+            {
+              "hex": "#ed7818",
+              "weight": 0.0831
+            },
+            {
+              "hex": "#c3ac9d",
+              "weight": 0.0731
+            }
+          ],
+          "render_colors": [
+            {
+              "hex": "#ff6600",
+              "weight": 0.5506
+            },
+            {
+              "hex": "#f5f5f5",
+              "weight": 0.2425
+            },
+            {
+              "hex": "#1a1a1a",
+              "weight": 0.2069
+            }
+          ]
+        },
+        "composition": {
+          "score": 0.9818,
+          "checks": [
+            {
+              "name": "로터 수(레시피→배치)",
+              "want": 4,
+              "got": 4,
+              "score": 1
+            },
+            {
+              "name": "프롬프트 휠베이스",
+              "want": 450,
+              "got": 450,
+              "score": 1
+            },
+            {
+              "name": "프롬프트 특징 반영",
+              "want": 2,
+              "got": 2,
+              "score": 1,
+              "detail": []
+            },
+            {
+              "name": "사진 인벤토리 반영",
+              "want": 11,
+              "got": 10,
+              "score": 0.9091,
+              "detail": [
+                "랜딩 스키드"
+              ]
+            },
+            {
+              "name": "로터 수(사진→배치)",
+              "want": 4,
+              "got": 4,
+              "score": 1
+            }
+          ],
+          "inventory_source": "primary/text"
+        }
+      },
+      "composite": 0.8233,
+      "unweighted_mean": 0.7894,
+      "layers_missing": [],
+      "weights": {
+        "composition": 0.3,
+        "proportion": 0.25,
+        "layout": 0.2,
+        "silhouette": 0.15,
+        "appearance": 0.1
+      },
+      "size_mm": [
+        522.8,
+        301,
+        522.8
+      ]
+    },
+    "agri-hexa": {
+      "reference": "views(photo)",
+      "photo": "docs/assets/samples/drones/agri-hexa.jpg",
+      "layers": {
+        "silhouette": {
+          "score": 0.5698,
+          "iou": {
+            "front": 0.515,
+            "left": 0.6229,
+            "rear": 0.5121,
+            "right": 0.6293,
+            "mean": 0.5698
+          },
+          "chamfer": 0.0251,
+          "yaw_deg": 0
+        },
+        "proportion": {
+          "score": 0.9623,
+          "axis": {
+            "x": 1,
+            "y": 0.9619,
+            "z": 0.9256
+          },
+          "aspect": {
+            "front": 0.9661,
+            "left": 0.9623,
+            "rear": 0.9576,
+            "right": 0.9623
+          }
+        },
+        "layout": {
+          "score": 0.8237,
+          "views": {
+            "front": {
+              "col": 0.7531,
+              "row": 0.8334,
+              "cell": 0.7947,
+              "centroid_shift": 0.0097
+            },
+            "left": {
+              "col": 0.8391,
+              "row": 0.8931,
+              "cell": 0.8346,
+              "centroid_shift": 0.0403
+            },
+            "rear": {
+              "col": 0.7461,
+              "row": 0.8286,
+              "cell": 0.7871,
+              "centroid_shift": 0.009
+            },
+            "right": {
+              "col": 0.8428,
+              "row": 0.8937,
+              "cell": 0.8375,
+              "centroid_shift": 0.0419
+            }
+          }
+        },
+        "appearance": {
+          "score": 0.9117,
+          "photo_background": "#c6c2c0",
+          "photo_foreground_fraction": 0.2531,
+          "photo_colors": [
+            {
+              "hex": "#ddd9d6",
+              "weight": 0.2604
+            },
+            {
+              "hex": "#1e1c1a",
+              "weight": 0.1579
+            },
+            {
+              "hex": "#2f2d2a",
+              "weight": 0.1204
+            },
+            {
+              "hex": "#42403d",
+              "weight": 0.1024
+            },
+            {
+              "hex": "#99958e",
+              "weight": 0.0939
+            },
+            {
+              "hex": "#0f0e0b",
+              "weight": 0.091
+            },
+            {
+              "hex": "#787571",
+              "weight": 0.088
+            },
+            {
+              "hex": "#5b5855",
+              "weight": 0.0861
+            }
+          ],
+          "render_colors": [
+            {
+              "hex": "#222222",
+              "weight": 0.3575
+            },
+            {
+              "hex": "#ffffff",
+              "weight": 0.3346
+            },
+            {
+              "hex": "#1a1a1a",
+              "weight": 0.2349
+            },
+            {
+              "hex": "#111111",
+              "weight": 0.0615
+            },
+            {
+              "hex": "#ff5500",
+              "weight": 0.0114
+            }
+          ]
+        },
+        "composition": {
+          "score": 1,
+          "checks": [
+            {
+              "name": "로터 수(레시피→배치)",
+              "want": 6,
+              "got": 6,
+              "score": 1
+            },
+            {
+              "name": "프롬프트 휠베이스",
+              "want": 1400,
+              "got": 1400,
+              "score": 1
+            },
+            {
+              "name": "프롬프트 특징 반영",
+              "want": 2,
+              "got": 2,
+              "score": 1,
+              "detail": []
+            },
+            {
+              "name": "사진 인벤토리 반영",
+              "want": 12,
+              "got": 12,
+              "score": 1,
+              "detail": []
+            },
+            {
+              "name": "로터 수(사진→배치)",
+              "want": 6,
+              "got": 6,
+              "score": 1
+            }
+          ],
+          "inventory_source": "primary/text"
+        }
+      },
+      "composite": 0.8819,
+      "unweighted_mean": 0.8535,
+      "layers_missing": [],
+      "weights": {
+        "composition": 0.3,
+        "proportion": 0.25,
+        "layout": 0.2,
+        "silhouette": 0.15,
+        "appearance": 0.1
+      },
+      "size_mm": [
+        1649.9,
+        756.5,
+        1429.4
+      ]
+    },
+    "map-wing": {
+      "reference": "views(mesh)",
+      "photo": "docs/assets/samples/drones/mapping-fixedwing.jpg",
+      "layers": {
+        "silhouette": {
+          "score": 0.6431,
+          "iou": {
+            "front": 0.4934,
+            "left": 0.7929,
+            "rear": 0.4934,
+            "right": 0.7929,
+            "mean": 0.6431
+          },
+          "chamfer": 0.0098,
+          "yaw_deg": 270
+        },
+        "proportion": {
+          "score": 0.9725,
+          "axis": {
+            "x": 1,
+            "y": 0.9831,
+            "z": 0.9607
+          },
+          "aspect": {
+            "front": 0.9831,
+            "left": 0.9444,
+            "rear": 0.9831,
+            "right": 0.9444
+          }
+        },
+        "layout": {
+          "score": 0.8628,
+          "views": {
+            "front": {
+              "col": 0.8497,
+              "row": 0.7648,
+              "cell": 0.8256,
+              "centroid_shift": 0.0158
+            },
+            "left": {
+              "col": 0.8995,
+              "row": 0.926,
+              "cell": 0.9112,
+              "centroid_shift": 0.009
+            },
+            "rear": {
+              "col": 0.8497,
+              "row": 0.7648,
+              "cell": 0.8256,
+              "centroid_shift": 0.0158
+            },
+            "right": {
+              "col": 0.8995,
+              "row": 0.926,
+              "cell": 0.9112,
+              "centroid_shift": 0.009
+            }
+          }
+        },
+        "appearance": {
+          "score": 0.9193,
+          "photo_background": "#d3d2ce",
+          "photo_foreground_fraction": 0.0545,
+          "photo_colors": [
+            {
+              "hex": "#a1a19d",
+              "weight": 0.2228
+            },
+            {
+              "hex": "#8d8c88",
+              "weight": 0.1896
+            },
+            {
+              "hex": "#666561",
+              "weight": 0.129
+            },
+            {
+              "hex": "#e3e2df",
+              "weight": 0.1255
+            },
+            {
+              "hex": "#b8b9b4",
+              "weight": 0.1007
+            },
+            {
+              "hex": "#eaeae7",
+              "weight": 0.0846
+            },
+            {
+              "hex": "#f2f1ef",
+              "weight": 0.0743
+            },
+            {
+              "hex": "#30302e",
+              "weight": 0.0734
+            }
+          ],
+          "render_colors": [
+            {
+              "hex": "#eeeeee",
+              "weight": 0.8914
+            },
+            {
+              "hex": "#333333",
+              "weight": 0.0715
+            },
+            {
+              "hex": "#000000",
+              "weight": 0.0277
+            },
+            {
+              "hex": "#0a0a10",
+              "weight": 0.0063
+            }
+          ]
+        },
+        "composition": {
+          "score": 0.975,
+          "checks": [
+            {
+              "name": "로터 수(레시피→배치)",
+              "want": 1,
+              "got": 1,
+              "score": 1
+            },
+            {
+              "name": "프롬프트 날개폭",
+              "want": 1200,
+              "got": 1200,
+              "score": 1
+            },
+            {
+              "name": "프롬프트 특징 반영",
+              "want": 2,
+              "got": 2,
+              "score": 1,
+              "detail": []
+            },
+            {
+              "name": "사진 인벤토리 반영",
+              "want": 8,
+              "got": 7,
+              "score": 0.875,
+              "detail": [
+                "모터 포드"
+              ]
+            },
+            {
+              "name": "로터 수(사진→배치)",
+              "want": 1,
+              "got": 1,
+              "score": 1
+            }
+          ],
+          "inventory_source": "primary/text"
+        }
+      },
+      "composite": 0.8966,
+      "unweighted_mean": 0.8745,
+      "layers_missing": [],
+      "weights": {
+        "composition": 0.3,
+        "proportion": 0.25,
+        "layout": 0.2,
+        "silhouette": 0.15,
+        "appearance": 0.1
+      },
+      "size_mm": [
+        1200,
+        224.8,
+        730.4
+      ]
+    },
+    "sar-vtol": {
+      "reference": "views(photo)",
+      "photo": "docs/assets/samples/drones/sar-vtol.jpg",
+      "layers": {
+        "silhouette": {
+          "score": 0.4574,
+          "iou": {
+            "front": 0.4427,
+            "left": 0.4631,
+            "rear": 0.4588,
+            "right": 0.465,
+            "mean": 0.4574
+          },
+          "chamfer": 0.0225,
+          "yaw_deg": 180
+        },
+        "proportion": {
+          "score": 0.765,
+          "axis": {
+            "x": 1,
+            "y": 0.7085,
+            "z": 0.8818
+          },
+          "aspect": {
+            "front": 0.6698,
+            "left": 0.6312,
+            "rear": 0.7471,
+            "right": 0.6183
+          }
+        },
+        "layout": {
+          "score": 0.7998,
+          "views": {
+            "front": {
+              "col": 0.7591,
+              "row": 0.8189,
+              "cell": 0.8744,
+              "centroid_shift": 0.0231
+            },
+            "left": {
+              "col": 0.767,
+              "row": 0.7801,
+              "cell": 0.7662,
+              "centroid_shift": 0.0134
+            },
+            "rear": {
+              "col": 0.7985,
+              "row": 0.8271,
+              "cell": 0.8727,
+              "centroid_shift": 0.0196
+            },
+            "right": {
+              "col": 0.771,
+              "row": 0.7798,
+              "cell": 0.7834,
+              "centroid_shift": 0.0139
+            }
+          }
+        },
+        "appearance": {
+          "score": 0.9285,
+          "photo_background": "#c8c3c0",
+          "photo_foreground_fraction": 0.1572,
+          "photo_colors": [
+            {
+              "hex": "#d0c8c2",
+              "weight": 0.159
+            },
+            {
+              "hex": "#96908b",
+              "weight": 0.1588
+            },
+            {
+              "hex": "#191714",
+              "weight": 0.1505
+            },
+            {
+              "hex": "#302c29",
+              "weight": 0.1295
+            },
+            {
+              "hex": "#e4e1de",
+              "weight": 0.1184
+            },
+            {
+              "hex": "#726d69",
+              "weight": 0.1145
+            },
+            {
+              "hex": "#e56d1c",
+              "weight": 0.0998
+            },
+            {
+              "hex": "#544f4c",
+              "weight": 0.0695
+            }
+          ],
+          "render_colors": [
+            {
+              "hex": "#ffffff",
+              "weight": 0.5817
+            },
+            {
+              "hex": "#1a1a1a",
+              "weight": 0.2191
+            },
+            {
+              "hex": "#e56d1c",
+              "weight": 0.1006
+            },
+            {
+              "hex": "#666666",
+              "weight": 0.0554
+            },
+            {
+              "hex": "#222222",
+              "weight": 0.0432
+            }
+          ]
+        },
+        "composition": {
+          "score": 0.9545,
+          "checks": [
+            {
+              "name": "로터 수(레시피→배치)",
+              "want": 5,
+              "got": 5,
+              "score": 1
+            },
+            {
+              "name": "프롬프트 특징 반영",
+              "want": 4,
+              "got": 4,
+              "score": 1,
+              "detail": []
+            },
+            {
+              "name": "사진 인벤토리 반영",
+              "want": 11,
+              "got": 9,
+              "score": 0.8182,
+              "detail": [
+                "암(+접이 힌지)",
+                "모터 포드"
+              ]
+            },
+            {
+              "name": "로터 수(사진→배치)",
+              "want": 5,
+              "got": 5,
+              "score": 1
+            }
+          ],
+          "inventory_source": "primary/text"
+        }
+      },
+      "composite": 0.7991,
+      "unweighted_mean": 0.7811,
+      "layers_missing": [],
+      "weights": {
+        "composition": 0.3,
+        "proportion": 0.25,
+        "layout": 0.2,
+        "silhouette": 0.15,
+        "appearance": 0.1
+      },
+      "size_mm": [
+        1710.4,
+        551.4,
+        1714.5
+      ]
+    },
+    "delivery-octo": {
+      "reference": null,
+      "photo": null,
+      "layers": {
+        "composition": {
+          "score": 1,
+          "checks": [
+            {
+              "name": "로터 수(레시피→배치)",
+              "want": 8,
+              "got": 8,
+              "score": 1
+            },
+            {
+              "name": "프롬프트 특징 반영",
+              "want": 2,
+              "got": 2,
+              "score": 1,
+              "detail": []
+            }
+          ],
+          "inventory_source": null
+        }
+      },
+      "composite": 1,
+      "unweighted_mean": 1,
+      "layers_missing": [
+        "proportion",
+        "layout",
+        "silhouette",
+        "appearance"
+      ],
+      "weights": {
+        "composition": 1
+      },
+      "size_mm": [
+        1091.8,
+        510,
+        1091.8
+      ]
+    },
+    "isr-wing": {
+      "reference": null,
+      "photo": null,
+      "layers": {
+        "composition": {
+          "score": 1,
+          "checks": [
+            {
+              "name": "로터 수(레시피→배치)",
+              "want": 1,
+              "got": 1,
+              "score": 1
+            },
+            {
+              "name": "프롬프트 날개폭",
+              "want": 1800,
+              "got": 1800,
+              "score": 1
+            },
+            {
+              "name": "프롬프트 특징 반영",
+              "want": 2,
+              "got": 2,
+              "score": 1,
+              "detail": []
+            }
+          ],
+          "inventory_source": null
+        }
+      },
+      "composite": 1,
+      "unweighted_mean": 1,
+      "layers_missing": [
+        "proportion",
+        "layout",
+        "silhouette",
+        "appearance"
+      ],
+      "weights": {
+        "composition": 1
+      },
+      "size_mm": [
+        1785.6,
+        400,
+        1195
+      ]
+    },
+    "cage-inspect": {
+      "reference": "views(mesh)",
+      "photo": "docs/assets/samples/drones/cage-inspect.png",
+      "layers": {
+        "silhouette": {
+          "score": 0.5236,
+          "iou": {
+            "front": 0.5059,
+            "left": 0.5414,
+            "rear": 0.5059,
+            "right": 0.5413,
+            "mean": 0.5236
+          },
+          "chamfer": 0.0738,
+          "yaw_deg": 0
+        },
+        "proportion": {
+          "score": 0.9696,
+          "axis": {
+            "x": 1,
+            "y": 0.9492,
+            "z": 0.9574
+          },
+          "aspect": {
+            "front": 0.9492,
+            "left": 0.9914,
+            "rear": 0.9492,
+            "right": 0.9914
+          }
+        },
+        "layout": {
+          "score": 0.87,
+          "views": {
+            "front": {
+              "col": 0.8887,
+              "row": 0.8461,
+              "cell": 0.8402,
+              "centroid_shift": 0.0125
+            },
+            "left": {
+              "col": 0.9245,
+              "row": 0.8804,
+              "cell": 0.8404,
+              "centroid_shift": 0.0041
+            },
+            "rear": {
+              "col": 0.8887,
+              "row": 0.8461,
+              "cell": 0.8402,
+              "centroid_shift": 0.0125
+            },
+            "right": {
+              "col": 0.9245,
+              "row": 0.8803,
+              "cell": 0.8403,
+              "centroid_shift": 0.0041
+            }
+          }
+        },
+        "appearance": {
+          "score": 0.8743,
+          "photo_background": "#d3cbbf",
+          "photo_foreground_fraction": 0.2719,
+          "photo_colors": [
+            {
+              "hex": "#cfc7ba",
+              "weight": 0.2346
+            },
+            {
+              "hex": "#252520",
+              "weight": 0.1744
+            },
+            {
+              "hex": "#3a3832",
+              "weight": 0.1275
+            },
+            {
+              "hex": "#131310",
+              "weight": 0.1212
+            },
+            {
+              "hex": "#545047",
+              "weight": 0.0955
+            },
+            {
+              "hex": "#afa698",
+              "weight": 0.0912
+            },
+            {
+              "hex": "#91887a",
+              "weight": 0.0854
+            },
+            {
+              "hex": "#74695b",
+              "weight": 0.0701
+            }
+          ],
+          "render_colors": [
+            {
+              "hex": "#222222",
+              "weight": 0.998
+            }
+          ]
+        },
+        "composition": {
+          "score": 1,
+          "checks": [
+            {
+              "name": "로터 수(레시피→배치)",
+              "want": 4,
+              "got": 4,
+              "score": 1
+            },
+            {
+              "name": "프롬프트 지름",
+              "want": 400,
+              "got": 400,
+              "score": 1
+            },
+            {
+              "name": "프롬프트 특징 반영",
+              "want": 3,
+              "got": 3,
+              "score": 1,
+              "detail": []
+            },
+            {
+              "name": "사진 인벤토리 반영",
+              "want": 6,
+              "got": 6,
+              "score": 1,
+              "detail": []
+            },
+            {
+              "name": "로터 수(사진→배치)",
+              "want": 4,
+              "got": 4,
+              "score": 1
+            }
+          ],
+          "inventory_source": "primary/text"
+        }
+      },
+      "composite": 0.8824,
+      "unweighted_mean": 0.8475,
+      "layers_missing": [],
+      "weights": {
+        "composition": 0.3,
+        "proportion": 0.25,
+        "layout": 0.2,
+        "silhouette": 0.15,
+        "appearance": 0.1
+      },
+      "size_mm": [
+        412,
+        396,
+        395
+      ]
+    },
+    "fpv-racer": {
+      "reference": "views(photo)",
+      "photo": "docs/assets/samples/drones/fpv-racer.png",
+      "layers": {
+        "silhouette": {
+          "score": 0.613,
+          "iou": {
+            "front": 0.6143,
+            "left": 0.6518,
+            "rear": 0.5349,
+            "right": 0.651,
+            "mean": 0.613
+          },
+          "chamfer": 0.0289,
+          "yaw_deg": 180
+        },
+        "proportion": {
+          "score": 0.914,
+          "axis": {
+            "x": 1,
+            "y": 0.9747,
+            "z": 0.8326
+          },
+          "aspect": {
+            "front": 0.9385,
+            "left": 0.8146,
+            "rear": 0.9887,
+            "right": 0.8269
+          }
+        },
+        "layout": {
+          "score": 0.8366,
+          "views": {
+            "front": {
+              "col": 0.8259,
+              "row": 0.8125,
+              "cell": 0.8369,
+              "centroid_shift": 0.004
+            },
+            "left": {
+              "col": 0.8472,
+              "row": 0.9212,
+              "cell": 0.8194,
+              "centroid_shift": 0.0199
+            },
+            "rear": {
+              "col": 0.7834,
+              "row": 0.7803,
+              "cell": 0.8288,
+              "centroid_shift": 0.0021
+            },
+            "right": {
+              "col": 0.8446,
+              "row": 0.9186,
+              "cell": 0.8202,
+              "centroid_shift": 0.0128
+            }
+          }
+        },
+        "appearance": {
+          "score": 0.9182,
+          "photo_background": "#d4c8bb",
+          "photo_foreground_fraction": 0.1912,
+          "photo_colors": [
+            {
+              "hex": "#120f0c",
+              "weight": 0.3329
+            },
+            {
+              "hex": "#2e2922",
+              "weight": 0.1832
+            },
+            {
+              "hex": "#49433b",
+              "weight": 0.1621
+            },
+            {
+              "hex": "#665e53",
+              "weight": 0.0821
+            },
+            {
+              "hex": "#877d70",
+              "weight": 0.0767
+            },
+            {
+              "hex": "#e7dfd5",
+              "weight": 0.0722
+            },
+            {
+              "hex": "#a09588",
+              "weight": 0.0529
+            },
+            {
+              "hex": "#832f08",
+              "weight": 0.0378
+            }
+          ],
+          "render_colors": [
+            {
+              "hex": "#f0f0f0",
+              "weight": 0.384
+            },
+            {
+              "hex": "#171717",
+              "weight": 0.2559
+            },
+            {
+              "hex": "#202020",
+              "weight": 0.1614
+            },
+            {
+              "hex": "#2c2c2c",
+              "weight": 0.1447
+            },
+            {
+              "hex": "#832f08",
+              "weight": 0.0496
+            }
+          ]
+        },
+        "composition": {
+          "score": 1,
+          "checks": [
+            {
+              "name": "로터 수(레시피→배치)",
+              "want": 4,
+              "got": 4,
+              "score": 1
+            },
+            {
+              "name": "프롬프트 대각",
+              "want": 220,
+              "got": 220,
+              "score": 1
+            },
+            {
+              "name": "프롬프트 특징 반영",
+              "want": 3,
+              "got": 3,
+              "score": 1,
+              "detail": []
+            },
+            {
+              "name": "사진 인벤토리 반영",
+              "want": 8,
+              "got": 8,
+              "score": 1,
+              "detail": []
+            },
+            {
+              "name": "로터 수(사진→배치)",
+              "want": 4,
+              "got": 4,
+              "score": 1
+            }
+          ],
+          "inventory_source": "primary/text"
+        }
+      },
+      "composite": 0.8796,
+      "unweighted_mean": 0.8564,
+      "layers_missing": [],
+      "weights": {
+        "composition": 0.3,
+        "proportion": 0.25,
+        "layout": 0.2,
+        "silhouette": 0.15,
+        "appearance": 0.1
+      },
+      "size_mm": [
+        225.1,
+        132.1,
+        225.1
+      ]
+    },
+    "fire-octo": {
+      "reference": "views(photo)",
+      "photo": "docs/assets/samples/drones/fire-octo.png",
+      "layers": {
+        "silhouette": {
+          "score": 0.4773,
+          "iou": {
+            "front": 0.4468,
+            "left": 0.5087,
+            "rear": 0.4464,
+            "right": 0.5072,
+            "mean": 0.4773
+          },
+          "chamfer": 0.0256,
+          "yaw_deg": 0
+        },
+        "proportion": {
+          "score": 0.9033,
+          "axis": {
+            "x": 0.9913,
+            "y": 0.8599,
+            "z": 1
+          },
+          "aspect": {
+            "front": 0.8524,
+            "left": 0.8599,
+            "rear": 0.8524,
+            "right": 0.8599
+          }
+        },
+        "layout": {
+          "score": 0.8059,
+          "views": {
+            "front": {
+              "col": 0.7891,
+              "row": 0.7672,
+              "cell": 0.7988,
+              "centroid_shift": 0.0083
+            },
+            "left": {
+              "col": 0.9039,
+              "row": 0.7309,
+              "cell": 0.8483,
+              "centroid_shift": 0.0117
+            },
+            "rear": {
+              "col": 0.7888,
+              "row": 0.7668,
+              "cell": 0.797,
+              "centroid_shift": 0.0083
+            },
+            "right": {
+              "col": 0.903,
+              "row": 0.7306,
+              "cell": 0.8468,
+              "centroid_shift": 0.0127
+            }
+          }
+        },
+        "appearance": {
+          "score": 0.8999,
+          "photo_background": "#cfc3b3",
+          "photo_foreground_fraction": 0.1984,
+          "photo_colors": [
+            {
+              "hex": "#1a1610",
+              "weight": 0.223
+            },
+            {
+              "hex": "#ddd2c3",
+              "weight": 0.1712
+            },
+            {
+              "hex": "#070604",
+              "weight": 0.1583
+            },
+            {
+              "hex": "#302b23",
+              "weight": 0.1501
+            },
+            {
+              "hex": "#958875",
+              "weight": 0.1353
+            },
+            {
+              "hex": "#554d42",
+              "weight": 0.0646
+            },
+            {
+              "hex": "#f4efe6",
+              "weight": 0.0538
+            },
+            {
+              "hex": "#cb5c10",
+              "weight": 0.0436
+            }
+          ],
+          "render_colors": [
+            {
+              "hex": "#222222",
+              "weight": 0.6479
+            },
+            {
+              "hex": "#111111",
+              "weight": 0.169
+            },
+            {
+              "hex": "#ffffff",
+              "weight": 0.1231
+            },
+            {
+              "hex": "#ff7700",
+              "weight": 0.0482
+            },
+            {
+              "hex": "#333333",
+              "weight": 0.0118
+            }
+          ]
+        },
+        "composition": {
+          "score": 1,
+          "checks": [
+            {
+              "name": "로터 수(레시피→배치)",
+              "want": 8,
+              "got": 8,
+              "score": 1
+            },
+            {
+              "name": "프롬프트 휠베이스",
+              "want": 1600,
+              "got": 1600,
+              "score": 1
+            },
+            {
+              "name": "프롬프트 특징 반영",
+              "want": 2,
+              "got": 2,
+              "score": 1,
+              "detail": []
+            },
+            {
+              "name": "사진 인벤토리 반영",
+              "want": 8,
+              "got": 8,
+              "score": 1,
+              "detail": []
+            },
+            {
+              "name": "로터 수(사진→배치)",
+              "want": 8,
+              "got": 8,
+              "score": 1
+            }
+          ],
+          "inventory_source": "primary/text"
+        }
+      },
+      "composite": 0.8486,
+      "unweighted_mean": 0.8173,
+      "layers_missing": [],
+      "weights": {
+        "composition": 0.3,
+        "proportion": 0.25,
+        "layout": 0.2,
+        "silhouette": 0.15,
+        "appearance": 0.1
+      },
+      "size_mm": [
+        1648.5,
+        834,
+        1648.5
+      ]
+    },
+    "relay-hexa": {
+      "reference": "views(photo)",
+      "photo": "docs/assets/samples/drones/relay-hexa.png",
+      "layers": {
+        "silhouette": {
+          "score": 0.1479,
+          "iou": {
+            "front": 0.1667,
+            "left": 0.1309,
+            "rear": 0.1629,
+            "right": 0.1311,
+            "mean": 0.1479
+          },
+          "chamfer": 0.0799,
+          "yaw_deg": 90
+        },
+        "proportion": {
+          "score": 0.8668,
+          "axis": {
+            "x": 0.9091,
+            "y": 0.8814,
+            "z": 0.9244
+          },
+          "aspect": {
+            "front": 0.9073,
+            "left": 0.9127,
+            "rear": 0.582,
+            "right": 0.9127
+          }
+        },
+        "layout": {
+          "score": 0.4797,
+          "views": {
+            "front": {
+              "col": 0.7382,
+              "row": 0.3073,
+              "cell": 0.3488,
+              "centroid_shift": 0.1508
+            },
+            "left": {
+              "col": 0.8044,
+              "row": 0.2797,
+              "cell": 0.4028,
+              "centroid_shift": 0.1663
+            },
+            "rear": {
+              "col": 0.7323,
+              "row": 0.3063,
+              "cell": 0.3549,
+              "centroid_shift": 0.1464
+            },
+            "right": {
+              "col": 0.8039,
+              "row": 0.2787,
+              "cell": 0.3988,
+              "centroid_shift": 0.1664
+            }
+          }
+        },
+        "appearance": {
+          "score": 0.9196,
+          "photo_background": "#d1c9bd",
+          "photo_foreground_fraction": 0.1365,
+          "photo_colors": [
+            {
+              "hex": "#0b0b09",
+              "weight": 0.1953
+            },
+            {
+              "hex": "#e7e1d9",
+              "weight": 0.1854
+            },
+            {
+              "hex": "#1a1a16",
+              "weight": 0.1498
+            },
+            {
+              "hex": "#6e695d",
+              "weight": 0.1394
+            },
+            {
+              "hex": "#2e2d28",
+              "weight": 0.1242
+            },
+            {
+              "hex": "#47453e",
+              "weight": 0.1044
+            },
+            {
+              "hex": "#968d80",
+              "weight": 0.0762
+            },
+            {
+              "hex": "#bc5107",
+              "weight": 0.0253
+            }
+          ],
+          "render_colors": [
+            {
+              "hex": "#222222",
+              "weight": 0.5065
+            },
+            {
+              "hex": "#eeeeee",
+              "weight": 0.2565
+            },
+            {
+              "hex": "#1a1a1a",
+              "weight": 0.1055
+            },
+            {
+              "hex": "#111111",
+              "weight": 0.0707
+            },
+            {
+              "hex": "#ff6600",
+              "weight": 0.0433
+            },
+            {
+              "hex": "#101010",
+              "weight": 0.0175
+            }
+          ]
+        },
+        "composition": {
+          "score": 1,
+          "checks": [
+            {
+              "name": "로터 수(레시피→배치)",
+              "want": 6,
+              "got": 6,
+              "score": 1
+            },
+            {
+              "name": "프롬프트 휠베이스",
+              "want": 900,
+              "got": 900,
+              "score": 1
+            },
+            {
+              "name": "프롬프트 특징 반영",
+              "want": 2,
+              "got": 2,
+              "score": 1,
+              "detail": []
+            },
+            {
+              "name": "사진 인벤토리 반영",
+              "want": 9,
+              "got": 9,
+              "score": 1,
+              "detail": []
+            },
+            {
+              "name": "로터 수(사진→배치)",
+              "want": 6,
+              "got": 6,
+              "score": 1
+            }
+          ],
+          "inventory_source": "primary/text"
+        }
+      },
+      "composite": 0.7268,
+      "unweighted_mean": 0.6828,
+      "layers_missing": [],
+      "weights": {
+        "composition": 0.3,
+        "proportion": 0.25,
+        "layout": 0.2,
+        "silhouette": 0.15,
+        "appearance": 0.1
+      },
+      "size_mm": [
+        1268.6,
+        1118,
+        1099.2
+      ]
+    }
+  }
+}

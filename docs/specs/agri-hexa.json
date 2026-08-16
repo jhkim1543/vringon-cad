@@ -655,7 +655,7 @@
           "pattern": "MIRROR_PAIR",
           "count": 2,
           "radius_mm": null,
-          "spacing_mm": 490.4,
+          "spacing_mm": 582,
           "start_angle_deg": null
         },
         "loft_sections": [
@@ -1415,7 +1415,7 @@
         },
         "center_mm": {
           "x": 0,
-          "y": 675,
+          "y": 610,
           "z": 0
         },
         "outer_profile": null,

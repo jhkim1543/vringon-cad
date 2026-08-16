@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VRINGON CAD · 사양서 렌더 대조표</title>
+<!-- Static contact sheet for the design-similarity renders. Deliberately has no
+     module imports: tools/stamp-version.mjs only stamps docs/index.html and
+     docs/js/*.js, so a page with versioned specifiers here would go stale.
+     Scores are fetched at runtime instead of baked in, so re-running the
+     metric updates this page without regenerating it. -->
+<style>
+  :root {
+    --bg: #10141a; --panel: #171d26; --line: #26303d;
+    --fg: #e7edf5; --dim: #93a2b5; --accent: #4da3ff; --warn: #ffb454;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--fg);
+         font: 14px/1.6 "Segoe UI", system-ui, sans-serif; }
+  header { padding: 28px 24px 16px; border-bottom: 1px solid var(--line); }
+  h1 { margin: 0 0 6px; font-size: 20px; letter-spacing: -.01em; }
+  .sub { color: var(--dim); font-size: 13px; max-width: 78ch; }
+  .sub code { background: #0b0e13; padding: 1px 5px; border-radius: 3px; }
+  main { padding: 8px 24px 60px; }
+  section { margin: 28px 0; background: var(--panel);
+            border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+  .head { display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: baseline;
+          padding: 14px 18px; border-bottom: 1px solid var(--line); }
+  .head h2 { margin: 0; font-size: 16px; }
+  .head .id { color: var(--dim); font-family: ui-monospace, Consolas, monospace; font-size: 12px; }
+  .head .prompt { color: var(--dim); font-size: 12.5px; flex: 1 1 320px; }
+  .scores { display: flex; flex-wrap: wrap; gap: 6px; padding: 10px 18px;
+            border-bottom: 1px solid var(--line); }
+  .chip { border: 1px solid var(--line); border-radius: 999px; padding: 2px 10px;
+          font-size: 12px; color: var(--dim); }
+  .chip b { color: var(--fg); font-weight: 600; }
+  .chip.total { border-color: var(--accent); color: var(--accent); }
+  .chip.na { color: var(--warn); border-color: #4a3a1e; }
+  .grid { display: grid; gap: 14px; padding: 16px 18px;
+          grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); }
+  figure { margin: 0; }
+  figure img { width: 100%; height: auto; display: block; background: #0b0e13;
+               border: 1px solid var(--line); border-radius: 6px; }
+  figcaption { color: var(--dim); font-size: 12px; margin-top: 5px; }
+  .missing { color: var(--warn); font-size: 12.5px; padding: 0 18px 16px; }
+  a { color: var(--accent); }
+</style>
+</head>
+<body>
+<header>
+  <h1>사양서 렌더 대조표</h1>
+  <p class="sub">
+    각 샘플의 원본 사진과, 사양서를 4면(정면·좌·후·우) 플랫 컬러로 렌더한 그림을 나란히 놓았습니다.
+    <b>overlay</b>는 같은 렌더 위에 참조 실루엣 외곽선을 빨강으로 겹친 것이고, <b>ref</b>는 그 참조 실루엣만
+    따로 본 것입니다. 점수는 <code>specs/_design-similarity.json</code>을 그때그때 읽어 표시하므로
+    지표를 다시 돌리면 이 페이지도 따라 바뀝니다. 파일 원본은 <code>assets/renders/&lt;샘플&gt;/</code>에 있습니다.
+  </p>
+</header>
+<main id="out"></main>
+
+<script>
+const VIEWS = [["front", "정면"], ["left", "좌측"], ["back", "후면"], ["right", "우측"]];
+const LAYERS = [["composition", "구성"], ["proportion", "비율"], ["layout", "배치"],
+                ["silhouette", "형상"], ["appearance", "외관"]];
+const out = document.getElementById("out");
+
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) =>
+  ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+
+// The metric records the photo as a repo-relative path; this page sits in docs/.
+const photoHref = (p) => (p ? p.replace(/^docs\//, "") : null);
+
+function scoreChips(s) {
+  if (!s) return "";
+  const pct = (v) => (v * 100).toFixed(1);
+  const chips = LAYERS.map(([k, ko]) => {
+    const v = s.layers && s.layers[k];
+    const n = v == null ? null : (typeof v === "object" ? v.score : v);
+    return n == null
+      ? `<span class="chip na">${ko} 측정 불가</span>`
+      : `<span class="chip">${ko} <b>${pct(n)}</b></span>`;
+  }).join("");
+  const missing = s.layers_missing && s.layers_missing.length;
+  const total = `<span class="chip total">종합 <b>${pct(s.composite)}</b>${
+    missing ? " (남은 층위로 재정규화)" : ""}</span>`;
+  /* Two samples have a photo on file but score against the stage-1 mesh, so
+     naming the reference keeps the red outline from being read as the photo. */
+  const REF_KO = { "views(photo)": "참조: 사진 4면 실루엣",
+                   "views(mesh)": "참조: 1단계 메시 4면", "mesh": "참조: 1단계 메시" };
+  const ref = s.reference
+    ? `<span class="chip">${esc(REF_KO[s.reference] || s.reference)}</span>` : "";
+  return chips + total + ref;
+}
+
+async function render() {
+  const index = await fetch("specs/index.json").then((r) => r.json()).catch(() => []);
+  const ds = await fetch("specs/_design-similarity.json").then((r) => r.json()).catch(() => ({ samples: {} }));
+  for (const row of index) {
+    const id = row.id;
+    const s = ds.samples && ds.samples[id];
+    const photo = photoHref(s && s.photo);
+    const hasRef = !!(s && s.layers && s.layers.silhouette);
+    const cells = [];
+    if (photo) {
+      cells.push(`<figure><img loading="lazy" src="${esc(photo)}" alt="${esc(id)} 원본 사진">
+        <figcaption>원본 사진</figcaption></figure>`);
+    }
+    for (const [v, ko] of VIEWS) {
+      cells.push(`<figure><img loading="lazy" src="assets/renders/${esc(id)}/${v}.png"
+        alt="${esc(id)} ${ko} 렌더"><figcaption>${ko} · 사양서 렌더</figcaption></figure>`);
+    }
+    if (hasRef) {
+      for (const [v, ko] of VIEWS) {
+        cells.push(`<figure><img loading="lazy" src="assets/renders/${esc(id)}/${v}.overlay.png"
+          alt="${esc(id)} ${ko} 대조"><figcaption>${ko} · 참조 외곽선 겹침</figcaption></figure>`);
+      }
+      for (const [v, ko] of VIEWS) {
+        cells.push(`<figure><img loading="lazy" src="assets/renders/${esc(id)}/${v}.ref.png"
+          alt="${esc(id)} ${ko} 참조"><figcaption>${ko} · 참조 실루엣</figcaption></figure>`);
+      }
+    }
+    const note = hasRef ? "" :
+      `<p class="missing">이 샘플은 사진도 1단계 메시도 없어 참조가 없습니다.
+       종합 점수는 구성 한 층위만 재고 나머지를 "측정 불가"로 재정규화한 값이지 유사도가 아닙니다.</p>`;
+    const sec = document.createElement("section");
+    sec.innerHTML =
+      `<div class="head"><h2>${esc(row.name || id)}</h2><span class="id">${esc(id)}</span>
+         <span class="prompt">${esc(row.prompt || "")}</span></div>
+       <div class="scores">${scoreChips(s)}</div>
+       <div class="grid">${cells.join("")}</div>${note}`;
+    out.appendChild(sec);
+  }
+}
+render();
+</script>
+</body>
+</html>

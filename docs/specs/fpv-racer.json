@@ -758,6 +758,49 @@
       "confidence": 0.95
     },
     {
+      "part_id": "part_015",
+      "parent_part_id": "part_007",
+      "name": "canopy_side_panels_orange",
+      "display_name_ko": "캐노피 측면 주황 패널",
+      "semantic_role": "SHELL",
+      "visibility": "VISIBLE",
+      "representation_strategy": "PRIMITIVE",
+      "representation_reason": "캐노피 하단 측면의 주황 패널",
+      "editable": true,
+      "locked_characteristics": [],
+      "geometry": {
+        "builder": "BOX",
+        "plane": "FRONT",
+        "size_mm": {
+          "w": 4,
+          "h": 14,
+          "d": 50
+        },
+        "center_mm": {
+          "x": 0,
+          "y": 28,
+          "z": 15
+        },
+        "outer_profile": null,
+        "inner_profile": null,
+        "corner_radius_mm": null,
+        "repeat": {
+          "pattern": "MIRROR_PAIR",
+          "count": 2,
+          "radius_mm": null,
+          "spacing_mm": 46,
+          "start_angle_deg": null
+        },
+        "loft_sections": null,
+        "rotation_deg": null,
+        "airfoil": null
+      },
+      "dimensions": [],
+      "features": [],
+      "material_id": "mat_accent_orange",
+      "confidence": 0.7
+    },
+    {
       "part_id": "part_008",
       "parent_part_id": "part_007",
       "name": "fpv_camera",
@@ -880,7 +923,7 @@
         },
         "center_mm": {
           "x": -2,
-          "y": 72,
+          "y": 64,
           "z": -15
         },
         "outer_profile": null,
@@ -1040,7 +1083,7 @@
         },
         "center_mm": {
           "x": -4,
-          "y": 56,
+          "y": 48,
           "z": -15
         },
         "outer_profile": null,
@@ -1299,6 +1342,18 @@
       "provenance": "CATEGORY_DEFAULT",
       "confidence": 0.9,
       "requires_confirmation": false
+    },
+    {
+      "material_class": "PLASTIC",
+      "material_subtype": null,
+      "finish": "MATTE",
+      "metalness": 0,
+      "roughness": 0.5,
+      "provenance": "IMAGE_OBSERVED",
+      "confidence": 0.8,
+      "requires_confirmation": false,
+      "material_id": "mat_accent_orange",
+      "base_color_hex": "#832F08"
     }
   ],
   "parameters": [

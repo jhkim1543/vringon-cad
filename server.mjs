@@ -2325,14 +2325,29 @@ parts[].geometry는 다음 단계가 그대로 실행하는 빌드 지시다. �
    real aircraft (agricultural sprayer anatomy, inspection quad payloads,
    survey wing fit-outs). This seeds the detail inventory so completeness does
    not depend on what the model happens to notice in the photograph. */
+/* The per-mission half of the inventory candidate list. A mission missing from
+   this table gets only the generic tail below, and the specification then has
+   nothing to be held to beyond the required roster — which is how the
+   firefighting octo (HEAVY_LIFT, absent here) came out with the boom tube its
+   prompt asked for and no nozzle on the end of it, and how the tethered relay
+   (COMMUNICATION_RELAY, present but antenna-only) came out with a payload box
+   where the prompt had written a cable spool. Both cost a full 12 points of
+   the composition layer in tools/design-similarity.mjs. Every mission in
+   DRONE_TAXONOMY.missions now has a row. */
 const DRONE_DETAIL_SEED = {
+  MEDIA_CAPTURE: ["짐벌(3축)", "시네마 카메라", "ND 필터 마운트", "접이식 암 래치"],
+  FPV_RACING: ["FPV 카메라(경사 마운트)", "VTX 안테나", "배터리 스트랩", "모터 벨"],
+  AGRICULTURE_SENSING: ["멀티스펙트럴 센서", "광량 센서(상방)", "하방 카메라 창", "지형추종 레이더"],
   AGRICULTURE_APPLICATION: ["살포 탱크(+주입구 캡)", "펌프", "호스 라인", "노즐 붐", "살포 노즐", "유량계", "지형추종 레이더"],
   INFRASTRUCTURE_INSPECTION: ["짐벌(2~3축)", "줌 카메라", "상방 카메라", "스포트라이트", "프로펠러 가드"],
+  CONFINED_SPACE_INSPECTION: ["보호 케이지", "케이지 연결 노드", "LED 조명", "충돌 범퍼"],
   DELIVERY: ["카고 베이", "윈치·릴리즈", "카고 도어", "낙하산 모듈"],
+  HEAVY_LIFT: ["하부 페이로드 마운트", "윈치·호이스트", "호스 릴", "소화 노즐", "보강 랜딩기어"],
   MAPPING_SURVEY: ["측량 카메라", "카메라 창(하방)", "핸드런치 그립"],
   SEARCH_AND_RESCUE: ["EO/IR 짐벌", "탐조등", "스피커", "리프트 붐", "리프트 로터"],
   DEFENSE_ISR: ["센서 터렛", "데이터링크 안테나", "카타펄트 후크"],
-  COMMUNICATION_RELAY: ["중계 안테나 레이돔", "지향성 안테나"],
+  DEFENSE_LOGISTICS: ["카고 슬링·후크", "하부 화물 베이", "야전 착륙 스키드"],
+  COMMUNICATION_RELAY: ["중계 안테나 레이돔", "지향성 안테나", "계류 케이블·스풀", "계류 전원 컨버터"],
 };
 
 const DRONE_INVENTORY_SCHEMA = {
@@ -2798,6 +2813,20 @@ ${SPEC_SYSTEM.split("<geometry_authoring>")[1] ? "<geometry_authoring>" + SPEC_S
    gear_height. 고정익: wingspan, fuselage_length, wing_chord, tail_span,
    propeller_diameter, gear_height. affects에 해당 part_id를 적는다.
 </drone_geometry_rules>
+
+<drone_color_rules>
+1. base_color_hex는 사진에서 그 파트가 차지한 화소의 색을 그대로 적는다.
+   카테고리 기본값(검정 기체 + 회색 부속)을 적고 넘어가지 않는다.
+   사진이 없을 때만 CATEGORY_DEFAULT를 쓰고, 그때는 색을 읽었다고 적지 않는다.
+2. 사진에 보이는 색은 면적이 작아도 재질을 따로 만든다. 노즈 캡, 악센트 패널,
+   프로펠러 가드, 윙팁처럼 한 가지 색으로 칠해진 부분이 있으면 그 색의
+   material을 추가하고 그 파트에만 material_id로 붙인다. 몸통 색 하나로
+   전체를 칠하면 사진과 다른 기체가 된다.
+3. 반대로, 악센트 색을 몸통 전체에 바르지 않는다. 어느 파트가 무슨 색인지
+   사진에서 확인하고 파트별로 나눠 붙인다 — "주황 악센트가 있는 흰 기체"는
+   흰 셸 + 주황 악센트 두 재질이지, 주황 셸 하나가 아니다.
+4. 사진에서 읽은 색만 provenance IMAGE_OBSERVED로 표기한다.
+</drone_color_rules>
 
 <output_rules>
 1. 제공된 JSON Schema만 따른다. JSON 외부에 텍스트를 쓰지 않는다.

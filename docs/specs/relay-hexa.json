@@ -1028,8 +1028,8 @@
     {
       "part_id": "part_010",
       "parent_part_id": "part_017",
-      "name": "lower_payload_module",
-      "display_name_ko": "하부 페이로드 모듈",
+      "name": "tether_cable_spool",
+      "display_name_ko": "하부 계류 케이블 스풀(페이로드)",
       "semantic_role": "OTHER",
       "visibility": "VISIBLE",
       "representation_strategy": "PRIMITIVE",
@@ -1037,16 +1037,16 @@
       "editable": true,
       "locked_characteristics": [],
       "geometry": {
-        "builder": "ROUNDED_BOX",
-        "plane": "FRONT",
+        "builder": "CYLINDER",
+        "plane": "SIDE",
         "size_mm": {
-          "w": 204,
-          "h": 100,
-          "d": 156
+          "w": 200,
+          "h": 130,
+          "d": 130
         },
         "center_mm": {
           "x": -1,
-          "y": 163,
+          "y": 160,
           "z": 0
         },
         "outer_profile": null,

@@ -174,20 +174,8 @@ export function sectionsVary(sections, threshold = 0.12) {
    first is measured — a ring of six arms is one arm six times — but the box has
    to be the right one or the sample lands in empty air. */
 function firstInstanceCenter(g) {
-  const c = g.center_mm || {};
-  const rep = g.repeat;
-  if (!rep || !(rep.count > 1)) return [c.x || 0, c.y || 0, c.z || 0];
-  if (rep.pattern === "CIRCULAR") {
-    const rad = Number(rep.radius_mm) || Math.hypot(c.x || 0, c.z || 0) || 10;
-    const a0 = ((Number(rep.start_angle_deg) || 0) * Math.PI) / 180;
-    const phi = Math.PI / 2 - a0;
-    return [Math.cos(phi) * rad, c.y || 0, Math.sin(phi) * rad];
-  }
-  if (rep.pattern === "MIRROR_PAIR") {
-    const off = rep.spacing_mm ? rep.spacing_mm / 2 : Math.abs(c.x || 0);
-    return [off, c.y || 0, c.z || 0];
-  }
-  return [c.x || 0, c.y || 0, c.z || 0];
+  // one composition for every reader — see instanceFrames below
+  return instanceFrames(g)[0].pos;
 }
 
 /* ------------------------------------------------------------ part frames
@@ -244,31 +232,63 @@ const matMul = (A, B) => A.map((row) => [0, 1, 2].map((j) => row[0] * B[0][j] + 
 const apply = (M, v) => M.map((row) => row[0] * v[0] + row[1] * v[1] + row[2] * v[2]);
 
 /**
+ * Every instance of a part — where it sits and how it is turned, in spec
+ * millimetres: [{pos, R}] with world = R·local + pos. R is null for an
+ * unrotated instance (axis-aligned, nothing to compose). This is the ONE
+ * place the frame is composed: partFrame (measurement) and partSpots
+ * (assembly bounds, heading search) both read it, so a rotated leg cannot be
+ * a tilted box to one and an upright box to the other — which is exactly how
+ * the assembly's fitted extent came to disagree with the measured parts by a
+ * few millimetres.
+ *
+ * Composition matches instanceXform() in spec-to-code: rotation_deg as an
+ * XYZ Euler in the part's own frame first, then the placement. A MIRROR_PAIR
+ * hinges on the mirror plane and its second copy carries the reflected
+ * rotation (y and z negated); a CIRCULAR ring adds the placement yaw after
+ * the tilt. Ring positions step evenly from start_angle_deg, as they always
+ * did here (the compiler's four-corner special case is not replicated).
+ */
+function instanceFrames(g) {
+  const c = g.center_mm || {};
+  const rep = g.repeat;
+  const rot = g.rotation_deg;
+  const R0 = rot && (rot.x || rot.y || rot.z) ? eulerXYZ(rot) : null;
+  const out = [];
+  if (rep && rep.count > 1 && rep.pattern === "CIRCULAR") {
+    const rad = Number(rep.radius_mm) || Math.hypot(c.x || 0, c.z || 0) || 10;
+    const n = Math.min(rep.count, 32);
+    const a0 = (Number(rep.start_angle_deg) || 0) * DEG;
+    for (let i = 0; i < n; i++) {
+      const phi = Math.PI / 2 - (a0 + (i / n) * Math.PI * 2);
+      /* Placement yaw carries the already-tilted part around the ring; the
+         first instance sits at compass angle start_angle_deg, the same phi
+         firstInstanceCenter uses. */
+      out.push({ pos: [Math.cos(phi) * rad, c.y || 0, Math.sin(phi) * rad], R: R0 ? matMul(rotY(-phi), R0) : null });
+    }
+  } else if (rep && rep.count > 1 && rep.pattern === "MIRROR_PAIR") {
+    const off = rep.spacing_mm ? rep.spacing_mm / 2 : Math.abs(c.x || 0);
+    for (const side of [1, -1]) {
+      /* The hinge is the mirror plane: the copy's offset along x is swung by
+         its own rotation, so a canted leg's root moves in and its foot out.
+         The mirrored copy is reflected across x=0, which negates y and z. */
+      const R = !R0 ? null : side > 0 ? R0 : eulerXYZ({ x: rot.x, y: -(rot.y || 0), z: -(rot.z || 0) });
+      const h = R ? apply(R, [side * off, 0, 0]) : [side * off, 0, 0];
+      out.push({ pos: [h[0], h[1] + (c.y || 0), h[2] + (c.z || 0)], R });
+    }
+  } else {
+    out.push({ pos: [c.x || 0, c.y || 0, c.z || 0], R: R0 });
+  }
+  return out;
+}
+
+/**
  * Where the first instance of a rotated part sits and how it is turned, in
  * spec millimetres: {pos, R} with world = R·local + pos. Null for a part
  * without rotation, which is measured in the world frame as before.
  */
 function partFrame(g) {
-  const rot = g.rotation_deg;
-  if (!rot || !(rot.x || rot.y || rot.z)) return null;
-  let R = eulerXYZ(rot);
-  const c = g.center_mm || {};
-  const rep = g.repeat;
-  let pos = firstInstanceCenter(g);
-  if (rep && rep.count > 1 && rep.pattern === "MIRROR_PAIR") {
-    /* The hinge is the mirror plane: the copy's offset along x is swung by
-       its own rotation, so a canted leg's root moves in and its foot out. */
-    const off = rep.spacing_mm ? rep.spacing_mm / 2 : Math.abs(c.x || 0);
-    const h = apply(R, [off, 0, 0]);
-    pos = [h[0], h[1] + (c.y || 0), h[2] + (c.z || 0)];
-  } else if (rep && rep.count > 1 && rep.pattern === "CIRCULAR") {
-    /* Placement yaw carries the already-tilted part around the ring; the
-       first instance sits at compass angle start_angle_deg, the same phi
-       firstInstanceCenter uses. */
-    const a0 = (Number(rep.start_angle_deg) || 0) * DEG;
-    R = matMul(rotY(-(Math.PI / 2 - a0)), R);
-  }
-  return { pos, R };
+  const f = instanceFrames(g)[0];
+  return f && f.R ? f : null;
 }
 
 /* The mesh in a rotated part's own frame, in millimetres: each point goes
@@ -292,44 +312,32 @@ function localFrame(mesh, mb, sb, specSize, { pos, R }) {
   return { positions, count: n, toFrame: same, toMm: same, perMm: [1, 1, 1] };
 }
 
-/* Every place one part is drawn, with its half-extent, in spec millimetres.
-   specBounds needs it to size the whole assembly and the heading search needs
-   it to know where the specification thinks its mass is; deriving the ring
-   twice was how the two ended up disagreeing about start_angle_deg. */
+/* Every place one part is drawn, with its world-axis half-extent, in spec
+   millimetres: [{c, half}]. specBounds needs it to size the whole assembly and
+   the heading search needs it to know where the specification thinks its mass
+   is; deriving the ring twice was how the two ended up disagreeing about
+   start_angle_deg. Frames come from instanceFrames, the same composition the
+   measurement uses, so a rotated instance contributes the axis-aligned box
+   AROUND its tilted size_mm box (|R| times the half-extents) — a canted leg's
+   foot ends where the compiler puts it, not where an upright box would. */
 function partSpots(g) {
   const sz = g && g.size_mm;
   if (!sz) return null;
-  const c = g.center_mm || {};
-  const half = [sz.w / 2, sz.h / 2, sz.d / 2];
-  const rep = g.repeat;
-  const spots = [];
-  if (rep && rep.count > 1 && rep.pattern === "CIRCULAR") {
-    const rad = Number(rep.radius_mm) || 10;
-    const n = Math.min(rep.count, 32);
-    const a0 = ((Number(rep.start_angle_deg) || 0) * Math.PI) / 180;
-    for (let i = 0; i < n; i++) {
-      const phi = Math.PI / 2 - (a0 + (i / n) * Math.PI * 2);
-      spots.push([Math.cos(phi) * rad, c.y || 0, Math.sin(phi) * rad]);
-    }
-  } else if (rep && rep.count > 1 && rep.pattern === "MIRROR_PAIR") {
-    const off = rep.spacing_mm ? rep.spacing_mm / 2 : Math.abs(c.x || 0);
-    spots.push([off, c.y || 0, c.z || 0], [-off, c.y || 0, c.z || 0]);
-  } else {
-    spots.push([c.x || 0, c.y || 0, c.z || 0]);
-  }
-  return { half, spots };
+  const h0 = [sz.w / 2, sz.h / 2, sz.d / 2];
+  return instanceFrames(g).map(({ pos, R }) => ({
+    c: pos,
+    half: R ? [0, 1, 2].map((a) => Math.abs(R[a][0]) * h0[0] + Math.abs(R[a][1]) * h0[1] + Math.abs(R[a][2]) * h0[2]) : h0,
+  }));
 }
 
 /* The specification's overall extent, so the mesh can be fitted to it. */
 function specBounds(spec) {
   const lo = [Infinity, Infinity, Infinity], hi = [-Infinity, -Infinity, -Infinity];
   for (const part of spec.parts || []) {
-    const s = partSpots(part.geometry);
-    if (!s) continue;
-    for (const c of s.spots) {
+    for (const { c, half } of partSpots(part.geometry) || []) {
       for (let a = 0; a < 3; a++) {
-        lo[a] = Math.min(lo[a], c[a] - s.half[a]);
-        hi[a] = Math.max(hi[a], c[a] + s.half[a]);
+        lo[a] = Math.min(lo[a], c[a] - half[a]);
+        hi[a] = Math.max(hi[a], c[a] + half[a]);
       }
     }
   }
@@ -385,11 +393,9 @@ function specOccupancy(spec, sb, size) {
   const cell = (v, a) => Math.max(0, Math.min(OCC - 1,
     Math.floor(((v - sb.lo[a]) / size[a]) * OCC)));
   for (const part of spec.parts || []) {
-    const s = partSpots(part.geometry);
-    if (!s) continue;
-    for (const c of s.spots) {
-      const lo = [0, 1, 2].map((a) => cell(c[a] - s.half[a], a));
-      const hi = [0, 1, 2].map((a) => cell(c[a] + s.half[a], a));
+    for (const { c, half } of partSpots(part.geometry) || []) {
+      const lo = [0, 1, 2].map((a) => cell(c[a] - half[a], a));
+      const hi = [0, 1, 2].map((a) => cell(c[a] + half[a], a));
       for (let i = lo[0]; i <= hi[0]; i++) for (let j = lo[1]; j <= hi[1]; j++) {
         for (let k = lo[2]; k <= hi[2]; k++) grid[(i * OCC + j) * OCC + k] = 1;
       }

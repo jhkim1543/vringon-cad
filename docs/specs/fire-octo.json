@@ -1068,12 +1068,12 @@
         "plane": "SIDE",
         "size_mm": {
           "w": 36,
-          "h": 453,
+          "h": 600,
           "d": 568
         },
         "center_mm": {
           "x": 0,
-          "y": 300,
+          "y": 293,
           "z": 0
         },
         "outer_profile": [
@@ -1265,7 +1265,7 @@
           "pattern": "MIRROR_PAIR",
           "count": 2,
           "radius_mm": null,
-          "spacing_mm": 500,
+          "spacing_mm": 600,
           "start_angle_deg": null
         },
         "loft_sections": [
@@ -1347,7 +1347,7 @@
         },
         "center_mm": {
           "x": 0,
-          "y": 15,
+          "y": -62,
           "z": 0
         },
         "outer_profile": null,
@@ -1357,7 +1357,7 @@
           "pattern": "MIRROR_PAIR",
           "count": 2,
           "radius_mm": null,
-          "spacing_mm": 500,
+          "spacing_mm": 600,
           "start_angle_deg": null
         },
         "loft_sections": null,
@@ -1390,7 +1390,7 @@
         },
         "center_mm": {
           "x": 0,
-          "y": 270,
+          "y": 180,
           "z": 0
         },
         "outer_profile": null,
@@ -1510,6 +1510,43 @@
       "features": [],
       "material_id": "mat_dark_metal",
       "confidence": 0.95
+    },
+    {
+      "part_id": "fire_nozzle",
+      "parent_part_id": "front_boom_tube",
+      "name": "fire_nozzle",
+      "display_name_ko": "전방 소화 노즐",
+      "semantic_role": "MECHANISM",
+      "visibility": "VISIBLE",
+      "representation_strategy": "PRIMITIVE",
+      "representation_reason": "전방 튜브 끝의 소화 노즐(프롬프트 명시)",
+      "editable": true,
+      "locked_characteristics": [],
+      "geometry": {
+        "builder": "CONE",
+        "plane": "FRONT",
+        "size_mm": {
+          "w": 50,
+          "h": 50,
+          "d": 70
+        },
+        "center_mm": {
+          "x": 0,
+          "y": 500,
+          "z": 368
+        },
+        "outer_profile": null,
+        "inner_profile": null,
+        "corner_radius_mm": null,
+        "repeat": null,
+        "loft_sections": null,
+        "rotation_deg": null,
+        "airfoil": null
+      },
+      "dimensions": [],
+      "features": [],
+      "material_id": "mat_dark_metal",
+      "confidence": 0.7
     },
     {
       "part_id": "comm_antenna",

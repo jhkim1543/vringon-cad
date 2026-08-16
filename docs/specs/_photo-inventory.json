@@ -1,0 +1,958 @@
+{
+  "fpv-racer": {
+    "source": "primary/text",
+    "photo": "docs/assets/samples/drones/fpv-racer.png",
+    "photo_sha1": "d95af7b42704",
+    "at": "2026-08-16T00:07:56.172Z",
+    "items": [
+      {
+        "name_ko": "프로펠러",
+        "present": true,
+        "count": 4,
+        "where_ko": "각 모터 상단"
+      },
+      {
+        "name_ko": "모터 포드",
+        "present": true,
+        "count": 4,
+        "where_ko": "각 암의 끝단"
+      },
+      {
+        "name_ko": "암(+접이 힌지)",
+        "present": true,
+        "count": 4,
+        "where_ko": "중앙 기체에서 4방향으로 연장된 카본 프레임"
+      },
+      {
+        "name_ko": "캐노피·셸",
+        "present": true,
+        "count": 1,
+        "where_ko": "기체 중앙 상부 커버"
+      },
+      {
+        "name_ko": "FPV·전방 카메라",
+        "present": true,
+        "count": 1,
+        "where_ko": "캐노피 전면 중앙"
+      },
+      {
+        "name_ko": "배터리(슬레드)",
+        "present": true,
+        "count": 1,
+        "where_ko": "기체 상단 후방 고정 스트랩 부위"
+      },
+      {
+        "name_ko": "통신 안테나",
+        "present": true,
+        "count": 1,
+        "where_ko": "기체 후상단으로 뻗은 막대형 안테나"
+      },
+      {
+        "name_ko": "프로펠러 허브 캡",
+        "present": true,
+        "count": 4,
+        "where_ko": "프로펠러 중앙 고정 넛"
+      },
+      {
+        "name_ko": "프로펠러 가드",
+        "present": false,
+        "count": 0,
+        "where_ko": ""
+      },
+      {
+        "name_ko": "기체 상판/하판 분리선",
+        "present": false,
+        "count": 0,
+        "where_ko": ""
+      },
+      {
+        "name_ko": "랜딩기어 다리(+브레이스)",
+        "present": false,
+        "count": 0,
+        "where_ko": ""
+      },
+      {
+        "name_ko": "랜딩 스키드",
+        "present": false,
+        "count": 0,
+        "where_ko": ""
+      },
+      {
+        "name_ko": "GNSS/RTK 안테나 마스트",
+        "present": false,
+        "count": 0,
+        "where_ko": ""
+      },
+      {
+        "name_ko": "짐벌 카메라",
+        "present": false,
+        "count": 0,
+        "where_ko": ""
+      },
+      {
+        "name_ko": "장애물 센서",
+        "present": false,
+        "count": 0,
+        "where_ko": ""
+      },
+      {
+        "name_ko": "LED 표시등",
+        "present": false,
+        "count": 0,
+        "where_ko": ""
+      },
+      {
+        "name_ko": "살포 탱크",
+        "present": false,
+        "count": 0,
+        "where_ko": ""
+      },
+      {
+        "name_ko": "노즐 붐",
+        "present": false,
+        "count": 0,
+        "where_ko": ""
+      },
+      {
+        "name_ko": "살포 노즐",
+        "present": false,
+        "count": 0,
+        "where_ko": ""
+      },
+      {
+        "name_ko": "탐조등",
+        "present": false,
+        "count": 0,
+        "where_ko": ""
+      },
+      {
+        "name_ko": "카고 베이",
+        "present": false,
+        "count": 0,
+        "where_ko": ""
+      },
+      {
+        "name_ko": "보호 케이지",
+        "present": false,
+        "count": 0,
+        "where_ko": ""
+      },
+      {
+        "name_ko": "안테나 레이돔",
+        "present": false,
+        "count": 0,
+        "where_ko": ""
+      },
+      {
+        "name_ko": "카메라 창(하방)",
+        "present": false,
+        "count": 0,
+        "where_ko": ""
+      }
+    ]
+  },
+  "inspect-quad": {
+    "source": "primary/text",
+    "photo": "docs/assets/samples/drones/inspection-quad.jpg",
+    "photo_sha1": "25f7af229e0b",
+    "at": "2026-08-16T00:12:31.764Z",
+    "items": [
+      {
+        "name_ko": "프로펠러",
+        "present": true,
+        "count": 4,
+        "where_ko": "모터 포드 상부"
+      },
+      {
+        "name_ko": "모터 포드",
+        "present": true,
+        "count": 4,
+        "where_ko": "각 암 끝단"
+      },
+      {
+        "name_ko": "암(+접이 힌지)",
+        "present": true,
+        "count": 4,
+        "where_ko": "중앙 기체와 모터 포드 연결부"
+      },
+      {
+        "name_ko": "프로펠러 가드",
+        "present": true,
+        "count": 4,
+        "where_ko": "각 모터 포드 하단 및 측면 주위"
+      },
+      {
+        "name_ko": "프로펠러 허브 캡",
+        "present": true,
+        "count": 4,
+        "where_ko": "프로펠러 회전축 중앙 상단"
+      },
+      {
+        "name_ko": "캐노피·셸",
+        "present": true,
+        "count": 1,
+        "where_ko": "중앙 기체 외관 전체"
+      },
+      {
+        "name_ko": "짐벌 카메라",
+        "present": true,
+        "count": 2,
+        "where_ko": "기체 상부 중앙 및 기체 하부 전방"
+      },
+      {
+        "name_ko": "장애물 센서",
+        "present": true,
+        "count": 2,
+        "where_ko": "전면 하얀색 캐노피 하단 오목한 센서 창"
+      },
+      {
+        "name_ko": "랜딩기어 다리(+브레이스)",
+        "present": true,
+        "count": 4,
+        "where_ko": "기체 하부에서 지면으로 연결되는 기둥"
+      },
+      {
+        "name_ko": "랜딩 스키드",
+        "present": true,
+        "count": 2,
+        "where_ko": "랜딩기어 다리 최하단 지면 접촉부"
+      },
+      {
+        "name_ko": "기체 상판/하판 분리선",
+        "present": true,
+        "count": 1,
+        "where_ko": "중앙 캐노피 측면 분리선"
+      },
+      {
+        "name_ko": "배터리(슬레드)",
+        "present": false,
+        "count": 0
+      },
+      {
+        "name_ko": "GNSS/RTK 안테나 마스트",
+        "present": false,
+        "count": 0
+      },
+      {
+        "name_ko": "통신 안테나",
+        "present": false,
+        "count": 0
+      },
+      {
+        "name_ko": "FPV·전방 카메라",
+        "present": false,
+        "count": 0
+      },
+      {
+        "name_ko": "살포 탱크",
+        "present": false,
+        "count": 0
+      },
+      {
+        "name_ko": "노즐 붐",
+        "present": false,
+        "count": 0
+      },
+      {
+        "name_ko": "살포 노즐",
+        "present": false,
+        "count": 0
+      },
+      {
+        "name_ko": "펌프",
+        "present": false,
+        "count": 0
+      },
+      {
+        "name_ko": "탐조등",
+        "present": false,
+        "count": 0
+      },
+      {
+        "name_ko": "보호 케이지",
+        "present": false,
+        "count": 0
+      },
+      {
+        "name_ko": "주익",
+        "present": false,
+        "count": 0
+      },
+      {
+        "name_ko": "수직·수평 미익",
+        "present": false,
+        "count": 0
+      },
+      {
+        "name_ko": "카메라 창(하방)",
+        "present": false,
+        "count": 0
+      }
+    ]
+  },
+  "agri-hexa": {
+    "source": "primary/text",
+    "photo": "docs/assets/samples/drones/agri-hexa.jpg",
+    "photo_sha1": "359e0ec7c89c",
+    "at": "2026-08-16T00:09:05.930Z",
+    "items": [
+      {
+        "name_ko": "프로펠러",
+        "present": true,
+        "count": 6,
+        "where_ko": "6개 모터 상단"
+      },
+      {
+        "name_ko": "모터 포드",
+        "present": true,
+        "count": 6,
+        "where_ko": "각 암 끝단"
+      },
+      {
+        "name_ko": "암(+접이 힌지)",
+        "present": true,
+        "count": 6,
+        "where_ko": "중앙 기체에서 방사형으로 연결된 구조"
+      },
+      {
+        "name_ko": "살포 탱크",
+        "present": true,
+        "count": 1,
+        "where_ko": "중앙 기체 하부"
+      },
+      {
+        "name_ko": "노즐 붐",
+        "present": true,
+        "count": 1,
+        "where_ko": "기체 하단 전면에 수평 장착된 파이프"
+      },
+      {
+        "name_ko": "살포 노즐",
+        "present": true,
+        "count": 6,
+        "where_ko": "노즐 붐 및 외부 연장관 하단부"
+      },
+      {
+        "name_ko": "랜딩기어 다리(+브레이스)",
+        "present": true,
+        "count": 4,
+        "where_ko": "중앙 프레임 하부 수직 및 대각 지지대"
+      },
+      {
+        "name_ko": "랜딩 스키드",
+        "present": true,
+        "count": 2,
+        "where_ko": "기체 최하부 좌우 접지 파이프"
+      },
+      {
+        "name_ko": "캐노피·셸",
+        "present": true,
+        "count": 1,
+        "where_ko": "중앙 기체 상단 본체 커버"
+      },
+      {
+        "name_ko": "배터리(슬레드)",
+        "present": true,
+        "count": 1,
+        "where_ko": "중앙 본체 상부 장착부"
+      },
+      {
+        "name_ko": "호스 라인",
+        "present": true,
+        "count": 2,
+        "where_ko": "탱크 하단에서 노즐 붐으로 연결되는 배관"
+      },
+      {
+        "name_ko": "프로펠러 허브 캡",
+        "present": true,
+        "count": 6,
+        "where_ko": "각 프로펠러 중앙 축"
+      },
+      {
+        "name_ko": "프로펠러 가드",
+        "present": false,
+        "count": 0
+      },
+      {
+        "name_ko": "GNSS/RTK 안테나 마스트",
+        "present": false,
+        "count": 0
+      },
+      {
+        "name_ko": "통신 안테나",
+        "present": false,
+        "count": 0
+      },
+      {
+        "name_ko": "FPV·전방 카메라",
+        "present": false,
+        "count": 0
+      },
+      {
+        "name_ko": "짐벌 카메라",
+        "present": false,
+        "count": 0
+      },
+      {
+        "name_ko": "장애물 센서",
+        "present": false,
+        "count": 0
+      },
+      {
+        "name_ko": "탐조등",
+        "present": false,
+        "count": 0
+      },
+      {
+        "name_ko": "카고 베이",
+        "present": false,
+        "count": 0
+      },
+      {
+        "name_ko": "보호 케이지",
+        "present": false,
+        "count": 0
+      },
+      {
+        "name_ko": "소화 노즐",
+        "present": false,
+        "count": 0
+      },
+      {
+        "name_ko": "주익",
+        "present": false,
+        "count": 0
+      },
+      {
+        "name_ko": "수직·수평 미익",
+        "present": false,
+        "count": 0
+      }
+    ]
+  },
+  "map-wing": {
+    "source": "primary/text",
+    "photo": "docs/assets/samples/drones/mapping-fixedwing.jpg",
+    "photo_sha1": "ae63d6c6d093",
+    "at": "2026-08-16T00:09:15.161Z",
+    "items": [
+      {
+        "name_ko": "주익",
+        "present": true,
+        "count": 2,
+        "where_ko": "동체 중앙 양쪽"
+      },
+      {
+        "name_ko": "수직·수평 미익",
+        "present": true,
+        "count": 3,
+        "where_ko": "동체 후방"
+      },
+      {
+        "name_ko": "프로펠러",
+        "present": true,
+        "count": 1,
+        "where_ko": "동체 후방 상부"
+      },
+      {
+        "name_ko": "캐노피·셸",
+        "present": true,
+        "count": 1,
+        "where_ko": "동체 상부 전반"
+      },
+      {
+        "name_ko": "기체 상판/하판 분리선",
+        "present": true,
+        "count": 1,
+        "where_ko": "동체 측면 및 해치 조립선"
+      },
+      {
+        "name_ko": "모터 포드",
+        "present": true,
+        "count": 1,
+        "where_ko": "동체 상부 프로펠러 마운트"
+      },
+      {
+        "name_ko": "프로펠러 허브 캡",
+        "present": true,
+        "count": 1,
+        "where_ko": "프로펠러 회전축 중앙"
+      },
+      {
+        "name_ko": "카메라 창(하방)",
+        "present": true,
+        "count": 1,
+        "where_ko": "동체 하부 측면 센서 창"
+      },
+      {
+        "name_ko": "암(+접이 힌지)",
+        "present": false,
+        "count": 0,
+        "where_ko": ""
+      },
+      {
+        "name_ko": "프로펠러 가드",
+        "present": false,
+        "count": 0,
+        "where_ko": ""
+      },
+      {
+        "name_ko": "랜딩기어 다리(+브레이스)",
+        "present": false,
+        "count": 0,
+        "where_ko": ""
+      },
+      {
+        "name_ko": "랜딩 스키드",
+        "present": false,
+        "count": 0,
+        "where_ko": ""
+      },
+      {
+        "name_ko": "GNSS/RTK 안테나 마스트",
+        "present": false,
+        "count": 0,
+        "where_ko": ""
+      },
+      {
+        "name_ko": "통신 안테나",
+        "present": false,
+        "count": 0,
+        "where_ko": ""
+      },
+      {
+        "name_ko": "FPV·전방 카메라",
+        "present": false,
+        "count": 0,
+        "where_ko": ""
+      },
+      {
+        "name_ko": "짐벌 카메라",
+        "present": false,
+        "count": 0,
+        "where_ko": ""
+      },
+      {
+        "name_ko": "장애물 센서",
+        "present": false,
+        "count": 0,
+        "where_ko": ""
+      },
+      {
+        "name_ko": "LED 표시등",
+        "present": false,
+        "count": 0,
+        "where_ko": ""
+      },
+      {
+        "name_ko": "살포 탱크",
+        "present": false,
+        "count": 0,
+        "where_ko": ""
+      },
+      {
+        "name_ko": "노즐 붐",
+        "present": false,
+        "count": 0,
+        "where_ko": ""
+      },
+      {
+        "name_ko": "살포 노즐",
+        "present": false,
+        "count": 0,
+        "where_ko": ""
+      },
+      {
+        "name_ko": "호스 라인",
+        "present": false,
+        "count": 0,
+        "where_ko": ""
+      },
+      {
+        "name_ko": "탐조등",
+        "present": false,
+        "count": 0,
+        "where_ko": ""
+      },
+      {
+        "name_ko": "안테나 레이돔",
+        "present": false,
+        "count": 0,
+        "where_ko": ""
+      }
+    ]
+  },
+  "sar-vtol": {
+    "source": "primary/text",
+    "photo": "docs/assets/samples/drones/sar-vtol.jpg",
+    "photo_sha1": "fb297966d002",
+    "at": "2026-08-16T00:09:26.615Z",
+    "items": [
+      {
+        "name_ko": "주익",
+        "present": true,
+        "count": 2,
+        "where_ko": "동체 중앙에서 좌우로 확장된 고정익 날개"
+      },
+      {
+        "name_ko": "수직·수평 미익",
+        "present": true,
+        "count": 2,
+        "where_ko": "기체 후방 테일에 배치된 V자형 경사 미익"
+      },
+      {
+        "name_ko": "프로펠러",
+        "present": true,
+        "count": 5,
+        "where_ko": "수직 이착륙 붐 상단 4개 및 테일 후방 추진용 1개"
+      },
+      {
+        "name_ko": "암(+접이 힌지)",
+        "present": true,
+        "count": 2,
+        "where_ko": "주익을 관통하여 앞뒤로 뻗은 수직 이착륙 붐"
+      },
+      {
+        "name_ko": "모터 포드",
+        "present": true,
+        "count": 4,
+        "where_ko": "수직 이착륙 붐 양 끝단 하부 돌출형 포드"
+      },
+      {
+        "name_ko": "캐노피·셸",
+        "present": true,
+        "count": 1,
+        "where_ko": "기체 중앙의 유선형 중앙 동체 커버"
+      },
+      {
+        "name_ko": "짐벌 카메라",
+        "present": true,
+        "count": 1,
+        "where_ko": "동체 하부 전방에 탑재된 구형 카메라"
+      },
+      {
+        "name_ko": "탐조등",
+        "present": true,
+        "count": 1,
+        "where_ko": "동체 전방 주황색 노즈 내장형 라이트"
+      },
+      {
+        "name_ko": "랜딩 스키드",
+        "present": true,
+        "count": 2,
+        "where_ko": "동체 하단 좌우에 설치된 지지대 및 스키드"
+      },
+      {
+        "name_ko": "기체 상판/하판 분리선",
+        "present": true,
+        "count": 1,
+        "where_ko": "동체 측면을 따라 조립된 결합 분리선"
+      },
+      {
+        "name_ko": "프로펠러 허브 캡",
+        "present": true,
+        "count": 4,
+        "where_ko": "수직 모터 상단 프로펠러 고정부"
+      },
+      {
+        "name_ko": "프로펠러 가드",
+        "present": false,
+        "count": 0
+      },
+      {
+        "name_ko": "GNSS/RTK 안테나 마스트",
+        "present": false,
+        "count": 0
+      },
+      {
+        "name_ko": "통신 안테나",
+        "present": false,
+        "count": 0
+      },
+      {
+        "name_ko": "FPV·전방 카메라",
+        "present": false,
+        "count": 0
+      },
+      {
+        "name_ko": "장애물 센서",
+        "present": false,
+        "count": 0
+      },
+      {
+        "name_ko": "살포 탱크",
+        "present": false,
+        "count": 0
+      },
+      {
+        "name_ko": "노즐 붐",
+        "present": false,
+        "count": 0
+      },
+      {
+        "name_ko": "카고 베이",
+        "present": false,
+        "count": 0
+      },
+      {
+        "name_ko": "보호 케이지",
+        "present": false,
+        "count": 0
+      }
+    ]
+  },
+  "cage-inspect": {
+    "source": "primary/text",
+    "photo": "docs/assets/samples/drones/cage-inspect.png",
+    "photo_sha1": "9240d914ec09",
+    "at": "2026-08-16T00:09:34.766Z",
+    "items": [
+      {
+        "name_ko": "보호 케이지",
+        "present": true,
+        "count": 1,
+        "where_ko": "기체 외곽 전체를 감싸는 구형 프레임"
+      },
+      {
+        "name_ko": "캐노피·셸",
+        "present": true,
+        "count": 1,
+        "where_ko": "기체 중앙 몸체 상부 및 측면"
+      },
+      {
+        "name_ko": "FPV·전방 카메라",
+        "present": true,
+        "count": 1,
+        "where_ko": "기체 전면 중앙 주황색 베젤 내부"
+      },
+      {
+        "name_ko": "LED 표시등",
+        "present": true,
+        "count": 2,
+        "where_ko": "전면 카메라 하단 좌우"
+      },
+      {
+        "name_ko": "프로펠러",
+        "present": true,
+        "count": 4,
+        "where_ko": "기체 내부 4개 모터 상단"
+      },
+      {
+        "name_ko": "모터 포드",
+        "present": true,
+        "count": 4,
+        "where_ko": "4개 암 끝단의 모터 하우징"
+      },
+      {
+        "name_ko": "암(+접이 힌지)",
+        "present": true,
+        "count": 4,
+        "where_ko": "중앙 몸체에서 모터로 연결되는 프레임"
+      },
+      {
+        "name_ko": "랜딩기어 다리(+브레이스)",
+        "present": false,
+        "count": 0
+      },
+      {
+        "name_ko": "배터리(슬레드)",
+        "present": false,
+        "count": 0
+      },
+      {
+        "name_ko": "GNSS/RTK 안테나 마스트",
+        "present": false,
+        "count": 0
+      },
+      {
+        "name_ko": "살포 탱크",
+        "present": false,
+        "count": 0
+      },
+      {
+        "name_ko": "살포 노즐",
+        "present": false,
+        "count": 0
+      }
+    ]
+  },
+  "fire-octo": {
+    "source": "primary/text",
+    "photo": "docs/assets/samples/drones/fire-octo.png",
+    "photo_sha1": "07ef6ce3b7c3",
+    "at": "2026-08-16T00:09:45.746Z",
+    "items": [
+      {
+        "name_ko": "프로펠러",
+        "present": true,
+        "count": 8,
+        "where_ko": "각 암 끝단 모터 축 상하부"
+      },
+      {
+        "name_ko": "모터 포드",
+        "present": true,
+        "count": 8,
+        "where_ko": "4개 암 끝단의 동축 상하부"
+      },
+      {
+        "name_ko": "암(+접이 힌지)",
+        "present": true,
+        "count": 4,
+        "where_ko": "중앙 기체 본체에서 방사형으로 연장된 부위"
+      },
+      {
+        "name_ko": "캐노피·셸",
+        "present": true,
+        "count": 1,
+        "where_ko": "기체 상단 중앙 커버"
+      },
+      {
+        "name_ko": "소화 노즐",
+        "present": true,
+        "count": 1,
+        "where_ko": "기체 전방 하단 돌출부"
+      },
+      {
+        "name_ko": "계류 케이블·스풀",
+        "present": true,
+        "count": 1,
+        "where_ko": "기체 하부 중앙 호스 릴"
+      },
+      {
+        "name_ko": "랜딩기어 다리(+브레이스)",
+        "present": true,
+        "count": 4,
+        "where_ko": "기체 하단에서 지면 방향으로 뻗은 다리"
+      },
+      {
+        "name_ko": "랜딩 스키드",
+        "present": true,
+        "count": 2,
+        "where_ko": "랜딩기어 최하단 지지대"
+      },
+      {
+        "name_ko": "LED 표시등",
+        "present": true,
+        "count": 2,
+        "where_ko": "전면 캐노피 상단 구멍 내부"
+      },
+      {
+        "name_ko": "프로펠러 가드",
+        "present": false,
+        "count": 0
+      },
+      {
+        "name_ko": "살포 탱크",
+        "present": false,
+        "count": 0
+      },
+      {
+        "name_ko": "짐벌 카메라",
+        "present": false,
+        "count": 0
+      },
+      {
+        "name_ko": "GNSS/RTK 안테나 마스트",
+        "present": false,
+        "count": 0
+      }
+    ]
+  },
+  "relay-hexa": {
+    "source": "primary/text",
+    "photo": "docs/assets/samples/drones/relay-hexa.png",
+    "photo_sha1": "346d87bfd9b7",
+    "at": "2026-08-16T00:09:57.347Z",
+    "items": [
+      {
+        "name_ko": "프로펠러",
+        "present": true,
+        "count": 6,
+        "where_ko": "각 암 끝 모터 포드 상단"
+      },
+      {
+        "name_ko": "모터 포드",
+        "present": true,
+        "count": 6,
+        "where_ko": "6개 암의 외곽 끝단"
+      },
+      {
+        "name_ko": "암(+접이 힌지)",
+        "present": true,
+        "count": 6,
+        "where_ko": "중앙 기체에서 방사형으로 연결된 암"
+      },
+      {
+        "name_ko": "캐노피·셸",
+        "present": true,
+        "count": 1,
+        "where_ko": "드론 중앙 상단 하우징"
+      },
+      {
+        "name_ko": "기체 상판/하판 분리선",
+        "present": true,
+        "count": 1,
+        "where_ko": "캐노피 둘레의 주황색 테두리"
+      },
+      {
+        "name_ko": "통신 안테나",
+        "present": true,
+        "count": 1,
+        "where_ko": "캐노피 중앙 상부 수직 마스트"
+      },
+      {
+        "name_ko": "계류 케이블·스풀",
+        "present": true,
+        "count": 1,
+        "where_ko": "기체 하단 스풀 모듈 및 연결 케이블"
+      },
+      {
+        "name_ko": "랜딩기어 다리(+브레이스)",
+        "present": true,
+        "count": 4,
+        "where_ko": "기체 하단에서 비스듬히 내려오는 다리"
+      },
+      {
+        "name_ko": "랜딩 스키드",
+        "present": true,
+        "count": 2,
+        "where_ko": "랜딩기어 하단 지지대"
+      },
+      {
+        "name_ko": "프로펠러 가드",
+        "present": false,
+        "count": 0
+      },
+      {
+        "name_ko": "짐벌 카메라",
+        "present": false,
+        "count": 0
+      },
+      {
+        "name_ko": "살포 탱크",
+        "present": false,
+        "count": 0
+      },
+      {
+        "name_ko": "살포 노즐",
+        "present": false,
+        "count": 0
+      },
+      {
+        "name_ko": "탐조등",
+        "present": false,
+        "count": 0
+      },
+      {
+        "name_ko": "카고 베이",
+        "present": false,
+        "count": 0
+      },
+      {
+        "name_ko": "주익",
+        "present": false,
+        "count": 0
+      }
+    ]
+  }
+}

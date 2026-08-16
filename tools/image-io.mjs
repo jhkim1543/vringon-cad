@@ -21,7 +21,7 @@ import { inflateSync, deflateSync } from "node:zlib";
 
 /* ---------------------------------------------------------------- PNG read */
 
-function decodePng(buf) {
+function decodePng(buf, wantRgb = false) {
   let p = 8; // past the 8-byte signature
   let ihdr = null, plte = null, trns = null;
   const idat = [];
@@ -88,24 +88,31 @@ function decodePng(buf) {
 
   const gray = new Uint8Array(w * h);
   const alpha = new Uint8Array(w * h).fill(255);
+  /* Colour is only kept when asked for: the silhouette tools never look at it,
+     and a 3168-wide mask sheet would carry 12MB of chroma nobody reads. */
+  const rgb = wantRgb ? new Uint8Array(w * h * 3) : null;
   let hasAlpha = false;
+  const put = (i, r, g, b) => {
+    gray[i] = luma(r, g, b);
+    if (rgb) { rgb[i * 3] = r; rgb[i * 3 + 1] = g; rgb[i * 3 + 2] = b; }
+  };
   for (let y = 0; y < h; y++) {
     const row = y * rowBytes;
     for (let x = 0; x < w; x++) {
       const i = y * w + x, s = x * channels;
-      if (color === 0) gray[i] = sample(row, s);
-      else if (color === 4) { gray[i] = sample(row, s); alpha[i] = sample(row, s + 1); hasAlpha = true; }
+      if (color === 0) { const v = sample(row, s); put(i, v, v, v); }
+      else if (color === 4) { const v = sample(row, s); put(i, v, v, v); alpha[i] = sample(row, s + 1); hasAlpha = true; }
       else if (color === 3) {
         const idx = depth === 16 ? img[row + x * 2] : sample(row, s) * maxV / 255;
-        gray[i] = luma(plte[idx * 3], plte[idx * 3 + 1], plte[idx * 3 + 2]);
+        put(i, plte[idx * 3], plte[idx * 3 + 1], plte[idx * 3 + 2]);
         if (trns && idx < trns.length) { alpha[i] = trns[idx]; hasAlpha = true; }
       } else {
-        gray[i] = luma(sample(row, s), sample(row, s + 1), sample(row, s + 2));
+        put(i, sample(row, s), sample(row, s + 1), sample(row, s + 2));
         if (color === 6) { alpha[i] = sample(row, s + 3); hasAlpha = true; }
       }
     }
   }
-  return { w, h, gray, alpha: hasAlpha ? alpha : null };
+  return { w, h, gray, alpha: hasAlpha ? alpha : null, rgb };
 }
 
 const luma = (r, g, b) => (r * 77 + g * 150 + b * 29) >> 8;
@@ -190,7 +197,7 @@ function buildHuff(bits, vals) {
   return lut;
 }
 
-function decodeJpeg(buf) {
+function decodeJpeg(buf, wantRgb = false) {
   const qt = [], hdc = [], hac = [];
   let frame = null, ri = 0, scan = null, scanStart = 0;
 
@@ -249,6 +256,18 @@ function decodeJpeg(buf) {
   const Y = frame.comps[0];
   const yW = mcusX * Y.h * 8, yH = mcusY * Y.v * 8;
   const plane = new Uint8Array(yW * yH);
+  /* Chroma is decoded only on request. Each component gets a plane at its own
+     sampling (4:2:0 chroma is a quarter of the luma plane) and is upsampled
+     by nearest neighbour at the end — a colour average over a part region
+     cannot tell the difference, and it keeps the decoder one pass. */
+  const planes = new Map([[Y, { data: plane, w: yW, h: yH }]]);
+  if (wantRgb) {
+    for (const c of frame.comps) {
+      if (c === Y) continue;
+      const cw = mcusX * c.h * 8, ch = mcusY * c.v * 8;
+      planes.set(c, { data: new Uint8Array(cw * ch), w: cw, h: ch });
+    }
+  }
 
   /* Bit reader. 0xFF in entropy-coded data is escaped as 0xFF00, and any other
      0xFF is a marker — reading past one would decode noise, so it stops. */
@@ -283,6 +302,7 @@ function decodeJpeg(buf) {
 
   const blk = new Float64Array(64), tmp = new Float64Array(64);
   const decodeBlock = (s, bx, by, keep) => {
+    const dst = planes.get(s.c);
     blk.fill(0);
     const q = qt[s.c.tq];
     const t = huffDecode(hdc[s.dc]);
@@ -307,7 +327,7 @@ function decodeJpeg(buf) {
       let v = 0;
       for (let u = 0; u < 8; u++) v += COS[y * 8 + u] * tmp[u * 8 + x];
       const px = bx * 8 + x, py = by * 8 + y;
-      if (px < yW && py < yH) plane[py * yW + px] = Math.max(0, Math.min(255, Math.round(v + 128)));
+      if (px < dst.w && py < dst.h) dst.data[py * dst.w + px] = Math.max(0, Math.min(255, Math.round(v + 128)));
     }
   };
 
@@ -325,7 +345,7 @@ function decodeJpeg(buf) {
         sinceRst = 0;
       }
       for (const s of scan) {
-        const keep = s.c === Y;
+        const keep = s.c === Y || (wantRgb && planes.has(s.c));
         if (single) decodeBlock(s, mx, my, keep);
         else for (let v = 0; v < s.c.v; v++) for (let h = 0; h < s.c.h; h++) {
           decodeBlock(s, mx * s.c.h + h, my * s.c.v + v, keep);
@@ -341,16 +361,39 @@ function decodeJpeg(buf) {
   for (let y = 0; y < frame.h; y++) for (let x = 0; x < frame.w; x++) {
     gray[y * frame.w + x] = plane[Math.min(yH - 1, (y / sy) | 0) * yW + Math.min(yW - 1, (x / sx) | 0)];
   }
-  return { w: frame.w, h: frame.h, gray, alpha: null };
+  let rgb = null;
+  if (wantRgb) {
+    rgb = new Uint8Array(frame.w * frame.h * 3);
+    const at = (c, x, y) => {
+      const pl = planes.get(c);
+      const fx = frame.w / pl.w, fy = frame.h / pl.h;   // >1 when this plane is subsampled
+      return pl.data[Math.min(pl.h - 1, (y / fy) | 0) * pl.w + Math.min(pl.w - 1, (x / fx) | 0)];
+    };
+    const [C1, C2] = frame.comps.length >= 3 ? [frame.comps[1], frame.comps[2]] : [null, null];
+    const clamp = (v) => (v < 0 ? 0 : v > 255 ? 255 : Math.round(v));
+    for (let y = 0; y < frame.h; y++) for (let x = 0; x < frame.w; x++) {
+      const i = y * frame.w + x;
+      const Yv = gray[i];
+      if (!C1) { rgb[i * 3] = rgb[i * 3 + 1] = rgb[i * 3 + 2] = Yv; continue; }
+      const cb = at(C1, x, y) - 128, cr = at(C2, x, y) - 128;
+      // JFIF YCbCr → RGB
+      rgb[i * 3] = clamp(Yv + 1.402 * cr);
+      rgb[i * 3 + 1] = clamp(Yv - 0.344136 * cb - 0.714136 * cr);
+      rgb[i * 3 + 2] = clamp(Yv + 1.772 * cb);
+    }
+  }
+  return { w: frame.w, h: frame.h, gray, alpha: null, rgb };
 }
 
 /* ------------------------------------------------------------------ public */
 
-/** Decode a PNG, baseline JPEG or PGM/PPM buffer into {w,h,gray,alpha}. */
-export function decodeImage(buf, label = "이미지") {
+/** Decode a PNG, baseline JPEG or PGM/PPM buffer into {w,h,gray,alpha}.
+    Pass { rgb: true } to also get an interleaved 8-bit RGB plane (PNG and
+    JPEG; PGM/PPM stays luminance-only). */
+export function decodeImage(buf, label = "이미지", { rgb = false } = {}) {
   try {
-    if (buf.length > 8 && buf[0] === 0x89 && buf.toString("latin1", 1, 4) === "PNG") return decodePng(buf);
-    if (buf[0] === 0xff && buf[1] === 0xd8) return decodeJpeg(buf);
+    if (buf.length > 8 && buf[0] === 0x89 && buf.toString("latin1", 1, 4) === "PNG") return decodePng(buf, rgb);
+    if (buf[0] === 0xff && buf[1] === 0xd8) return decodeJpeg(buf, rgb);
     if (buf[0] === 0x50 && buf[1] >= 0x31 && buf[1] <= 0x36) return decodeNetpbm(buf);
   } catch (e) {
     throw new Error(`${label}: ${e.message}`);

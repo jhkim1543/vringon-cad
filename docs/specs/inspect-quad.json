@@ -379,7 +379,7 @@
         }
       ],
       "features": [],
-      "material_id": "mat_orange",
+      "material_id": "mat_white",
       "confidence": 0.9
     },
     {
@@ -1051,12 +1051,12 @@
         "plane": "TOP",
         "size_mm": {
           "w": 281.3,
-          "h": 22,
+          "h": 80,
           "d": 233
         },
         "center_mm": {
           "x": 0,
-          "y": 135.6,
+          "y": 126,
           "z": 0
         },
         "outer_profile": null,
@@ -1540,7 +1540,7 @@
         },
         "center_mm": {
           "x": 0,
-          "y": 115,
+          "y": 85,
           "z": 90
         },
         "outer_profile": null,
@@ -1574,7 +1574,7 @@
         },
         "center_mm": {
           "x": 0,
-          "y": 90,
+          "y": 55,
           "z": 90
         },
         "outer_profile": null,
