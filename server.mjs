@@ -8,7 +8,7 @@ import { extname, join, normalize } from "node:path";
 import { fileURLToPath } from "node:url";
 import { CATALOG, MATERIAL_KEYS, clampParams } from "./js/catalog.js";
 import { makeAssetStore, assetSummary, searchAssets } from "./asset-store.mjs";
-import { REPRESENTATION, BUILDER_VALUES, validateSpec } from "./spec-validate.mjs";
+import { REPRESENTATION, BUILDER_VALUES, validateSpec, builderFitErrors } from "./spec-validate.mjs";
 import { PROGRAM_SPEC, PROGRAM_EXAMPLE } from "./js/program-spec.js";
 import { BASE_RECIPES, FEATURE_RECIPES, recipeContract } from "./js/recipes.js";
 import { sanitizeMeshBytes, scrubResponse, findVendorTokens } from "./glb-sanitize.mjs";
@@ -2779,6 +2779,31 @@ ${SPEC_SYSTEM.split("<geometry_authoring>")[1] ? "<geometry_authoring>" + SPEC_S
    loft_sections는 null로 두어라. 1단계 메시가 있으면 서버가 실제 단면을 측정해 채운다.
    plane의 법선이 단면이 쌓이는 축이다(동체는 보통 FRONT = 앞뒤로 쌓임).
    메시가 없으면 서버가 EXTRUDE_2D로 되돌리므로 outer_profile도 함께 채워라.
+2-3. **빌더 선택 — 무엇으로 만드는가가 형상을 정한다.** 치수가 다 맞아도 빌더가
+   틀리면 다른 물건이 나온다. 이름과 빌더가 어긋나면 검증에서 되돌아온다.
+   - BOX·ROUNDED_BOX: 각진 덩어리. 배터리·전장 보드·베이·패널.
+   - CYLINDER: 속이 찬 축·보스·마스트·모터·다리, 그리고 얇은 원반(로터 디스크,
+     원형 상판). 지름 대비 두께가 8% 이하면 원반이다.
+   - **TUBE: 속이 빈 관·링·띠.** 카본 튜브 암, 프로펠러 가드, 스커트처럼
+     이름이 관·가드인 것을 CYLINDER로 쓰면 속이 꽉 찬 봉이 된다.
+     **벽 두께(mm)는 corner_radius_mm에 적는다** — TUBE에서 이 필드는 모서리
+     반경이 아니라 벽 두께로 읽힌다. 비워 두면 벽이 반경의 28%가 되어,
+     지름 280 가드는 벽 39mm짜리 양동이가 된다(카본 암 1.5~3, 가드·스커트 3~8).
+     size_mm은 월드 박스다: plane 법선 방향이 길이, 나머지 둘이 바깥지름.
+   - **TORUS: 단면이 둥근 후프.** 프로펠러 가드 링, 케이지 링, 범퍼 링.
+     size_mm도 월드 박스이고, plane 법선 방향 치수가 로드(튜브) 지름,
+     나머지 둘이 링 바깥지름이다. 예: 수평으로 누운 바깥지름 280 가드에 10mm
+     로드 → plane TOP, w 280 · h 10 · d 280. 링이 여러 개 교차하는 케이지는
+     링마다 별도 파트로 두고 plane으로 방향을 준다(적도 TOP, 좌우 SIDE,
+     앞뒤 FRONT, 셋 다 같은 center_mm). repeat CIRCULAR은 사본을 radius_mm만큼
+     바깥으로 밀어내므로 암 끝에 하나씩 붙는 가드에만 쓴다.
+   - CONE: 노즈 콘·노즐·스피너. SPHERE: 진짜 구(짐벌 볼, 케이지 노드).
+     한 축이 다른 축의 2배 이상이면 구가 아니다 — REVOLVE나 LOFT로 써라.
+   - 판(상판·하판·분리선·데크)은 관이 아니다. 두께가 h인 얇은 CYLINDER·BOX,
+     윤곽이 있으면 plane TOP의 EXTRUDE_2D다. TUBE로 쓰면 가운데가 뚫린다.
+   보호 케이지·프롭 가드는 덩어리가 아니라 후프다. 통짜로 그리면 지키려던
+   프로펠러를 삼킨 양동이가 되고, 실제로 점검용 쿼드에서는 가드 네 개의 벽이
+   전체 추정 프린트 질량의 74%를 차지했다.
 3. 고정익: 동체는 REVOLVE 유선형(축이 Y로 서므로 길이 방향 주의 — 동체는
    REVOLVE 대신 plane FRONT의 EXTRUDE_2D 유선형 측면 단면도 좋다).
    주익·수평미익은 반드시 plane TOP의 EXTRUDE_2D: outer_profile이 위에서 본
@@ -3150,8 +3175,12 @@ async function runSpecJson(body, job) {
     }];
 
     normalizeStrutRadius(spec);
-    jobStage(job, "validate", "치수·간섭·조립을 검증하는 중", "로터 간섭, 파트 접촉, 인벤토리 누락을 훑습니다");
-    let errors = [...validateSpec(spec, { hasMesh: !!meshInfo }), ...inventoryGaps(spec, inventory), ...contactGaps(spec)];
+    jobStage(job, "validate", "치수·간섭·조립을 검증하는 중", "빌더 적합성, 로터 간섭, 파트 접촉, 인벤토리 누락을 훑습니다");
+    /* builderFitErrors asks the one question the coordinate checks cannot: is
+       this part the kind of thing this builder makes. A guard built as a solid
+       passes every dimension rule and still comes out a bucket. */
+    let errors = [...validateSpec(spec, { hasMesh: !!meshInfo }), ...inventoryGaps(spec, inventory),
+      ...contactGaps(spec), ...builderFitErrors(spec)];
     console.log(`[repair-diag] parts=${(spec.parts || []).length} inv=${inventory?.length || 0}`
       + ` initial=${JSON.stringify(codeTally(errors))} weight=${granularWeight(errors)}`);
     for (const e of errors) if (e.error_code === "DETAIL_ITEM_MISSING") console.log(`[repair-diag] missing ${e.required_fix.slice(0, 300)}`);
@@ -3167,7 +3196,8 @@ async function runSpecJson(body, job) {
         ], "drone_spec", DRONE_SPEC_SCHEMA, 32000, "spec");
         groundProvenance(fixed, !!image);
         normalizeStrutRadius(fixed);
-        const after = [...validateSpec(fixed, { hasMesh: !!meshInfo }), ...inventoryGaps(fixed, inventory), ...contactGaps(fixed)];
+        const after = [...validateSpec(fixed, { hasMesh: !!meshInfo }), ...inventoryGaps(fixed, inventory),
+          ...contactGaps(fixed), ...builderFitErrors(fixed)];
         console.log(`[repair-diag] round=${round + 1} ms=${Date.now() - t0} kept=${after.length < errors.length}`
           + ` parts=${(spec.parts || []).length}->${(fixed.parts || []).length}`
           + ` n=${errors.length}->${after.length} weight=${granularWeight(errors)}->${granularWeight(after)}`
@@ -3284,7 +3314,9 @@ async function handleSpecPatch(body) {
     }
   }
 
-  const errors = validateSpec(patched, { hasMesh: !!body.hasMesh });
+  /* An edit is the other way a wrong builder gets in — "가드를 키워줘" comes
+     back with a bigger bucket — and the panel shows these to the user. */
+  const errors = [...validateSpec(patched, { hasMesh: !!body.hasMesh }), ...builderFitErrors(patched)];
   await logEvent("spec_patch", { instruction: instruction.slice(0, 80), errors: errors.length });
   return { ok: true, spec: patched, validationErrors: errors };
 }

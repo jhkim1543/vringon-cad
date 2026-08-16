@@ -12,9 +12,9 @@
    ========================================================================== */
 import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
-import { requireAuth } from "./auth.js?v=832e871a";
-import { measureForm } from "./measure.js?v=832e871a";
-import { planRepresentation, buildSpecification, specText } from "./threespec.js?v=832e871a";
+import { requireAuth } from "./auth.js?v=2d99286f";
+import { measureForm } from "./measure.js?v=2d99286f";
+import { planRepresentation, buildSpecification, specText } from "./threespec.js?v=2d99286f";
 
 requireAuth();
 const $ = (id) => document.getElementById(id);

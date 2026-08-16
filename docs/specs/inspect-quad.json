@@ -1006,7 +1006,7 @@
         },
         "center_mm": {
           "x": 0,
-          "y": 81.7,
+          "y": 187,
           "z": 0
         },
         "outer_profile": null,
@@ -1061,7 +1061,7 @@
         },
         "outer_profile": null,
         "inner_profile": null,
-        "corner_radius_mm": null,
+        "corner_radius_mm": 6,
         "repeat": {
           "pattern": "CIRCULAR",
           "count": 4,

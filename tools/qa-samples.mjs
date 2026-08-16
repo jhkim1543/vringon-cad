@@ -24,7 +24,9 @@ import { isProp } from "../js/spec-to-code.js";
 
    Propellers are exempt by design: their box is the disc the blades sweep, and
    a two-blade stand-in is meant to leave most of that disc empty. */
-const ROUND = new Set(["CYLINDER", "CONE", "TUBE", "SPHERE"]);
+/* TORUS joined them when it gained an axis: its outer diameter used to come
+   out at ring + tube, so a hoop declared 281 wide built itself 361 wide. */
+const ROUND = new Set(["CYLINDER", "CONE", "TUBE", "SPHERE", "TORUS"]);
 const BOX_TOL = 0.02;
 
 function roundBoxIssues(built) {

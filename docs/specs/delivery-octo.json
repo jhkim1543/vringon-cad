@@ -255,7 +255,7 @@
       "editable": true,
       "locked_characteristics": [],
       "geometry": {
-        "builder": "CYLINDER",
+        "builder": "TUBE",
         "plane": "FRONT",
         "size_mm": {
           "w": 35,
@@ -269,7 +269,7 @@
         },
         "outer_profile": null,
         "inner_profile": null,
-        "corner_radius_mm": null,
+        "corner_radius_mm": 2,
         "repeat": {
           "pattern": "CIRCULAR",
           "count": 4,

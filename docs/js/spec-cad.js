@@ -9,7 +9,7 @@
    ========================================================================== */
 import * as THREE from "three";
 import { tessellate, revolveVolume, buildFromAnalysis, generateThreeCode,
-  airfoilDepth, maxChord } from "./spec-to-code.js?v=832e871a";
+  airfoilDepth, maxChord } from "./spec-to-code.js?v=2d99286f";
 
 const num = (v, d = 0) => (Number.isFinite(v) ? v : d);
 const dist = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1]);
@@ -174,11 +174,30 @@ export function specToAnalysis(spec) {
       }
     }
 
+    /* Wall thickness, for the one builder that has a wall the outside can see.
+       A TUBE's bore was a fixed 72% of its outer radius, so the wall scaled
+       with the diameter: fine on a 35mm carbon arm, a 39mm wall on a 281mm
+       propeller guard. Everything a hoop or a skin band is depends on this
+       number and the specification had no way to say it.
+
+       It rides on corner_radius_mm rather than a field of its own, and that is
+       a deliberate trade. The geometry schema is a strict structured output —
+       additionalProperties false, every property in `required` — so a new
+       property becomes a new mandatory key on every part in every request, and
+       the last time one was added the primary LLM refused the request outright.
+       corner_radius_mm costs nothing here: it is null on every TUBE in every
+       shipped specification, no builder reads it, and a tube has no corners for
+       it to have meant anything on. Confined to TUBE so it cannot change what
+       the field means anywhere else, and undoing the overload is one line. */
+    const wallMm = builder === "TUBE" && num(g.corner_radius_mm) > 0
+      ? num(g.corner_radius_mm) : undefined;
+
     const r = {
       regionId: p.part_id,
       name: p.display_name_ko || p.name || p.part_id,
       semanticRole: p.semantic_role || "OTHER",
       builder,
+      wallMm,
       size: { w: Math.max(0.2, num(size.w, 10)), h: Math.max(0.2, num(size.h, 10)), d: Math.max(0.2, num(size.d, 10)) },
       center: { x: num(c.x), y: cy, z: num(c.z) },
       plane: g.plane || "FRONT",
@@ -242,6 +261,30 @@ export function specToAnalysis(spec) {
         startAngle: ((g.repeat.start_angle_deg || 0) * Math.PI) / 180,
       };
     }
+    /* A cavity exists only where a builder can carry one. REVOLVE sweeps the
+       inner profile back down the lathe and EXTRUDE_2D punches it through the
+       section; every other builder reads size_mm and loft_sections and never
+       looks at inner_profile, so a wall declared on one of them is a wall the
+       specification claims and the CAD does not have. The inspection cage is
+       written as a 5mm spherical shell and renders as a solid ball — the whole
+       of that sample's shape score.
+
+       Reported rather than repaired, and deliberately. A shelled loft is a
+       different builder, not a flag: offsetting eight measured superellipse
+       stations inward would invent a wall of a thickness nobody stated, on a
+       surface measured from the outside only, and the result would be as
+       confidently wrong as the solid it replaced — with the added cost that
+       nobody would be told. A ring is a TORUS, a band or a duct is a TUBE with
+       a wall, a shell of revolution is a REVOLVE; those three cover what the
+       samples are actually asking for, and each of them says its wall out loud.
+       Naming them here is what turns a silent lump into a fixable spec. */
+    if (inner?.length && builder !== "REVOLVE" && builder !== "EXTRUDE_2D") {
+      notes.push(`${r.name}: ${builder} 빌더는 inner_profile을 읽지 않아 `
+        + `속이 찬 덩어리로 만들어집니다. 벽이 있는 형상은 REVOLVE(회전 셸)나 `
+        + `EXTRUDE_2D(구멍 뚫린 단면)로, 링·후프는 TORUS로, 관·밴드는 `
+        + `TUBE(corner_radius_mm이 벽 두께)로 바꾸십시오`);
+    }
+
     regions.push(r);
 
     for (const f of p.features || []) {

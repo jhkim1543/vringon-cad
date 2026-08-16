@@ -334,3 +334,145 @@ export function validateSpec(spec, { hasMesh = false } = {}) {
   }
   return errors;
 }
+
+/* ==========================================================================
+   Builder suitability — is this part the kind of thing this builder makes?
+
+   Every other check reads coordinates: where a part sits, how big it is,
+   whether it touches its neighbours. All of them pass on a propeller guard
+   built as a 281mm TUBE with a 39mm wall, because the numbers are right — the
+   guard really is 281 across and really does sit on the arm tips. What is
+   wrong is the choice of builder: a hoop asked for as a solid of revolution
+   comes out a bucket, swallows the propellers it was drawn to protect, and
+   carries three quarters of the assembly's estimated print mass in its wall.
+   Position and proportion score 85-100 on the shipped samples while shape
+   scores 46-64, and this is the layer that decides shape.
+
+   Deliberately NOT part of validateSpec. tools/fit-spec.mjs runs that on every
+   candidate it considers and keeps the ones with fewer errors; an authoring
+   fault it cannot fix — it moves coordinates, it never rewrites a builder —
+   would be a constant it has to carry, and three shipped specifications carry
+   one today. This runs where a repair round can actually act on it: the
+   generation path in server.mjs.
+
+   Each rule names the replacement. "가드가 LOFT입니다" tells a repair round
+   that something is wrong and not what to write instead, and a round that
+   cannot tell burns a call and returns the same spec.
+   ========================================================================== */
+
+/* A hoop is a ring of rod or a thin band. Guards, cages, ducts, bumper rings.
+   The joints and fittings that sit ON a cage are not — a cage node really is a
+   12mm sphere — so they are named out before the family is tested. */
+const HOOP_NAME = /가드|guard|케이지|cage|후프|hoop|덕트|duct|프롭\s*링|보호\s*링|링\s*프레임|bumper/i;
+const HOOP_FITTING = /노드|node|조인트|joint|클램프|clamp|마운트|mount|브래킷|bracket|커넥터|connector|힌지|hinge|패널|panel|커버|cover|볼트|나사/i;
+/* "판" catches 상판·하판·플레이트·분리선 — the flat things. A plate is defined
+   by its outline and its thickness, which is every builder except the one that
+   sweeps a section around an axis. */
+const PLATE_NAME = /판|플레이트|plate|데크|deck|분리선|격벽|bulkhead/i;
+/* A part whose own name says "tube" and which is built solid. The wall is the
+   whole point of calling it a tube. */
+const TUBE_NAME = /튜브|tube|파이프|pipe|배관/i;
+const SOLID_BUILDERS = ["BOX", "ROUNDED_BOX", "CYLINDER", "SPHERE", "CONE", "LOFT"];
+
+/* Which dimension the plane's normal picks out — the same convention the
+   compiler uses for CYLINDER, TUBE, CONE and TORUS (js/spec-to-code.js). */
+function axisLen(g) {
+  const s = g.size_mm || {};
+  return g.plane === "FRONT" ? Number(s.d) || 0 : g.plane === "SIDE" ? Number(s.w) || 0 : Number(s.h) || 0;
+}
+function crossDia(g) {
+  const s = g.size_mm || {};
+  const all = [Number(s.w) || 0, Number(s.h) || 0, Number(s.d) || 0];
+  const drop = g.plane === "FRONT" ? 2 : g.plane === "SIDE" ? 0 : 1;
+  return Math.max(...all.filter((_, i) => i !== drop));
+}
+
+/* "카본 튜브 암는" is what a template gets you. The messages are read by a
+   person in the validation panel as well as by the repair round, so the topic
+   particle follows the last syllable's final consonant. */
+function topic(s) {
+  const t = String(s).trim();
+  const c = t.charCodeAt(t.length - 1);
+  const hangul = c >= 0xac00 && c <= 0xd7a3;
+  return `${t}${hangul && (c - 0xac00) % 28 ? "은" : "는"}`;
+}
+
+export function builderFitErrors(spec) {
+  const errors = [];
+  const parts = (spec?.parts || []).filter((p) => p.geometry?.builder);
+  for (const p of parts) {
+    const g = p.geometry;
+    const label = topic(p.display_name_ko || p.name || p.part_id);
+    const n = `${p.name || ""} ${p.display_name_ko || ""}`;
+    const at = `parts.${p.part_id}.geometry`;
+    const isHoop = HOOP_NAME.test(n) && !HOOP_FITTING.test(n);
+    const hollowShell = (g.inner_profile || []).length > 0;
+
+    /* 1. A hoop built as a solid. The bucket. */
+    if (isHoop && (SOLID_BUILDERS.includes(g.builder)
+      || (!hollowShell && (g.builder === "REVOLVE" || g.builder === "EXTRUDE_2D")))) {
+      errors.push({ field_path: `${at}.builder`, error_code: "HOOP_AS_SOLID",
+        required_fix: `${label} 후프(빈 링)인데 ${g.builder}는 속이 찬 덩어리를 만듭니다. `
+          + `단면이 둥근 링이면 TORUS로 바꾸십시오 — plane 법선 방향 치수가 로드 지름, `
+          + `나머지 둘이 링 바깥지름입니다(수평 링이면 plane TOP, w·d에 바깥지름, h에 로드 지름 8~14). `
+          + `단면이 각지거나 띠 모양이면 TUBE + corner_radius_mm에 벽 두께(mm)를 쓰십시오. `
+          + `케이지처럼 링 여러 개가 교차한 것은 링마다 별도 파트로 두고 plane으로 방향을 주십시오 `
+          + `— 적도 링 plane TOP, 좌우 링 plane SIDE, 앞뒤 링 plane FRONT, 셋 다 같은 center_mm입니다. `
+          + `(repeat CIRCULAR은 사본을 radius_mm만큼 바깥으로 밀어내므로 동심 링에는 쓸 수 없습니다.) `
+          + `통짜로 그리면 프로펠러를 삼킨 양동이가 되고 프린트 질량의 대부분이 그 벽이 됩니다.` });
+      continue;
+    }
+
+    if (g.builder === "TUBE") {
+      const len = axisLen(g), dia = crossDia(g);
+      /* 2. A plate written as a tube. relay-hexa's 284 x 15 x 284 deck split
+         line: the wall rule then hollows out the middle of a lid. Geometry
+         catches the ones whose name does not say "plate". */
+      if (PLATE_NAME.test(n) || (dia > 0 && len > 0 && len < dia * 0.12)) {
+        errors.push({ field_path: `${at}.builder`, error_code: "PLATE_AS_TUBE",
+          required_fix: `${label} 두께 ${len || "?"}mm에 지름 ${dia || "?"}mm인 판인데 TUBE는 관을 만듭니다 `
+            + `— 가운데가 뚫린 링이 됩니다. 원형 판이면 CYLINDER(plane TOP, h가 두께), `
+            + `사각 판이면 BOX, 윤곽이 있으면 plane TOP의 EXTRUDE_2D로 바꾸십시오. `
+            + `구멍이 정말 있어야 한다면 그 사실을 이름에 쓰고 corner_radius_mm에 링 폭을 적으십시오.` });
+        continue;
+      }
+      /* 3. A tube with no wall stated. The default is 28% of the radius, which
+         is a sane carbon arm and an absurd guard, and the specification is the
+         only place that knows which one this is. */
+      if (!(Number(g.corner_radius_mm) > 0) && (isHoop || dia >= 120)) {
+        errors.push({ field_path: `${at}.corner_radius_mm`, error_code: "TUBE_WALL_UNSPECIFIED",
+          required_fix: `${label} 지름 ${dia.toFixed(0)}mm TUBE인데 벽 두께가 없습니다. `
+            + `기본값은 반경의 28% — 벽 ${(dia * 0.14).toFixed(0)}mm짜리 양동이가 됩니다. `
+            + `corner_radius_mm에 벽 두께를 mm로 쓰십시오(TUBE에서 이 필드는 모서리가 아니라 벽입니다. `
+            + `카본 암 1.5~3, 가드·스커트 3~8). 단면이 둥근 후프라면 TORUS가 더 맞습니다.` });
+        continue;
+      }
+    }
+
+    /* 4. The name says tube, the builder says solid bar. Same outline, and
+       everything inside it is filament that no one asked for. */
+    if (TUBE_NAME.test(n) && g.builder === "CYLINDER") {
+      errors.push({ field_path: `${at}.builder`, error_code: "TUBE_AS_SOLID_CYLINDER",
+        required_fix: `${label} 이름이 관인데 CYLINDER는 속이 찬 봉을 만듭니다. `
+          + `builder를 TUBE로 바꾸고 corner_radius_mm에 벽 두께(카본 튜브는 1.5~3mm)를 쓰십시오. `
+          + `size_mm·plane·center_mm은 그대로 두면 됩니다 — 바깥 지름과 축 규약이 같습니다.` });
+      continue;
+    }
+
+    /* 5. A sphere stretched twice its width is not a sphere; it is a nose, a
+       fairing or a pod, and those are turned or lofted. */
+    if (g.builder === "SPHERE") {
+      const s = g.size_mm || {};
+      const v = [Number(s.w) || 0, Number(s.h) || 0, Number(s.d) || 0];
+      const lo = Math.min(...v), hi = Math.max(...v);
+      if (lo > 0 && hi / lo >= 2) {
+        errors.push({ field_path: `${at}.builder`, error_code: "SPHERE_NOT_SPHERICAL",
+          required_fix: `${label} ${v.join("×")}mm — 한 축이 다른 축의 ${(hi / lo).toFixed(1)}배라 구가 아닙니다. `
+            + `SPHERE를 늘이면 곡률이 균일한 타원체가 되어 노즈·페어링의 어깨선이 사라집니다. `
+            + `축대칭이면 REVOLVE(outer_profile에 [반경, 높이] 6점 이상)로, `
+            + `단면이 변하는 몸체면 LOFT로 바꾸십시오.` });
+      }
+    }
+  }
+  return errors;
+}

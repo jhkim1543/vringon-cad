@@ -853,9 +853,9 @@
         "builder": "CYLINDER",
         "plane": "TOP",
         "size_mm": {
-          "w": 93,
+          "w": 100,
           "h": 6,
-          "d": 113
+          "d": 100
         },
         "center_mm": {
           "x": 0,

@@ -13,7 +13,7 @@
    canopy's measured loft at battery size, a gimbal as one bare sphere, and no
    choice of component changed anything but numbers.
    ========================================================================== */
-import { loftAxis } from "./mesh-loft.js?v=832e871a";
+import { loftAxis } from "./mesh-loft.js?v=2d99286f";
 
 /* ------------------------------------------------------------------ shapes
    A form is a stack of cross-sections along the part's loft axis. Both `w` and

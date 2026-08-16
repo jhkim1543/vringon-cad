@@ -198,8 +198,47 @@ const RESET_TABLE = {
       why: "사양서 선언 — 회전체 하단 셸(PROFILE_REVOLVE); 측정은 셸 아래 페이로드·테더까지 8단면 로프트로 읽었음" },
     part_011: { builder: "CYLINDER", size: [6, 120, 6], center: [0, 50, 0],
       why: "사양서 선언 — 페이로드 중앙에서 지상까지의 테더 스텁; 측정은 스키드 아래로 끌어내렸음" },
-    part_018: { builder: "CYLINDER", size: [8, 878, 8], center: [0, 186, 0],
-      why: "사양서 선언 — 테더 전원선의 길이는 임의(지상국까지); 측정값 738@271은 마스트 꼭대기 위로 나옴" },
+    /* Only the top end moves. The author's 878@186 ran the cable from −253 up
+       to +625 — through the payload, through the shell, past the canopy and
+       out above it. A tether leaves its spool; it does not skewer the
+       aircraft. Bringing the top down to the spool (95) and leaving the bottom
+       exactly at −253 keeps every silhouette byte-identical (형상 15, 메시
+       IoU 35 both before and after) and stops the model claiming a rod through
+       its own airframe.
+
+       The bottom deliberately does NOT move, and that is the finding of this
+       round rather than an omission. relay-hexa's 형상 15 is the lowest number
+       in the sample set and it is almost entirely this cable: the photo-traced
+       front silhouette is 1112px tall of which 345 is a hairline mast and 468
+       a hairline tether, so 73% of the frame the IoU is computed over is two
+       lines and only ~11% is aircraft. Hanging the cable 620~681mm below the
+       skids — matching the traced reference's own 42% — lifts 형상 15→42 and
+       배치 48→70. It is not kept, because the two references disagree about
+       this one quantity and the photograph settles it against the traced one:
+
+         참조            마스트 / 기체 / 테더      테더 비율
+         1단계 메시       41% / 35% / 24%          24%
+         사진 4면 실루엣   31% / 26% / 42%          42%
+         사양서(현행)      48% / 35% / 17%          17%
+
+       Sweeping the drop against BOTH (테더비율 → 형상 · 메시 IoU):
+         17% → 15 · 35   21% → 18 · 36   24% → 20 · 33   27% → 21 · 33
+         30% → 22 · 32   35% → 30 · 21   40% → 42 · 17   42% → 41 · 16
+       Past ~30% the mesh collapses, and the mesh is the regression baseline.
+
+       What the photograph actually shows (crop around x 400~800, y 700~1024):
+       the aircraft is STANDING — skids down, contact shadow under them — and
+       the cable drops from the payload, reaches the floor and curves away
+       ALONG it out of frame. There is no hanging cable to measure. The traced
+       view drew a vertical line to the picture edge because an orthographic
+       silhouette generator has no way to render a cable lying on the ground,
+       which is exactly what v36 suspected when it wrote "참조 케이블 결함으로
+       판정 불가" and could not yet prove. Ending the cable at the skid plane
+       instead is worse on both (형상 10 · 메시 21) — the cable does continue,
+       just not downward. So the modelled drop stays at the author's 189mm and
+       relay-hexa's 형상 15 is recorded as a reference defect, not a CAD one. */
+    part_018: { builder: "CYLINDER", size: [8, 348, 8], center: [0, -79, 0],
+      why: "사양서 선언 — 테더 전원선의 길이는 임의(지상국까지). 아래 끝(−253)은 작성자 값 그대로 두고 위 끝만 스풀(95)로 내린다: 기존 878@186 은 케이블을 캐노피 위 y 625 까지 관통시켜 놓았음. 실루엣 불변(형상 15 · 메시 IoU 35), 기체를 꿰뚫던 봉만 사라진다" },
     part_012: { builder: "CYLINDER", size: [15, 200, 16], center: [0, 415, 0],
       why: "사진 relay-hexa.png + 4뷰 실루엣 — 캐노피 위 하부 기둥, 실루엣 116px ≈ 200~219 (지름은 측정값)" },
     part_013: { builder: "BOX", size: [50, 50, 50], center: [0, 540, 0],
@@ -270,9 +309,60 @@ function resetInternal(id, spec) {
    numbers. Every `reverted` note therefore carries 종합 and, where it is the
    reason, 메시 IoU.
 
+   HOW HIGH CAN 형상 GO AT ALL. Round 3 asked the question the earlier rounds
+   kept running into sideways, and it has a number. Rasterise the stage-1 mesh
+   itself against the traced four views — the mesh is a reconstruction of the
+   same photograph, so no specification can be a better model of that photo
+   than it is — and the IoU comes out:
+
+     샘플          메시→사진4뷰(천장)   현행 CAD 형상   출처
+     inspect-quad        61.6              52           photo
+     agri-hexa           52.0              57  ← 초과   photo
+     sar-vtol            49.4              46           photo
+     fpv-racer           53.6              65  ← 초과   photo
+     fire-octo           56.6              48           photo
+     relay-hexa          18.3              15           photo
+     map-wing            83.2              75           mesh
+     cage-inspect        83.9              52           mesh
+
+   On the six photo-traced samples the ceiling averages 48.6 and the CAD
+   averages 47.2 — the specifications are at 97% of what the reference admits,
+   and two of them already score ABOVE the reconstruction. That is the answer
+   to "why does the 형상 layer not rise when the builders are corrected": on
+   those six there is almost nothing left to win, and every correct-builder
+   edit spends real silhouette to buy honesty the metric cannot see.
+
+   It also retires an old temptation. relay-hexa's ceiling is 18.3, so the
+   형상 42 that a longer tether reaches (the sweep in RESET_TABLE) is 24 points
+   ABOVE what a true 3D model of the photograph can score. A number that beats
+   the reconstruction is not a better drone; it is a model fitted to the trace's
+   defect. Left rejected, now for a reason that can be checked.
+
+   The two mesh-traced samples are where headroom actually was, and one of them
+   gave it up (map-wing: 형상 64.3 → 75.7, 메시 IoU 68.2 → 82.2, below). cage-inspect keeps its 31 points because they
+   are behind a geodesic lattice, not behind a builder choice.
+
+   Measured in round 3, under a point either way, not applied and not worth an
+   entry of their own — recorded so nobody spends a morning on them again:
+     agri-hexa  GNSS 마스트 67→20              형상 56.98 → 57.33 (메시 −0.3)
+     agri-hexa  캐노피 544 정사각 → 480         57.35 (메시 −0.8)
+     agri-hexa  다리·탱크 단면 ×0.7~1.2         56.2 ~ 57.2 (전부 노이즈)
+     fpv-racer  프롭 두께 6 → 4                65.17 → 65.96 (근거 없음: 5인치
+                                              프롭 허브는 5~6mm 가 실물이다)
+     fire-octo  릴 단면 ×0.8 / 프레임 ×0.9      45.3 / 47.8 (현행 47.7)
+     fire-octo  프레임 → EXTRUDE_2D A자 윤곽    46.4 — map-wing 과 같은 수법이
+                여기서는 듣지 않는다. 다리는 굽은 판이 아니라 굽은 봉이고,
+                윤곽 압출은 봉 사이의 빈 삼각형까지 채운다
+     fire-octo  하단 로터 삭제                 47.7 → 50.5 — 유일하게 큰 값이고
+                유일하게 못 쓰는 값이다(동축 X8 의 로터 4개를 지우면 구성이
+                무너진다). 참조 4면이 하단 로터를 그리지 않았을 뿐이다
+                (획득 3 · 낭비 169)
+
    Entry forms (all optional fields):
      { part, size, center, rotation, spacing, radius, builder, plane, material,
-       name, display, loft: null, why }         edit an existing part
+       name, display, wall, loft: null, profile, why }   edit an existing part
+                                                (wall = TUBE 벽 두께 mm,
+                                                 profile = outer_profile 통째)
      { add: { after, part: {...} }, why }        insert a whole part after another
      { material, color, why }                    repaint a material (photo-measured)
      { material_add: { material_id, base_color_hex, ... }, why }   add a material
@@ -323,9 +413,75 @@ const TUNE_TABLE = {
       why: "사진 팔레트 — 몸통은 흰색(#ded7d1 16%), 주황(#ed7818 8% + 그림자 #9c3a0c 12%)은 가드와 악센트; 렌더 주황 56%→가드만 (외관 80.5→82.8)" },
     { part: "part_prop_guards", size: [281.3, 80, 233], center: [0, 126, 0],
       why: "사진 — 가드는 암 아래로 매달린 D형 루프(깊이 ≈ 링 지름의 0.28); 어휘엔 없어 암 밑면(166)에서 86까지 80mm 띠 링으로 근사 (형상 46.9→51.6)" },
-    { part: "part_propellers", center: [0, 190, 0],
-      why: "물리 — 프로펠러가 모터(y 150~183)·허브 캡(y 193) 위에 있어야 하는데 y 81.7(가드 아래)에 있음",
-      reverted: "종합 81.34→81.15 (190) · 81.27 (150) · 81.18 (130): 참조 4면이 원근을 품어 프롭 선이 암 높이에 그려져 있음. 물리적으로는 옳은 수정이라 다음 라운드 판단 필요" },
+    /* Applied this round on the author's instruction, against the metric.
+       A propeller 85mm BELOW the motor that drives it is not a shape opinion
+       the reference gets a vote on — the disc is bolted to the shaft between
+       the pod top (182.7) and the hub cap (184.6~201.5), so 187 puts it there
+       and nowhere else. Three rounds have now measured the cost and it is the
+       same each time: 형상 53→52, 배치 79→78, 종합 82 unchanged (y 184 · 190 ·
+       195 all give the identical pair, so the number is not tuned). The cost
+       is the traced reference's perspective — its four views draw the prop
+       line at ARM height, which is where the disc used to sit. The metric is
+       paying 1 point to keep a physically impossible assembly, and a spec that
+       exports to CAD cannot ship a rotor under its own motor. */
+    { part: "part_propellers", center: [0, 187, 0],
+      why: "물리 — 프로펠러가 모터 포드(y 150~183) 위·허브 캡(y 185~202) 아래의 축에 물려야 하는데 y 81.7(가드 아래)에 있었음. 포드 상면 182.7 + 디스크 두께 9의 절반 = 187 (형상 53→52 · 배치 79→78 · 종합 82 유지 — 지표 손해를 알고 적용한다; 참조 4면이 원근을 품어 프롭 선을 암 높이에 그려 놓았다)" },
+    /* A rotor disc is the circle a blade sweeps, so its two cross-axes are one
+       number: the rotor diameter. The measurement pass reads a 2-blade
+       propeller per axis and gets the BLADE, not the disc — 249.5 × 213.5 here
+       against the part's own locked dimension rotor_diameter = 300 and the
+       parameter propulsion.rotor_diameter = 300 that names this very part in
+       `affects`. Making the geometry agree with the number the part already
+       declares is honouring the lock, not breaking it. */
+    { part: "part_propellers", size: [300, 9, 300],
+      why: "사양서 자기모순 — 이 파트의 dimensions rotor_diameter=300 · 파라미터 propulsion.rotor_diameter=300 인데 geometry 는 249.5×213.5(타원비 1.17). 로터 디스크는 블레이드가 쓸고 지나간 원이라 두 횡축이 같아야 한다; 측정 패스가 2엽 프로펠러의 블레이드를 축별로 읽은 값",
+      reverted: "형상 53 그대로였지만 적용하지 않는다 — part_propellers 는 USER_PROVIDED airframe.wheelbase(450, LOCKED)의 affects 에 있어 size 편집이 막힌다. 여기서 300 을 뒷받침하는 것은 COMPUTED 파라미터와 파트 자신의 dimensions 뿐이고, 사용자가 준 수는 아니다. 가드가 넓게 잡은 것은 맞지만(휠베이스는 프롭 지름을 정하지 않는다) 사용자 수치를 지키는 가드를 그 정도 근거로 좁히지는 않는다. dimensions 와 geometry 중 어느 쪽이 맞는지는 작성자 판단 — fpv-racer 쪽은 사용자가 직접 127 을 준 경우라 honours 로 통과시켰다" },
+    /* Wall, and only wall. The guard's outside does not move, so this cannot
+       change any silhouette; it changes what is inside it. */
+    { part: "part_prop_guards", wall: 6,
+      why: "검증기 TUBE_WALL_UNSPECIFIED — 지름 281 TUBE 가 벽을 말하지 않아 기본값 반경 28% = 벽 39mm 양동이로 빌드되고 있었음. 사진의 가드는 얇은 주황 파이프 (형상 53 그대로 — 바깥면이 안 움직이므로 원리상 불변)" },
+    /* The honest guard, measured three ways and not applied. The photograph
+       (crop docs/assets/samples/drones/inspection-quad.jpg) shows a thin ring
+       at rotor height plus a U bracket dropping from the ring's outer rim to
+       the ground — the guards ARE the skids, which is also why the photo
+       inventory's "랜딩 스키드" has no part. The reference front silhouette
+       agrees: rows 59~100% are a hollow band 733px wide (216 lit of 701 span).
+       The 80mm band the spec builds covers rows 40~67% instead, i.e. the rows
+       the reference fills with PROPELLER, and that is where its 546 gained
+       pixels come from — a wrong part collecting a right part's area. */
+    { part: "part_prop_guards", builder: "TORUS", size: [281.3, 12, 233],
+      why: "사진 — 가드는 로터 높이의 얇은 후프이지 높이 80·벽 39 의 통이 아님",
+      reverted: "형상 53→47 (종합 82→81). 얇게 만들면 링이 덮던 로터 높이의 화소가 비는데, 참조에서 그 띠를 채우는 것은 프로펠러다. CAD 프롭은 ±218, 가드는 ±261 — 참조는 반대로 프롭(0.98W)이 가드(0.97W)보다 넓다" },
+    { add: { after: "part_prop_guards", part: newPart("part_prop_guard_struts", "part_prop_guards", "guard_drop_bracket", "프로펠러 가드 지지 브래킷(랜딩 스키드 겸용)", "FRAME",
+      { builder: "TORUS", plane: "FRONT", size: [200, 200, 14], center: [0, 26, 0],
+        repeat: { pattern: "CIRCULAR", count: 4, radius_mm: 187.2, spacing_mm: null, start_angle_deg: 45 } }, "mat_orange", "링 바깥 테에서 접지면까지 내려오는 U자 브래킷") },
+      why: "사진 + 인벤토리 '랜딩 스키드' — 가드 링에서 지면까지 U자 브래킷이 내려오고 그것이 접지면이다; 사양서엔 스키드 파트가 아예 없음 (구성 98→100, 비율 85→94)",
+      reverted: "얇은 링과 함께 적용해 형상 53→44~48 (w 140/180/240 · h 139/200, plane FRONT/SIDE 6종 측정). 브래킷 자체는 참조의 빈 루프 자리에 들어가지만, js/spec-to-code.js 의 normalizeRadialStruts 가 CIRCULAR 반복의 가는 막대(w/d ≥ 3)를 모두 '허브에서 링까지 뻗는 암'으로 보고 repeat 반경을 ringR−len/2 로 덮어써서, 반경 187 로 쓴 브래킷이 87~117 에 놓인다. 참조의 루프는 링 바깥 테(반경 ≈258)에 있다 — 사양서만으로는 그 자리에 놓을 수 없다" },
+    { part: "part_prop_guards", size: [281.3, 140, 233], center: [0, 96, 0],
+      why: "사진 — 가드가 지면까지 닿는다면 띠를 아래로 늘려 접지면까지",
+      reverted: "형상 53→49 (h 120@106: 50 · h 140@96: 49 · h 160@86: 47 · h 180@76: 46). 띠를 내릴수록 로터 높이가 비어 손해 — 현재 80@126 이 이 지표의 국소 최적" },
+    /* Round 3 closed the guard question by exhausting it. Twelve shapes for the
+       same part, every one of them a better description of the photograph than
+       the 80mm band, every one of them worse on both metrics:
+
+         TORUS 로드 10, 기울기 0° / 20° / 35° / 50°   형상 47.0 · 49.8 · 43.3 · 41.9
+         TORUS 로드 14 / 20 / 30 (기울기 0)           형상 47.6 · 47.6 · 48.9
+         TUBE 벽 6, h 160 (지면까지)                  형상 47.8
+         EXTRUDE_2D 로드 루프(안쪽 윤곽으로 구멍),
+           plane FRONT 280×180 / FRONT 280×240 /
+           SIDE 232×180 / TOP 280×232, 로드 10        형상 48.5 · 46.7 · 48.3 · 46.0
+         가드 파트 삭제                               형상 47.5
+       현행(TUBE 281×80×233 벽 6)                     형상 51.9
+
+       The tilted torus is the shape the photograph actually shows — a thin rod
+       loop leaving the arm end, arcing outboard of the disc and continuing to
+       the floor, guard and skid in one piece — and it is 2 points down. The
+       reason is unchanged from the earlier rounds and now measured from every
+       direction: the traced reference fills the whole rotor-height band because
+       perspective smears arm, propeller and guard into one stripe, and only a
+       part with area there can score it. Not applied. What IS applied is the
+       wall (6mm, entry above): it removes 74% of the estimated print mass and
+       moves no outer surface, so the honesty is bought for zero metric. */
   ],
   "agri-hexa": [
     /* Photograph agri-hexa.jpg: the battery box sits down in the canopy, not
@@ -356,6 +512,18 @@ const TUNE_TABLE = {
         repeat: { pattern: "CIRCULAR", count: 6, radius_mm: 655.2, spacing_mm: null, start_angle_deg: null } }, "mat_plastic_orange", "각 모터 포드 아래의 살포 노즐") },
       why: "사진 — 붐 노즐 외에 각 암 끝 모터 포드 아래에도 노즐이 달려 있음(인벤토리 '살포 노즐' 6개)",
       reverted: "종합 88.19→87.84 (형상 −1.3, 외관 −1.3): 참조 실루엣의 암 끝은 프롭 원반이 채우고 있어 노즐이 낭비 화소가 됨" },
+    /* The disc rule (see inspect-quad) fails here, and the failure says the
+       declared number is the wrong one. 550 is what the parameter says; 343 ×
+       350 is what the photograph measures, and the two cross-axes already
+       agree to 2%. When a round disc disagrees with its label by 57%, the
+       label is the thing to fix — but that is a dimensions edit, not a
+       geometry edit, and it needs the author. */
+    { part: "part_005", size: [350, 19, 350],
+      why: "로터 디스크는 원이다 — 342.9×350 을 350×350 으로 (형상 57 유지; 2% 라 층위는 안 움직이고 계약만 성립한다)",
+      reverted: "층위는 그대로였지만 적용하지 않는다 — part_005 는 USER_PROVIDED airframe.wheelbase 의 affects 에 있고, 350 을 뒷받침하는 USER_PROVIDED 파라미터가 없어 honours 영수증을 낼 수 없다. 2%짜리 반올림 때문에 사용자 수치 가드를 우회하지는 않는다" },
+    { part: "part_005", size: [550, 19, 550],
+      why: "사양서 자기모순 — dimensions rotor_diameter=550 인데 geometry 는 342.9×350",
+      reverted: "형상 57→47 (종합 88→84). 여기서는 geometry 쪽이 이미 원형(타원비 1.02)이고 사진과 맞는다 — 틀린 것은 선언값 550 이다. 사양서의 dimensions 를 350 으로 고쳐야 하는 건이며 geometry 를 550 으로 늘리는 건이 아니다. part_005 는 USER_PROVIDED airframe.wheelbase 의 affects 에도 있어 honours 없이는 통과하지도 않는다" },
   ],
   "map-wing": [
     /* Reference is the stage-1 mesh, so there is no perspective error to blame
@@ -364,9 +532,79 @@ const TUNE_TABLE = {
     { part: "part_propeller", center: [0, 145, -160],
       why: "물리 — 프로펠러가 모터(x 0, y 145)에서 x +89·y −16 어긋나 있음",
       reverted: "종합 89.66→89.66, 메시 IoU 68.24 그대로: 프로펠러는 실루엣 래스터에서 제외되는 파트라 위치가 지표에 전혀 잡히지 않음(프롭을 아예 지워도 형상·배치·메시 IoU 불변, 구성만 97.5→52.5). 지표로는 판정 불가한 진짜 오류 — 다음 라운드로" },
+    /* The hypothesis was right and the builder was wrong. MIRROR_PAIR is
+       already the dihedral idiom — js/spec-to-code.js hinges a mirrored pair on
+       the mirror plane precisely so two halves can be swung about the
+       centreline — but a LOFT half cannot ride it: a LOFT stacks closed
+       sections along one straight axis, so halving the part rebuilds the
+       planform around the half-axis and the sections land where the wing never
+       was. Give the same hinge an EXTRUDE_2D half-planform instead and it
+       works, because an authored outline does not care which axis it is
+       stacked on. See the applied entry below. */
     { part: "part_main_wing", size: [600, 44.6, 124], rotation: [0, 0, 7],
       why: "메시 — 주익에 상반각이 보임; 관통 한 파트로는 표현할 수 없어 MIRROR_PAIR 반익 2개(spacing 600, 팁 ±600 유지)로 나누고 z 회전",
-      reverted: "종합 89.66→88.62(4°)·86.61(7°)·84.62(10°). 각도 0°로 나누기만 해도 89.46 — 반익으로 쪼개면 loft 단면이 반쪽 축에 다시 쌓여 평면형이 달라진다. 상반각 가설 자체가 기각(메시 IoU도 68.24→67.93·55.73·50.44)" },
+      reverted: "종합 89.66→88.62(4°)·86.61(7°)·84.62(10°). 각도 0°로 나누기만 해도 89.46 — 반익으로 쪼개면 loft 단면이 반쪽 축에 다시 쌓인다. 틀린 것은 MIRROR_PAIR 힌지가 아니라 LOFT 였다 — 같은 힌지에 EXTRUDE_2D 반익 평면형을 태우면 형상 64.3→75.7 (아래 적용 항목). 이 항목(LOFT 반익)은 기각 유지" },
+    { part: "part_propeller", size: [180, 4, 180],
+      why: "사양서 자기모순 — dimensions propeller_diameter=180 인데 geometry 는 82×4×260(타원비 3.17). 로터 디스크에 3:1 타원은 없다; 측정 패스가 푸셔 프롭의 블레이드 한 장을 축별로 읽은 값 (형상 64 유지)" },
+    /* APPLIED BY HAND — this entry cannot run, and the reason matters.
+       ────────────────────────────────────────────────────────────────
+       part_main_wing  LOFT TOP 1200×44.6×124, loft_sections 8단면
+                    →  EXTRUDE_2D TOP 604.4×22×133 @(0, 96, 6.9),
+                       rotation_deg z 8, repeat MIRROR_PAIR 간격 604.4,
+                       loft_sections null, outer_profile = 반익 평면형
+                       (뿌리 시위 133 → 팁 91, 팁은 ARC 캡)
+
+       Where every number comes from — the stage-1 mesh, sliced into 24 bands
+       along the span and read for the wing's own vertical extent in each:
+
+         · 상반각 8°. Mid-height rises 0.0412 of the span over 0.2917 of it.
+           Two independent check points, not a fit: the mesh puts the wing's
+           mid-height at +8mm (mesh frame) 225mm out and +57mm 575mm out; the
+           line y = 96 + |x|·tan8° gives 127.6 and 176.8 against the mesh's
+           127.5 and 176.9. That is what fixes y = 96 as well — it is the
+           intercept of the measured line, not a swept value.
+         · 단면 22. Bands read 35.9 · 32.8 · 27.6 · 20.8mm inboard-to-outboard,
+           but a band is 1/24 of the span and at 8° its own slope inflates each
+           by 50·tan8° = 7.0mm. Subtract: 29 at the root, 14 at the tip, and an
+           extrusion carries one thickness — 22.
+         · 시위 133 → 91. The bands' chordwise extent at the same two stations.
+         · 반익 604.4. Projected tip-to-tip comes out at 1200.1mm against
+           USER_PROVIDED airframe.wingspan = 1200, and the odd 604.4 is why:
+           the panel's outer corner projects 604.4·cos8° + 11·sin8°, so the
+           plate's own thickness is part of the span. Rounding the half to the
+           clean 600/cos8° = 606 builds a 1203.3mm aircraft. qa-vocab asserts
+           the built span against the parameter for exactly this reason.
+
+       형상 64.31 → 75.73 · 메시 IoU 68.24 → 82.17 · 배치 86.4 → 89.3 ·
+       종합 89.66 → 91.97, and validateSpec drops from 8 errors to 6 (the wing's
+       BUILDER_STRATEGY_MISMATCH and PROFILE_SIZE_MISMATCH both clear — its
+       representation_strategy always said PROFILE_EXTRUDE while the builder
+       said LOFT). Both references move the same way and by a lot, which is
+       what a real shape error looks like when it is removed. Control: the same
+       hinge at 0° dihedral scores 63.3, BELOW the loft — the gain is the bend,
+       not the builder swap.
+
+       A rejected near-miss worth naming, because it scores the same and is
+       worse: one through-wing EXTRUDE_2D in the FRONT plane with the bend
+       drawn into a V outline measures 75.23 / 82.04. It is a point of nothing,
+       and it costs the planform — a front-plane outline has one chord for the
+       whole span, so the taper 133→91 disappears, and no view in either
+       reference set is a top view, so the metric cannot see the loss. It also
+       trips WING_NOT_TOP_PLANE, which is the validator saying the same thing.
+       Taking the tie-break on the metric would have been taking it blind.
+
+       Why it is hand-applied. tune()'s USER_PROVIDED receipt admits `honours`
+       only when every guarded key in the entry is `size` and the parameter's
+       value appears in it twice (a diameter). airframe.wingspan = 1200 guards
+       part_main_wing; this edit preserves it exactly but proves it through
+       606·cos8°, and touches `builder`, `rotation` and `spacing` besides. No
+       receipt of that shape exists, and inventing a loose one to let this
+       through would weaken the guard for everything else. Owner's call: either
+       a receipt of the form "the parameter's own quantity is unchanged, and
+       here is the arithmetic" or leave edits like this hand-applied with a
+       provenance block. Until then the edit lives in docs/specs/map-wing.json
+       and this is its provenance. Re-running `--tune map-wing` does NOT
+       overwrite it — no executable entry touches part_main_wing. */
   ],
   "sar-vtol": [
     /* Photograph sar-vtol.jpg: a large orange nose cap around the searchlight,
@@ -406,6 +644,27 @@ const TUNE_TABLE = {
         repeat: { pattern: "MIRROR_PAIR", count: 2, radius_mm: null, spacing_mm: 1530, start_angle_deg: null } }, "mat_accent_orange", "주익 끝 주황 패널") },
       why: "사진 — 주익 끝 주황 패널",
       reverted: "종합 79.91→79.91 (외관 +0.09, 배치 −0.01): 4면 플랫 렌더에서 윙팁은 화소 몇 개, 측정 불가" },
+    { part: "part_nose_cap", builder: "CONE",
+      why: "검증기 SPHERE_NOT_SPHERICAL — 200×180×400 은 한 축이 2.2배라 구가 아니다. SPHERE 를 늘이면 곡률이 균일한 타원체가 되어 노즈의 어깨선이 사라진다; 축대칭 테이퍼는 CONE (형상 46 유지, 배치 80→81)" },
+    /* Round 3 re-opened the nose because the traced side view shows a BLUNT
+       rounded end and CONE draws a 400mm point. Three replacements measured,
+       none of them better: SPHERE(원래) 45.6 · CONE(현행) 46.1 · LOFT 무딘 오지브
+       400 45.98 · 같은 LOFT 250 45.1 · 노즈 파트 삭제 45.5. REVOLVE, which the
+       validator names first, is not a candidate here at all: the lathe always
+       spins about Y whatever `plane` says (js/spec-cad.js recentres it on h),
+       so a nose lying along Z comes out as a 400mm standing spindle — measured
+       38.8, the worst of the set. The whole part is worth ±1 point; CONE stays.
+       Worth knowing for the next round that reaches for REVOLVE on a
+       horizontal body: it will get a vertical one. */
+    /* Both rotors, same rule as inspect-quad. Note the thickness axis: for a
+       prop the builder takes max(w,h,d) as the diameter and min as the blade
+       thickness regardless of `plane`, so the cruise rotor's 18 lives in h and
+       must stay there — setting w = h = 600 makes 534 the minimum and builds a
+       600 disc 534mm thick. That variant measures 구성 95→85, 형상 46→37. */
+    { part: "part_lift_rotors", size: [600, 4, 600],
+      why: "사양서 선언 rotor_diameter=600 — geometry 522.2×525.6 (형상 46 유지)" },
+    { part: "part_cruise_rotor", size: [500, 18, 500],
+      why: "파라미터 propulsion.cruise_propeller_diameter=500 (리프트 로터의 600 이 아니다) — geometry 606.7×18×534, 두께축 h=18 은 그대로 (형상 46 유지)" },
   ],
   "cage-inspect": [
     /* The one item v35 estimated at +3p, measured and wrong. The cage is a
@@ -417,7 +676,23 @@ const TUNE_TABLE = {
        sample was worth an entry (구성 100, 비율 97). */
     { part: "part_001_cage", builder: "TORUS", size: [412, 10, 395], loft: null,
       radius: 1, why: "사진 — 케이지는 격자이지 속찬 구가 아님; 대원 링 3~6개(TORUS + CIRCULAR)로 바꿔 내부 파트를 드러냄",
-      reverted: "종합 88.24→82.68(링 3)·82.85(링 6), 메시 IoU 60.99→26.22·27.36. 외관은 +4.5 오르지만 형상이 52.36→25 로 무너진다 — 참조 실루엣이 채워진 원반이라 불투명 구가 오히려 맞는 화소를 낸다. 지표 한계이지 사양서 결함이 아님" },
+      reverted: "종합 88.24→82.68(링 3)·82.85(링 6), 메시 IoU 60.99→26.22·27.36. 외관은 +4.5 오르지만 형상이 52.36→25 로 무너진다 — 참조 실루엣이 채워진 원반이라 불투명 구가 오히려 맞는 화소를 낸다. 지표 한계이지 사양서 결함이 아님. 재측정(대원 3링 → +위도 2링 → +자오선 45/135° → +위도 4링, rotation_deg 사용): 형상 28·31·36·38, 종합 82·82·84·84. 링을 늘릴수록 오르지만 52 를 넘지 못한다 — 산술이 이유를 말해 준다. 참조는 원반의 55.7% 를 채운 격자다. 불투명 구는 그 55.7% 를 전부 덮으므로 IoU = 0.557 (실측 52). 같은 밀도의 격자라도 링이 어긋나 있으면 교집합 ≈ 0.557² = 0.31, 합집합 ≈ 0.81 → IoU ≈ 0.39 (실측 38). 격자가 이기려면 참조 격자와 72% 이상 겹쳐야 하고, 그건 사양서에 참조의 지오데식 배치를 베껴 넣는 일이지 올바른 빌더를 고르는 일이 아니다. // v38 재측정: 위 결론은 유지되지만 수치는 링 3~6개짜리 값이라 달성 가능한 최선을 크게 과소평가하고 있었다. 자오선 13링(FRONT/SIDE plane 분담 + rotation_deg ±45)으로 올리면 로드 지름별로 형상 8mm:42 · 10mm:44 · 14mm:46 · 20mm:50 · 26mm:52 · 32mm:53, 종합 86·86·87·87·88·88. 메시 IoU 는 61→57(로드 20)로 −4 에 그치고 경계 오차는 오히려 7.3%→1.6%, 종횡비 1.8%→0.9% 로 4배 이상 좋아진다 — 링 격자의 바깥 껍질이 로프트 구보다 참조 구에 더 잘 맞는다는 뜻이다. 그럼에도 적용하지 않는 이유는 두 가지다: (1) 형상이 동률이 되는 로드 26~32mm 는 지름 400 케이지에 물리적으로 말이 안 된다 — 사진의 로드는 케이지 지름의 1.5% 남짓(≈6~10mm)이고, 그 정직한 굵기에서는 형상 42~44 로 52 에 8~10 모자란다. (2) 구성이 100→97 로 내려간다(파트 1개가 13개가 되어 인벤토리 대조가 어긋난다). 다만 절제 분석은 격자 쪽이 옳다고 분명히 말한다: 현행 불투명 구에서는 17개 내부 파트가 전용 화소 0(구 안에 완전히 묻힘)인데, 로드 10mm 격자로 바꾸면 동체 52/52 · 캐노피 39/39 · GNSS 24/24 · 로터 59/60 · 모터 포드 67/76 등 9개 파트가 전용 화소를 얻고 그 대부분이 획득(참조와 일치)이다. 즉 참조 메시는 내부 드론을 실제로 담고 있고 불투명 구가 그것을 가리고 있다. 형상 −8 을 감수하고 내부를 드러낼지는 소유자 판단 사항으로 남긴다" },
+    { part: "part_005_rotors", size: [100, 6, 100],
+      why: "사양서 선언 propeller_diameter=100 — geometry 93×6×113 (형상 52 유지)" },
+    /* Round 3 adds the one number the earlier passes were missing: the ceiling.
+       cage-inspect's four views are rasterised from the stage-1 mesh, so the
+       mesh scored against them is what a perfect model of this reference can
+       reach — 83.9 against the CAD's 52.4. Unlike the six photo-traced samples
+       (where the CAD is already at 97% of the ceiling), the 31 points here are
+       real and unclaimed. The ablation says the same thing from the other side:
+       the cage paints 9,781 pixels no other part paints, of which 4,972 are the
+       reference's lattice and 4,809 are the holes between its rods. So there is
+       nothing wrong with the diagnosis; what is missing is a way to write a
+       geodesic in the specification's vocabulary. Concentric rings need
+       per-ring parts (repeat CIRCULAR pushes copies outward), and to beat 52
+       the rings must overlap the reference's own geodesic by 72% — which means
+       transcribing its node layout, not choosing a builder. Still the owner's
+       call, and still the largest single opportunity in the sample set. */
   ],
   "fpv-racer": [
     /* Photograph fpv-racer.png: the battery rides behind the canopy with its
@@ -441,6 +716,13 @@ const TUNE_TABLE = {
       why: "사진 — 안테나 후방 기울기", reverted: "종합 87.30→87.28: 참조 4면(yaw 180 정합)에선 현재 부호가 맞음" },
     { part: "part_006", center: [0, 12, 0],
       why: "사진 — 랜딩 패드 없음, 모터 벨이 발", reverted: "종합 87.30→86.49 (비율 91→88): 패드가 높이 범위 하단을 정함" },
+    /* The prompt says 5인치. A 5-inch propeller is 127mm across, and the
+       parameter propulsion.rotor_diameter already says 127. The geometry said
+       100 × 82 — neither the prompt's number nor a circle. This is the one
+       disc-rule case in the repository that moves the silhouette, because on a
+       220mm quad the disc is a quarter of the whole airframe. */
+    { part: "part_004", size: [127, 6, 127], honours: "propulsion.rotor_diameter",
+      why: "프롬프트 '5인치 FPV 레이싱 쿼드' → 파라미터 propulsion.rotor_diameter=127 (USER_PROVIDED) 인데 geometry 는 100×6×82(타원비 1.22)로 프롬프트 수치도 원형도 아니었음. 이 파트는 USER_PROVIDED airframe.wheelbase 의 affects 에도 있으나, 휠베이스는 프롭을 배치할 뿐 지름을 정하지 않는다 — honours 로 어느 사용자 수치를 따르는지 밝히고 통과 (형상 61→65, 배치 84→86; 비율은 91→86 으로 내려가 종합 88 유지)" },
   ],
   "fire-octo": [
     /* The prompt asks for a "전방 소화 노즐" and the specification wrote only the
@@ -483,6 +765,19 @@ const TUNE_TABLE = {
       name: "tether_cable_spool", display: "하부 계류 케이블 스풀(페이로드)",
       why: "프롬프트 '하부 계류 케이블 스풀' + 사진 relay-hexa.png — 다리 사이 하부 페이로드는 케이블이 빠져나오는 가로축 드럼(스풀)이지 상자가 아님; 사양서는 '하부 페이로드 모듈' 상자로 적어 스풀을 빠뜨렸음. 드럼 지름 ≈130·폭 ≈200(로터 스팬 1280 대비 사진 비례). 구성 87.8→100, 종합 68.93→72.68" },
     { part: "part_008", rotation: [0, 0, 32], why: "사진 — 다리 벌림 25→32°", reverted: "종합 72.68→72.69, 참조 케이블 결함으로 판정 불가" },
+    /* v36 could not decide the cable and said so. It is decided now, against
+       the traced reference: RESET_TABLE part_018 carries the photograph, the
+       two-reference sweep and the arithmetic. Nothing about the cable's length
+       changes; what is left here is the plate. */
+    { part: "part_002", builder: "CYLINDER",
+      why: "검증기 PLATE_AS_TUBE — 두께 15 · 지름 284 의 판인데 TUBE 로 쓰여 가운데가 뚫린 링으로 빌드되고 있었음. 원형 판은 CYLINDER (형상 41 유지 — 이 파트는 캐노피 안에 묻혀 전용 화소 0)" },
+  ],
+  "delivery-octo": [
+    /* No photograph and no stage-1 mesh, so only 구성 is measurable and the
+       silhouette layers say nothing either way. Applied on the validator's
+       word and the part's own name. */
+    { part: "part_arm_set", builder: "TUBE", wall: 2,
+      why: "검증기 TUBE_AS_SOLID_CYLINDER — '카본 튜브 암' 이 CYLINDER 라 속이 찬 봉으로 빌드됨. 치수·plane 그대로 TUBE + 벽 2mm (참조가 없어 형상 측정 불가; 프린트 질량만 줄어든다)" },
   ],
 };
 
@@ -507,7 +802,10 @@ function describeRepeat(g) {
     + (r.radius_mm != null ? ` 반경 ${r.radius_mm}` : "");
   const rot = g.rotation_deg && (g.rotation_deg.x || g.rotation_deg.y || g.rotation_deg.z)
     ? ` · 회전 ${g.rotation_deg.x}/${g.rotation_deg.y}/${g.rotation_deg.z}` : "";
-  return describe(g) + extra + rot;
+  /* A wall edit moves no outer surface, so without this the log line is
+     identical on both sides of the arrow and reads as a no-op. */
+  const wall = g.builder === "TUBE" ? ` · 벽 ${g.corner_radius_mm > 0 ? g.corner_radius_mm : "미지정(반경 28%)"}` : "";
+  return describe(g) + extra + rot + wall;
 }
 
 function tune(id, spec) {
@@ -549,7 +847,31 @@ function tune(id, spec) {
     if (!part) throw new Error(`${id}: 파트 ${e.part} 없음`);
     if (guarded.has(e.part)) {
       const bad = GUARDED_KEYS.filter((k) => e[k] !== undefined);
-      if (bad.length) throw new Error(`${id}: ${e.part} 는 USER_PROVIDED 파라미터가 정하는 파트 — ${bad.join("/")} 수정 불가`);
+      /* One parameter guards a part, another parameter fixes the number the
+         edit writes, and both can be the user's. fpv-racer says "5인치 …
+         대각 220mm": the wheelbase lists the rotor in `affects` (it places the
+         rotor, it does not size it) while propulsion.rotor_diameter — also
+         USER_PROVIDED — says 127 and the geometry said 100 × 82. Refusing that
+         edit protects one user number by keeping another one broken.
+
+         `honours` names the parameter being obeyed and is CHECKED, not
+         believed: it must exist, be USER_PROVIDED, name this part in
+         `affects`, and its value must be the size actually written. An entry
+         cannot talk its way past the guard, only show its receipt. Anything
+         other than `size` still refuses. */
+      if (bad.length && e.honours) {
+        const par = (spec.parameters || []).find((x) => x.id === e.honours);
+        const want = par?.value;
+        const ok = par && par.provenance === "USER_PROVIDED" && (par.affects || []).includes(e.part)
+          && bad.every((k) => k === "size") && e.size.filter((v) => v === want).length === 2;
+        if (!ok) {
+          throw new Error(`${id}: ${e.part} honours ${e.honours} 가 성립하지 않습니다 `
+            + `(USER_PROVIDED 여부 ${par?.provenance} · affects 포함 ${!!par && (par.affects || []).includes(e.part)} `
+            + `· 값 ${want} 가 size ${JSON.stringify(e.size)} 에 두 축으로 들어가는가)`);
+        }
+      } else if (bad.length) {
+        throw new Error(`${id}: ${e.part} 는 USER_PROVIDED 파라미터가 정하는 파트 — ${bad.join("/")} 수정 불가`);
+      }
     }
     const g = part.geometry;
     const was = describeRepeat(g);
@@ -558,6 +880,12 @@ function tune(id, spec) {
     if (e.size) g.size_mm = { w: e.size[0], h: e.size[1], d: e.size[2] };
     if (e.center) g.center_mm = { x: e.center[0], y: e.center[1], z: e.center[2] };
     if (e.rotation) g.rotation_deg = { x: e.rotation[0], y: e.rotation[1], z: e.rotation[2] };
+    /* A TUBE's wall is carried by corner_radius_mm (js/spec-cad.js says which
+       field and why). It is the only edit here that changes no outer surface
+       at all, so it can never move a silhouette — which is exactly why it has
+       to be expressible: otherwise the only way to stop a 281mm guard being
+       built with a 39mm wall is to change its outside too. */
+    if (e.wall != null) g.corner_radius_mm = e.wall;
     if (e.spacing != null && g.repeat) g.repeat.spacing_mm = e.spacing;
     if (e.radius != null && g.repeat) g.repeat.radius_mm = e.radius;
     if (e.loft === null) g.loft_sections = null;

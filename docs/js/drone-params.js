@@ -14,7 +14,7 @@
      dismantles itself.
    - partFields()/applyPartField(): raw per-part dimensions for direct editing.
    ========================================================================== */
-import { loftAxis } from "./mesh-loft.js?v=832e871a";
+import { loftAxis } from "./mesh-loft.js?v=2d99286f";
 
 const NAME = (p) => `${p.name || ""} ${p.display_name_ko || ""}`;
 const isArm = (p) => /암(?!레스트)|arm|boom|붐/i.test(NAME(p));

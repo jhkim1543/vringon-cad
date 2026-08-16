@@ -552,6 +552,29 @@ export function refineFromMesh(spec, mesh) {
     const sz = g.size_mm;
     const dims = [sz.w, sz.h, sz.d];
 
+    /* Which of the three box axes a reconstruction of the OUTSIDE is entitled
+       to write, and which one it must leave alone.
+
+       This is where an accurate measurement makes a part more accurately
+       wrong. The inspection quad's propeller guard measures 281 × 80 × 233 off
+       the mesh and every one of those numbers is correct — they are the guard
+       assembly's envelope. Give them to a solid builder and you get a bucket
+       occupying exactly the space a 10mm hoop was meant to leave empty. The
+       envelope was never the shape; it was the shape's shadow.
+
+       So a hoop is measured across its ring, where the envelope really is the
+       outer diameter, and not along its axis, where the envelope is the whole
+       assembly seen edge-on and the honest number is the rod's own section —
+       an interior fact the outside does not carry. A wall is the same kind of
+       fact, which is why nothing in this function has ever written one and
+       nothing here starts.
+
+       hollow also stops the loft conversion below. Rewriting a ring or a
+       walled tube as a stack of measured sections closes it: same bucket, one
+       function further down. */
+    const ringAxis = g.builder === "TORUS" ? (g.plane === "FRONT" ? 2 : g.plane === "SIDE" ? 0 : 1) : -1;
+    const hollow = g.builder === "TORUS" || (g.builder === "TUBE" && g.corner_radius_mm > 0);
+
     /* Which frame the box lives in. A rotated part is read through the mesh
        turned into its own frame, where its declared centre is the origin and
        the box is axis-aligned again; everything else reads the mesh as it is. */
@@ -622,6 +645,7 @@ export function refineFromMesh(spec, mesh) {
     for (let a = 0; a < 3; a++) {
       const before = dims[a];
       if (!(meas[a] > 0.5)) continue;
+      if (a === ringAxis) continue;   // the hoop's tube diameter — see above, the envelope does not hold it
       // a reading wildly unlike the declaration means the box caught a neighbour
       if (!inRatio(meas[a], before)) continue;
       sz[keys[a]] = Math.round(meas[a]);
@@ -659,8 +683,8 @@ export function refineFromMesh(spec, mesh) {
     const ax = loftAxis(g.size_mm);
     const cross = [0, 1, 2].filter((a) => a !== ax);
     const raw = measureSections(frame, box, g.size_mm, 8, ax);
-    let mode = pf ? "회전·치수" : "치수";
-    if (raw && sectionsVary(raw) && !NEVER_LOFT.test(label)) {
+    let mode = (pf ? "회전·치수" : "치수") + (ringAxis >= 0 ? "(튜브 지름 보존)" : "");
+    if (raw && sectionsVary(raw) && !hollow && !NEVER_LOFT.test(label)) {
       const sections = raw.map((x) => ({
         at_pct: x.at_pct,
         w_mm: Math.max(1, Math.round(x.w / frame.perMm[cross[0]])),

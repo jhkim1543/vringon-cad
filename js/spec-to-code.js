@@ -80,8 +80,8 @@ export function revolveVolume(pts) {
 
    Which two of a round part's three box dimensions form its cross-section.
 
-   Every lathed builder here — CYLINDER, CONE, TUBE — is generated about local
-   Y and then turned so local Y lands on the plane's normal: TOP leaves it
+   Every round builder here — CYLINDER, CONE, TUBE, TORUS — is generated about
+   local Y and then turned so local Y lands on the plane's normal: TOP leaves it
    upright, FRONT sends it to +z, SIDE to x. So the section is always local X
    and Z, and which world dimensions those become follows from that one turn.
    Defined once because the runtime builder and the code generator have to
@@ -279,11 +279,32 @@ function buildGeometry(r) {
     if (dia4 > 0) g.scale(w / dia4, h / dia4, d / dia4);
     return g;
   }
-  /* TORUS is left round. Its ring is drawn in local XY, not XZ like every
-     other lathe here, so the box rule would need a different pair of axes —
-     and no sample exercises it, so there is nothing to check the change
-     against. Kept as it was rather than guessed at. */
-  if (b === "TORUS") return new THREE.TorusGeometry(Math.max(w, d) / 2, Math.max(0.2, h / 2), 20, 48);
+  /* A hoop — the one builder that can say "thin ring" without also saying
+     "solid band", and the reason it was worth fixing: a propeller guard is a
+     10mm rod bent into a circle, and every other builder here can only offer
+     it a wall to hide behind.
+
+     It now follows the same two conventions as CYLINDER, CONE and TUBE.
+
+     Axis. The plane's normal is the ring's axis. TorusGeometry draws its ring
+     in local XY with the axis on z, so it is turned onto local Y first and
+     then handed to axis() with the rest; before this it ignored plane entirely
+     and every hoop stood upright facing forward.
+
+     Box. size_mm is the world bounding box, so the axis dimension is the TUBE
+     diameter and the other two are the ring's OUTER diameter — the centre
+     circle is therefore (outer − tube) across, not outer. Reading max(w, d) as
+     the ring radius and h as the tube radius put the outer edge at
+     max(w, d) + h: a guard declared 281 wide came out 361. */
+  if (b === "TORUS") {
+    const cross5 = crossOf();
+    const dia5 = Math.max(...cross5);
+    const tube5 = r.plane === "FRONT" ? d : r.plane === "SIDE" ? w : h;
+    const t5 = Math.max(0.05, Math.min(tube5, dia5) / 2);
+    const g = new THREE.TorusGeometry(Math.max(0.05, dia5 / 2 - t5), t5, 18, 72);
+    g.rotateX(Math.PI / 2);   // ring from local XY onto local XZ, so the axis is local Y like every lathe here
+    return axis(oval(g, cross5, dia5));
+  }
   if (b === "LOFT" && r.loftSections?.length >= 2) {
     /* Skin the measured stations. Each section is a superellipse whose
        exponent comes from how full the measurement said it was: 2 is an
@@ -307,7 +328,16 @@ function buildGeometry(r) {
     const cross3 = crossOf();
     const dia3 = Math.max(...cross3);
     const len3 = r.plane === "FRONT" ? d : r.plane === "SIDE" ? w : h;
-    const ro = dia3 / 2, ri = ro * 0.72;
+    const ro = dia3 / 2;
+    /* The wall was 28% of the radius, hardcoded, and that one constant is what
+       turned every ring into a bucket: it is 5mm on a 35mm arm and 39mm on a
+       281mm guard, so the same rule that looks right on a carbon tube gives a
+       skin band a wall thicker than most of the airframe. Wall thickness is a
+       fact about the part, not a fraction of its diameter, so the spec is
+       allowed to state it (spec-cad.js explains which field carries it and
+       why that one). The old ratio stays as the default, so every part that
+       says nothing is built exactly as before. */
+    const ri = Math.max(0.01, r.wallMm > 0 ? ro - Math.min(r.wallMm, ro * 0.98) : ro * 0.72);
     const pts = [
       new THREE.Vector2(ri, 0), new THREE.Vector2(ro, 0),
       new THREE.Vector2(ro, len3), new THREE.Vector2(ri, len3), new THREE.Vector2(ri, 0),
@@ -980,7 +1010,22 @@ export function generateThreeCode(analysis) {
     } else if (r.builder === "TUBE") {
       const tCross = sectionOf(r, s), tDia = Math.max(...tCross);
       const tLen = r.plane === "FRONT" ? s.d : r.plane === "SIDE" ? s.w : s.h;
-      L.push(`  const ${v}Geo = new THREE.CylinderGeometry(${n(tDia / 2)}, ${n(tDia / 2)}, ${n(tLen)}, 48, 1, true);   // size_mm 박스의 축 방향이 길이`);
+      /* An open-ended cylinder was emitted here — a surface with no wall at
+         all, while the viewer built a lathed shell. The two were the same
+         picture only because nothing looks inside a tube's end. Now that the
+         wall is a number the spec can set, the difference is the whole point,
+         so the emitted file sweeps the same section the viewer does. */
+      const tRo = tDia / 2;
+      const tRi = Math.max(0.01, r.wallMm > 0 ? tRo - Math.min(r.wallMm, tRo * 0.98) : tRo * 0.72);
+      L.push(`  // 외경 ${n(tDia)} · 내경 ${n(tRi * 2)} · 벽 ${n(tRo - tRi)}mm`
+        + (r.wallMm > 0 ? " (사양서 지정)" : " (기본값: 반경의 28%)"));
+      L.push(`  const ${v}Profile = [`);
+      for (const [pr, py] of [[tRi, 0], [tRo, 0], [tRo, tLen], [tRi, tLen], [tRi, 0]]) {
+        L.push(`    new THREE.Vector2(${n(pr)}, ${n(py)}),`);
+      }
+      L.push(`  ];`);
+      L.push(`  const ${v}Geo = new THREE.LatheGeometry(${v}Profile, 48);`);
+      L.push(`  ${v}Geo.translate(0, ${n(-tLen / 2)}, 0);   // size_mm 박스의 축 방향이 길이`);
       ovalLine(L, v, tCross, tDia);
       if (r.plane === "FRONT") L.push(`  ${v}Geo.rotateX(Math.PI / 2);`);
       else if (r.plane === "SIDE") L.push(`  ${v}Geo.rotateZ(Math.PI / 2);`);
@@ -991,7 +1036,15 @@ export function generateThreeCode(analysis) {
         L.push(`  ${v}Geo.scale(${n(s.w / sDia, 4)}, ${n(s.h / sDia, 4)}, ${n(s.d / sDia, 4)});   // size_mm 박스에 맞춘 타원체`);
       }
     } else if (r.builder === "TORUS") {
-      L.push(`  const ${v}Geo = new THREE.TorusGeometry(${n(Math.max(s.w, s.d) / 2)}, ${n(s.h / 2)}, 20, 48);`);
+      const oCross = sectionOf(r, s), oDia = Math.max(...oCross);
+      const oTube = r.plane === "FRONT" ? s.d : r.plane === "SIDE" ? s.w : s.h;
+      const oT = Math.max(0.05, Math.min(oTube, oDia) / 2);
+      L.push(`  // 후프 외경 ${n(oDia)} · 링 지름 ${n(Math.max(0.1, oDia - oTube))} · 튜브 지름 ${n(oT * 2)}mm`);
+      L.push(`  const ${v}Geo = new THREE.TorusGeometry(${n(Math.max(0.05, oDia / 2 - oT))}, ${n(oT)}, 18, 72);`);
+      L.push(`  ${v}Geo.rotateX(Math.PI / 2);   // 링을 로컬 XZ로 눕혀 축을 로컬 Y로 맞춘다`);
+      ovalLine(L, v, oCross, oDia);
+      if (r.plane === "FRONT") L.push(`  ${v}Geo.rotateX(Math.PI / 2);   // 축이 전방(+z)을 향한다`);
+      else if (r.plane === "SIDE") L.push(`  ${v}Geo.rotateZ(Math.PI / 2);   // 축이 좌우(x)를 향한다`);
     } else if (r.builder === "CONE") {
       const kCross = sectionOf(r, s), kDia = Math.max(...kCross);
       const kLen = r.plane === "FRONT" ? s.d : r.plane === "SIDE" ? s.w : s.h;

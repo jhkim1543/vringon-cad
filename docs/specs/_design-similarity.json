@@ -8,22 +8,22 @@
     "silhouette": 0.15,
     "appearance": 0.1
   },
-  "generated": "2026-08-16T01:25:46.790Z",
+  "generated": "2026-08-16T09:39:16.922Z",
   "samples": {
     "inspect-quad": {
       "reference": "views(photo)",
       "photo": "docs/assets/samples/drones/inspection-quad.jpg",
       "layers": {
         "silhouette": {
-          "score": 0.5274,
+          "score": 0.5192,
           "iou": {
-            "front": 0.5183,
-            "left": 0.5322,
-            "rear": 0.5265,
-            "right": 0.5328,
-            "mean": 0.5274
+            "front": 0.4984,
+            "left": 0.5348,
+            "rear": 0.5082,
+            "right": 0.5354,
+            "mean": 0.5192
           },
-          "chamfer": 0.0381,
+          "chamfer": 0.0388,
           "yaw_deg": 180
         },
         "proportion": {
@@ -41,36 +41,36 @@
           }
         },
         "layout": {
-          "score": 0.7906,
+          "score": 0.7833,
           "views": {
             "front": {
-              "col": 0.7953,
-              "row": 0.7946,
-              "cell": 0.791,
-              "centroid_shift": 0.0325
+              "col": 0.7982,
+              "row": 0.7751,
+              "cell": 0.7728,
+              "centroid_shift": 0.0394
             },
             "left": {
-              "col": 0.8092,
-              "row": 0.8267,
-              "cell": 0.7201,
-              "centroid_shift": 0.0135
+              "col": 0.806,
+              "row": 0.8246,
+              "cell": 0.716,
+              "centroid_shift": 0.0134
             },
             "rear": {
-              "col": 0.7998,
-              "row": 0.7997,
-              "cell": 0.7944,
-              "centroid_shift": 0.0321
+              "col": 0.803,
+              "row": 0.7829,
+              "cell": 0.7745,
+              "centroid_shift": 0.0389
             },
             "right": {
-              "col": 0.8102,
-              "row": 0.825,
-              "cell": 0.721,
-              "centroid_shift": 0.0131
+              "col": 0.807,
+              "row": 0.8229,
+              "cell": 0.7168,
+              "centroid_shift": 0.0129
             }
           }
         },
         "appearance": {
-          "score": 0.8016,
+          "score": 0.8013,
           "photo_background": "#cac5bf",
           "photo_foreground_fraction": 0.3737,
           "photo_colors": [
@@ -110,15 +110,15 @@
           "render_colors": [
             {
               "hex": "#ff6600",
-              "weight": 0.5506
+              "weight": 0.5529
             },
             {
               "hex": "#f5f5f5",
-              "weight": 0.2425
+              "weight": 0.2473
             },
             {
               "hex": "#1a1a1a",
-              "weight": 0.2069
+              "weight": 0.1998
             }
           ]
         },
@@ -163,8 +163,8 @@
           "inventory_source": "primary/text"
         }
       },
-      "composite": 0.8233,
-      "unweighted_mean": 0.7894,
+      "composite": 0.8206,
+      "unweighted_mean": 0.7862,
       "layers_missing": [],
       "weights": {
         "composition": 0.3,
@@ -359,15 +359,15 @@
       "photo": "docs/assets/samples/drones/mapping-fixedwing.jpg",
       "layers": {
         "silhouette": {
-          "score": 0.6431,
+          "score": 0.7573,
           "iou": {
-            "front": 0.4934,
-            "left": 0.7929,
-            "rear": 0.4934,
-            "right": 0.7929,
-            "mean": 0.6431
+            "front": 0.7258,
+            "left": 0.7888,
+            "rear": 0.7258,
+            "right": 0.7888,
+            "mean": 0.7573
           },
-          "chamfer": 0.0098,
+          "chamfer": 0.0069,
           "yaw_deg": 270
         },
         "proportion": {
@@ -385,36 +385,36 @@
           }
         },
         "layout": {
-          "score": 0.8628,
+          "score": 0.8927,
           "views": {
             "front": {
-              "col": 0.8497,
-              "row": 0.7648,
-              "cell": 0.8256,
-              "centroid_shift": 0.0158
+              "col": 0.8853,
+              "row": 0.8679,
+              "cell": 0.8907,
+              "centroid_shift": 0.0076
             },
             "left": {
-              "col": 0.8995,
-              "row": 0.926,
-              "cell": 0.9112,
-              "centroid_shift": 0.009
+              "col": 0.9079,
+              "row": 0.911,
+              "cell": 0.8936,
+              "centroid_shift": 0.0075
             },
             "rear": {
-              "col": 0.8497,
-              "row": 0.7648,
-              "cell": 0.8256,
-              "centroid_shift": 0.0158
+              "col": 0.8853,
+              "row": 0.8679,
+              "cell": 0.8907,
+              "centroid_shift": 0.0076
             },
             "right": {
-              "col": 0.8995,
-              "row": 0.926,
-              "cell": 0.9112,
-              "centroid_shift": 0.009
+              "col": 0.9079,
+              "row": 0.911,
+              "cell": 0.8936,
+              "centroid_shift": 0.0075
             }
           }
         },
         "appearance": {
-          "score": 0.9193,
+          "score": 0.9191,
           "photo_background": "#d3d2ce",
           "photo_foreground_fraction": 0.0545,
           "photo_colors": [
@@ -454,19 +454,19 @@
           "render_colors": [
             {
               "hex": "#eeeeee",
-              "weight": 0.8914
+              "weight": 0.8801
             },
             {
               "hex": "#333333",
-              "weight": 0.0715
+              "weight": 0.0789
             },
             {
               "hex": "#000000",
-              "weight": 0.0277
+              "weight": 0.0301
             },
             {
               "hex": "#0a0a10",
-              "weight": 0.0063
+              "weight": 0.0068
             }
           ]
         },
@@ -511,8 +511,8 @@
           "inventory_source": "primary/text"
         }
       },
-      "composite": 0.8966,
-      "unweighted_mean": 0.8745,
+      "composite": 0.9197,
+      "unweighted_mean": 0.9033,
       "layers_missing": [],
       "weights": {
         "composition": 0.3,
@@ -522,7 +522,7 @@
         "appearance": 0.1
       },
       "size_mm": [
-        1200,
+        1200.1,
         224.8,
         730.4
       ]
@@ -532,15 +532,15 @@
       "photo": "docs/assets/samples/drones/sar-vtol.jpg",
       "layers": {
         "silhouette": {
-          "score": 0.4574,
+          "score": 0.4612,
           "iou": {
-            "front": 0.4427,
-            "left": 0.4631,
-            "rear": 0.4588,
-            "right": 0.465,
-            "mean": 0.4574
+            "front": 0.4418,
+            "left": 0.4707,
+            "rear": 0.4578,
+            "right": 0.4746,
+            "mean": 0.4612
           },
-          "chamfer": 0.0225,
+          "chamfer": 0.0226,
           "yaw_deg": 180
         },
         "proportion": {
@@ -558,36 +558,36 @@
           }
         },
         "layout": {
-          "score": 0.7998,
+          "score": 0.8062,
           "views": {
             "front": {
-              "col": 0.7591,
-              "row": 0.8189,
-              "cell": 0.8744,
-              "centroid_shift": 0.0231
+              "col": 0.7569,
+              "row": 0.8194,
+              "cell": 0.8737,
+              "centroid_shift": 0.0233
             },
             "left": {
-              "col": 0.767,
-              "row": 0.7801,
-              "cell": 0.7662,
-              "centroid_shift": 0.0134
+              "col": 0.795,
+              "row": 0.7733,
+              "cell": 0.786,
+              "centroid_shift": 0.0249
             },
             "rear": {
-              "col": 0.7985,
-              "row": 0.8271,
-              "cell": 0.8727,
-              "centroid_shift": 0.0196
+              "col": 0.797,
+              "row": 0.8268,
+              "cell": 0.872,
+              "centroid_shift": 0.0197
             },
             "right": {
-              "col": 0.771,
-              "row": 0.7798,
-              "cell": 0.7834,
-              "centroid_shift": 0.0139
+              "col": 0.8019,
+              "row": 0.7731,
+              "cell": 0.7992,
+              "centroid_shift": 0.0202
             }
           }
         },
         "appearance": {
-          "score": 0.9285,
+          "score": 0.9276,
           "photo_background": "#c8c3c0",
           "photo_foreground_fraction": 0.1572,
           "photo_colors": [
@@ -627,23 +627,23 @@
           "render_colors": [
             {
               "hex": "#ffffff",
-              "weight": 0.5817
+              "weight": 0.6008
             },
             {
               "hex": "#1a1a1a",
-              "weight": 0.2191
+              "weight": 0.2259
             },
             {
               "hex": "#e56d1c",
-              "weight": 0.1006
+              "weight": 0.0756
             },
             {
               "hex": "#666666",
-              "weight": 0.0554
+              "weight": 0.0571
             },
             {
               "hex": "#222222",
-              "weight": 0.0432
+              "weight": 0.0406
             }
           ]
         },
@@ -683,8 +683,8 @@
           "inventory_source": "primary/text"
         }
       },
-      "composite": 0.7991,
-      "unweighted_mean": 0.7811,
+      "composite": 0.8008,
+      "unweighted_mean": 0.7829,
       "layers_missing": [],
       "weights": {
         "composition": 0.3,
@@ -951,62 +951,62 @@
       "photo": "docs/assets/samples/drones/fpv-racer.png",
       "layers": {
         "silhouette": {
-          "score": 0.613,
+          "score": 0.6517,
           "iou": {
-            "front": 0.6143,
-            "left": 0.6518,
-            "rear": 0.5349,
-            "right": 0.651,
-            "mean": 0.613
+            "front": 0.6409,
+            "left": 0.7074,
+            "rear": 0.5504,
+            "right": 0.7081,
+            "mean": 0.6517
           },
-          "chamfer": 0.0289,
+          "chamfer": 0.0254,
           "yaw_deg": 180
         },
         "proportion": {
-          "score": 0.914,
+          "score": 0.8618,
           "axis": {
             "x": 1,
-            "y": 0.9747,
+            "y": 0.8912,
             "z": 0.8326
           },
           "aspect": {
-            "front": 0.9385,
-            "left": 0.8146,
-            "rear": 0.9887,
-            "right": 0.8269
+            "front": 0.8581,
+            "left": 0.7448,
+            "rear": 0.904,
+            "right": 0.756
           }
         },
         "layout": {
-          "score": 0.8366,
+          "score": 0.8628,
           "views": {
             "front": {
-              "col": 0.8259,
-              "row": 0.8125,
-              "cell": 0.8369,
-              "centroid_shift": 0.004
+              "col": 0.8905,
+              "row": 0.7899,
+              "cell": 0.8972,
+              "centroid_shift": 0.0064
             },
             "left": {
-              "col": 0.8472,
-              "row": 0.9212,
-              "cell": 0.8194,
-              "centroid_shift": 0.0199
+              "col": 0.8744,
+              "row": 0.9139,
+              "cell": 0.8345,
+              "centroid_shift": 0.0208
             },
             "rear": {
-              "col": 0.7834,
-              "row": 0.7803,
-              "cell": 0.8288,
-              "centroid_shift": 0.0021
+              "col": 0.8711,
+              "row": 0.7691,
+              "cell": 0.8848,
+              "centroid_shift": 0.0011
             },
             "right": {
-              "col": 0.8446,
-              "row": 0.9186,
-              "cell": 0.8202,
-              "centroid_shift": 0.0128
+              "col": 0.8776,
+              "row": 0.9115,
+              "cell": 0.839,
+              "centroid_shift": 0.0135
             }
           }
         },
         "appearance": {
-          "score": 0.9182,
+          "score": 0.9184,
           "photo_background": "#d4c8bb",
           "photo_foreground_fraction": 0.1912,
           "photo_colors": [
@@ -1046,23 +1046,23 @@
           "render_colors": [
             {
               "hex": "#f0f0f0",
-              "weight": 0.384
+              "weight": 0.3736
             },
             {
               "hex": "#171717",
-              "weight": 0.2559
+              "weight": 0.2489
             },
             {
               "hex": "#202020",
-              "weight": 0.1614
+              "weight": 0.1804
             },
             {
               "hex": "#2c2c2c",
-              "weight": 0.1447
+              "weight": 0.1426
             },
             {
               "hex": "#832f08",
-              "weight": 0.0496
+              "weight": 0.0497
             }
           ]
         },
@@ -1105,8 +1105,8 @@
           "inventory_source": "primary/text"
         }
       },
-      "composite": 0.8796,
-      "unweighted_mean": 0.8564,
+      "composite": 0.8776,
+      "unweighted_mean": 0.8589,
       "layers_missing": [],
       "weights": {
         "composition": 0.3,
@@ -1116,9 +1116,9 @@
         "appearance": 0.1
       },
       "size_mm": [
-        225.1,
+        243.4,
         132.1,
-        225.1
+        243.4
       ]
     },
     "fire-octo": {
@@ -1301,15 +1301,15 @@
       "photo": "docs/assets/samples/drones/relay-hexa.png",
       "layers": {
         "silhouette": {
-          "score": 0.1479,
+          "score": 0.1474,
           "iou": {
-            "front": 0.1667,
+            "front": 0.1656,
             "left": 0.1309,
-            "rear": 0.1629,
+            "rear": 0.1618,
             "right": 0.1311,
-            "mean": 0.1479
+            "mean": 0.1474
           },
-          "chamfer": 0.0799,
+          "chamfer": 0.0798,
           "yaw_deg": 90
         },
         "proportion": {
@@ -1327,12 +1327,12 @@
           }
         },
         "layout": {
-          "score": 0.4797,
+          "score": 0.4799,
           "views": {
             "front": {
-              "col": 0.7382,
-              "row": 0.3073,
-              "cell": 0.3488,
+              "col": 0.739,
+              "row": 0.3075,
+              "cell": 0.3492,
               "centroid_shift": 0.1508
             },
             "left": {
@@ -1342,9 +1342,9 @@
               "centroid_shift": 0.1663
             },
             "rear": {
-              "col": 0.7323,
-              "row": 0.3063,
-              "cell": 0.3549,
+              "col": 0.7332,
+              "row": 0.3065,
+              "cell": 0.3554,
               "centroid_shift": 0.1464
             },
             "right": {
@@ -1356,7 +1356,7 @@
           }
         },
         "appearance": {
-          "score": 0.9196,
+          "score": 0.9204,
           "photo_background": "#d1c9bd",
           "photo_foreground_fraction": 0.1365,
           "photo_colors": [
@@ -1396,27 +1396,27 @@
           "render_colors": [
             {
               "hex": "#222222",
-              "weight": 0.5065
+              "weight": 0.5068
             },
             {
               "hex": "#eeeeee",
-              "weight": 0.2565
+              "weight": 0.2616
             },
             {
               "hex": "#1a1a1a",
-              "weight": 0.1055
+              "weight": 0.1056
             },
             {
               "hex": "#111111",
-              "weight": 0.0707
+              "weight": 0.0708
             },
             {
               "hex": "#ff6600",
-              "weight": 0.0433
+              "weight": 0.0384
             },
             {
               "hex": "#101010",
-              "weight": 0.0175
+              "weight": 0.0168
             }
           ]
         },
@@ -1460,7 +1460,7 @@
         }
       },
       "composite": 0.7268,
-      "unweighted_mean": 0.6828,
+      "unweighted_mean": 0.6829,
       "layers_missing": [],
       "weights": {
         "composition": 0.3,

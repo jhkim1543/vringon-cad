@@ -4,18 +4,18 @@
     "samples": {
       "inspect-quad": {
         "iou": {
-          "front": 0.5007,
-          "left": 0.5325,
-          "rear": 0.5007,
-          "right": 0.5325,
-          "mean": 0.5166
+          "front": 0.4754,
+          "left": 0.5267,
+          "rear": 0.4754,
+          "right": 0.5267,
+          "mean": 0.501
         },
         "chamfer": {
-          "front": 0.0419,
-          "left": 0.0383,
-          "rear": 0.0419,
-          "right": 0.0383,
-          "mean": 0.0401
+          "front": 0.0458,
+          "left": 0.0393,
+          "rear": 0.0458,
+          "right": 0.0393,
+          "mean": 0.0425
         },
         "aspect_error": 0.3426,
         "axis_error": {
@@ -84,18 +84,18 @@
       },
       "map-wing": {
         "iou": {
-          "front": 0.5474,
-          "left": 0.8175,
-          "rear": 0.5474,
-          "right": 0.8175,
-          "mean": 0.6824
+          "front": 0.8109,
+          "left": 0.8324,
+          "rear": 0.8109,
+          "right": 0.8324,
+          "mean": 0.8217
         },
         "chamfer": {
-          "front": 0.0103,
-          "left": 0.0076,
-          "rear": 0.0103,
-          "right": 0.0076,
-          "mean": 0.0089
+          "front": 0.0037,
+          "left": 0.007,
+          "rear": 0.0037,
+          "right": 0.007,
+          "mean": 0.0054
         },
         "aspect_error": 0.0909,
         "axis_error": {
@@ -117,25 +117,25 @@
         },
         "yaw_deg": 270,
         "size_mm": [
-          1200,
+          1200.1,
           224.8,
           730.4
         ]
       },
       "sar-vtol": {
         "iou": {
-          "front": 0.5875,
-          "left": 0.6285,
-          "rear": 0.5875,
-          "right": 0.6285,
-          "mean": 0.608
+          "front": 0.5848,
+          "left": 0.6569,
+          "rear": 0.5848,
+          "right": 0.6569,
+          "mean": 0.6208
         },
         "chamfer": {
           "front": 0.0144,
-          "left": 0.017,
+          "left": 0.0164,
           "rear": 0.0144,
-          "right": 0.017,
-          "mean": 0.0157
+          "right": 0.0164,
+          "mean": 0.0154
         },
         "aspect_error": 0.1277,
         "axis_error": {
@@ -204,29 +204,29 @@
       },
       "fpv-racer": {
         "iou": {
-          "front": 0.3606,
-          "left": 0.5265,
-          "rear": 0.3606,
-          "right": 0.5265,
-          "mean": 0.4436
+          "front": 0.3877,
+          "left": 0.5758,
+          "rear": 0.3877,
+          "right": 0.5758,
+          "mean": 0.4817
         },
         "chamfer": {
-          "front": 0.0328,
-          "left": 0.0572,
-          "rear": 0.0328,
-          "right": 0.0572,
-          "mean": 0.045
+          "front": 0.0253,
+          "left": 0.0472,
+          "rear": 0.0253,
+          "right": 0.0472,
+          "mean": 0.0363
         },
-        "aspect_error": 0.2297,
+        "aspect_error": 0.1575,
         "axis_error": {
           "x": 0,
-          "y": 0.4,
+          "y": 0.28,
           "z": 0.1569
         },
         "proportion": {
           "cad": [
             1,
-            0.5932,
+            0.5424,
             1
           ],
           "ref": [
@@ -237,9 +237,9 @@
         },
         "yaw_deg": 90,
         "size_mm": [
-          225.1,
+          243.4,
           132.1,
-          225.1
+          243.4
         ]
       },
       "fire-octo": {
@@ -284,11 +284,11 @@
       },
       "relay-hexa": {
         "iou": {
-          "front": 0.3629,
+          "front": 0.3621,
           "left": 0.3316,
-          "rear": 0.3629,
+          "rear": 0.3621,
           "right": 0.3316,
-          "mean": 0.3472
+          "mean": 0.3468
         },
         "chamfer": {
           "front": 0.0252,

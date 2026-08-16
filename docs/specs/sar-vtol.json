@@ -436,7 +436,7 @@
       "editable": true,
       "locked_characteristics": [],
       "geometry": {
-        "builder": "SPHERE",
+        "builder": "CONE",
         "plane": "FRONT",
         "size_mm": {
           "w": 200,
@@ -1109,9 +1109,9 @@
         "builder": "CYLINDER",
         "plane": "TOP",
         "size_mm": {
-          "w": 522.2,
+          "w": 600,
           "h": 4,
-          "d": 525.6
+          "d": 600
         },
         "center_mm": {
           "x": 0,
@@ -1193,9 +1193,9 @@
         "builder": "CYLINDER",
         "plane": "FRONT",
         "size_mm": {
-          "w": 606.7,
+          "w": 500,
           "h": 18,
-          "d": 534
+          "d": 500
         },
         "center_mm": {
           "x": 0,

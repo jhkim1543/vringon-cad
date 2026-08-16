@@ -657,34 +657,34 @@
       "semantic_role": "STRUCTURAL_BODY",
       "visibility": "VISIBLE",
       "representation_strategy": "PROFILE_EXTRUDE",
-      "representation_reason": "Single continuous extrusion spanning both sides.",
+      "representation_reason": "1단계 메시 스팬 슬라이스 — 상반각 8°, 뿌리 시위 133 · 팁 91. 로프트는 단면을 직선 축에 쌓으므로 굽은 날개를 표현할 수 없다; 반익 평면형을 중심선 힌지로 벌린다(MIRROR_PAIR + rotation)",
       "editable": true,
       "locked_characteristics": [
         "wingspan"
       ],
       "geometry": {
-        "builder": "LOFT",
+        "builder": "EXTRUDE_2D",
         "plane": "TOP",
         "size_mm": {
-          "w": 1200,
-          "h": 44.6,
-          "d": 124
+          "w": 604.4,
+          "h": 22,
+          "d": 133
         },
         "center_mm": {
           "x": 0,
-          "y": 137,
+          "y": 96,
           "z": 6.9
         },
         "outer_profile": [
           {
             "type": "LINE",
             "start": [
-              0,
-              -110
+              -302.2,
+              -66.5
             ],
             "end": [
-              580,
-              -40
+              -151.1,
+              -61.3
             ],
             "radius": null,
             "sweep": "NONE",
@@ -692,44 +692,14 @@
             "control2": null
           },
           {
-            "type": "ARC",
-            "start": [
-              580,
-              -40
-            ],
-            "end": [
-              600,
-              0
-            ],
-            "radius": 45,
-            "sweep": "CCW",
-            "control1": null,
-            "control2": null
-          },
-          {
-            "type": "ARC",
-            "start": [
-              600,
-              0
-            ],
-            "end": [
-              580,
-              40
-            ],
-            "radius": 45,
-            "sweep": "CCW",
-            "control1": null,
-            "control2": null
-          },
-          {
             "type": "LINE",
             "start": [
-              580,
-              40
+              -151.1,
+              -61.3
             ],
             "end": [
               0,
-              110
+              -56
             ],
             "radius": null,
             "sweep": "NONE",
@@ -740,11 +710,41 @@
             "type": "LINE",
             "start": [
               0,
-              110
+              -56
             ],
             "end": [
-              -580,
-              40
+              151.1,
+              -50.8
+            ],
+            "radius": null,
+            "sweep": "NONE",
+            "control1": null,
+            "control2": null
+          },
+          {
+            "type": "LINE",
+            "start": [
+              151.1,
+              -50.8
+            ],
+            "end": [
+              253.8,
+              -47.2
+            ],
+            "radius": null,
+            "sweep": "NONE",
+            "control1": null,
+            "control2": null
+          },
+          {
+            "type": "LINE",
+            "start": [
+              253.8,
+              -47.2
+            ],
+            "end": [
+              302.2,
+              -25.1
             ],
             "radius": null,
             "sweep": "NONE",
@@ -754,42 +754,102 @@
           {
             "type": "ARC",
             "start": [
-              -580,
-              40
+              302.2,
+              -25.1
             ],
             "end": [
-              -600,
-              0
+              302.2,
+              25.1
             ],
-            "radius": 45,
-            "sweep": "CCW",
-            "control1": null,
-            "control2": null
-          },
-          {
-            "type": "ARC",
-            "start": [
-              -600,
-              0
-            ],
-            "end": [
-              -580,
-              -40
-            ],
-            "radius": 45,
-            "sweep": "CCW",
+            "radius": 31.4,
+            "sweep": "CW",
             "control1": null,
             "control2": null
           },
           {
             "type": "LINE",
             "start": [
-              -580,
-              -40
+              302.2,
+              25.1
+            ],
+            "end": [
+              253.8,
+              47.2
+            ],
+            "radius": null,
+            "sweep": "NONE",
+            "control1": null,
+            "control2": null
+          },
+          {
+            "type": "LINE",
+            "start": [
+              253.8,
+              47.2
+            ],
+            "end": [
+              151.1,
+              50.8
+            ],
+            "radius": null,
+            "sweep": "NONE",
+            "control1": null,
+            "control2": null
+          },
+          {
+            "type": "LINE",
+            "start": [
+              151.1,
+              50.8
             ],
             "end": [
               0,
-              -110
+              56
+            ],
+            "radius": null,
+            "sweep": "NONE",
+            "control1": null,
+            "control2": null
+          },
+          {
+            "type": "LINE",
+            "start": [
+              0,
+              56
+            ],
+            "end": [
+              -151.1,
+              61.3
+            ],
+            "radius": null,
+            "sweep": "NONE",
+            "control1": null,
+            "control2": null
+          },
+          {
+            "type": "LINE",
+            "start": [
+              -151.1,
+              61.3
+            ],
+            "end": [
+              -302.2,
+              66.5
+            ],
+            "radius": null,
+            "sweep": "NONE",
+            "control1": null,
+            "control2": null
+          },
+          {
+            "type": "LINE",
+            "start": [
+              -302.2,
+              66.5
+            ],
+            "end": [
+              -302.2,
+              -66.5
             ],
             "radius": null,
             "sweep": "NONE",
@@ -799,51 +859,19 @@
         ],
         "inner_profile": null,
         "corner_radius_mm": 25,
-        "repeat": null,
-        "loft_sections": [
-          {
-            "at_pct": 6,
-            "w_mm": 33.7,
-            "h_mm": 124,
-            "fill": 0.61
-          },
-          {
-            "at_pct": 19,
-            "w_mm": 32.7,
-            "h_mm": 102,
-            "fill": 0.67
-          },
-          {
-            "at_pct": 31,
-            "w_mm": 35.7,
-            "h_mm": 65,
-            "fill": 0.83
-          },
-          {
-            "at_pct": 44,
-            "w_mm": 41.6,
-            "h_mm": 47,
-            "fill": 0.88
-          },
-          {
-            "at_pct": 56,
-            "w_mm": 44.6,
-            "h_mm": 31,
-            "fill": 0.77
-          },
-          {
-            "at_pct": 69,
-            "w_mm": 43.6,
-            "h_mm": 26,
-            "fill": 0.81
-          },
-          {
-            "at_pct": 94,
-            "w_mm": 43.6,
-            "h_mm": 45,
-            "fill": 0.99
-          }
-        ]
+        "repeat": {
+          "pattern": "MIRROR_PAIR",
+          "count": 2,
+          "radius_mm": null,
+          "spacing_mm": 604.4,
+          "start_angle_deg": null
+        },
+        "loft_sections": null,
+        "rotation_deg": {
+          "x": 0,
+          "y": 0,
+          "z": 8
+        }
       },
       "dimensions": [
         {
@@ -1449,9 +1477,9 @@
         "builder": "CYLINDER",
         "plane": "TOP",
         "size_mm": {
-          "w": 82,
+          "w": 180,
           "h": 4,
-          "d": 260
+          "d": 180
         },
         "center_mm": {
           "x": 89,
