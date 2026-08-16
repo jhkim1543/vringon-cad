@@ -63,6 +63,7 @@ node tools/eval-extract.mjs --method both --tier text --save     # 서버가 떠
 node tools/gen-dataset.mjs --n 5000 --out dataset --augment 0.3 --omit 0.15
 node tools/deploy-docs.mjs                  # ../docs/revolve/ 보호 빌드 갱신 → 커밋 (--raw 는 디버깅용 원본 복사)
 node tools/test-assembly.mjs && node tools/test-exports.mjs      # 조립·시뮬 / 내보내기 회귀
+node tools/test-input-guard.mjs             # 회전체가 아닌 도면을 판독 전에 막는지 (정상 60건 오거부 0)
 cd pipeline && PYTHONIOENCODING=utf-8 .venv/Scripts/python.exe tests/test_golden.py
 ```
 방법론·마일스톤 상태·수치·데이터 소스·다음 할 일은 [HANDOFF.md](HANDOFF.md), 외부 공유·도메인 배포·코드 보호는 [DEPLOY.md](DEPLOY.md) 에 있습니다.

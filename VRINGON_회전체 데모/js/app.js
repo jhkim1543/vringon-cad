@@ -38,7 +38,7 @@ const state = {
   raster: null,        /* ImageData 로 판독용 */
   extraction: null,    /* {method, dsl, dims_read, notes, silhouette, verify?, hints, ms} */
   dsl: null, pristine: null, gold: null,
-  built: null, verify: null, mates: null, assembly: null, sim: null, marker: null, simOn: false,
+  built: null, verify: null, mates: null, assembly: null, sim: null, marker: null, simOn: false, forceRead: false,
   section: false, showingDrawing: false, showingGolden: false,
 };
 /* PIPE[k] 는 k+1 단계. cta/note 는 그 단계를 "실행"하는 버튼의 말 — 다음 단계가 무엇을 하는지 미리 알린다 */
@@ -283,6 +283,11 @@ async function stepExtract() {
     ex = { method: "server", dsl: normalizeShaft(j.dsl), dims_read: j.dims_read || [], notes: j.notes || [], serverVerify: j.verify, provider: j.provider, tier: j.tier, repaired: j.repaired, ms: j.elapsed_ms };
   } else {
     if (!sil.ok) { showUnsuitable("도면에서 부품 외형을 찾지 못했습니다.", sil.notes || []); throw new Error(sil.notes?.join(" ") || "부품 외형을 찾지 못했습니다"); }
+    /* 회전체 정면도가 아닌 것이 분명하면 여기서 멈춘다. 억지로 만들면 도면과 무관한 형상이 나온다(캐스터 조립도 사례). */
+    if (sil.verdict === "not_revolve" && !state.forceRead) {
+      showUnsuitable("회전체 정면도로 보이지 않아 판독을 멈췄습니다.", sil.reasons || [], true);
+      throw new Error("회전체 정면도가 아닙니다");
+    }
     if (sil.plausible === false) showUnsuitable("판독 결과가 회전체 정면도답지 않습니다. 결과는 참고용입니다.", sil.reasons || []);
     ex = { method: "silhouette", dsl: sil.dsl, dims_read: [], notes: sil.notes, ms: performance.now() - t0 };
     if (!L) ex.notes.unshift("전체 길이를 입력하지 않아 100mm 로 가정했습니다. 왼쪽 '전체 길이'에 값을 넣으면 실제 치수가 맞습니다.");
@@ -305,11 +310,13 @@ async function stepExtract() {
   $("jsonBlock").scrollIntoView({ behavior: "smooth", block: "start" });
 }
 /* 적합하지 않은 입력: 억지로 3D 를 만들기보다 왜 안 되는지와 안내를 보여준다 */
-function showUnsuitable(title, reasons) {
+function showUnsuitable(title, reasons, hard = false) {
   const box = $("unsuitable"); if (!box) return;
   box.style.display = "block";
   box.innerHTML = `<b>${escapeHtml(title)}</b>${reasons?.length ? `<ul style="margin:6px 0 0 16px">${reasons.slice(0, 5).map((r) => `<li>${escapeHtml(r)}</li>`).join("")}</ul>` : ""}
-    <div style="margin-top:8px"><a href="./guide.html" target="_blank" class="btn btn-ghost btn-sm">어떤 도면을 올려야 하나요</a></div>`;
+    <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap"><a href="./guide.html" target="_blank" class="btn btn-ghost btn-sm">어떤 도면을 올려야 하나요</a>
+    ${hard ? `<button class="btn btn-ghost btn-sm" id="btnForceRead">그래도 읽어 보기</button>` : ""}</div>`;
+  if (hard) $("btnForceRead").onclick = () => { state.forceRead = true; box.style.display = "none"; runStep(2); };
   toast(title);
 }
 function renderExtractPanel() {
@@ -769,6 +776,7 @@ function resetWorkspace(full = true) {
   state.showingGolden = false; $("btnGolden").textContent = "정답 사양 보기"; $("btnGolden").classList.remove("on");
   state.sheetMode = "original"; $("btnRegen").textContent = "재생성 도면"; $("btnRegen").classList.remove("on");
   state.simOn = false; $("btnSim").textContent = "조립 · 시뮬 켜기"; $("btnSim").classList.remove("on");
+  state.forceRead = false;
   pipe.done = 0; pipe.running = 0; pipe.active = false;
   showSheet(false); $("stageEmpty").style.display = ""; $("dock").style.display = "none";
   for (const id of ["extractBlock", "segBlock", "featBlock", "jsonBlock", "verifyBlock", "mateBlock", "exportBlock"]) $(id).style.display = "none";

@@ -189,6 +189,17 @@ export function measureSilhouette(img, opts = {}) {
   const bigOnes = cands.filter((c) => c.w >= w * 0.22 || c.n >= main.n * 0.35).filter((c) => c.id !== main.id && c.id !== partner?.id);
   const flags = [];
   if (bigOnes.length >= 1) flags.push({ kind: "multiview", n: bigOnes.length + 1 + (partner ? 1 : 0), text: `큰 성분이 ${bigOnes.length + 1}개. 여러 투상도나 조립체로 보입니다. 이 데모는 회전체 정면도 한 장을 읽습니다(단면도·키홈 단면은 옆에 있어도 됩니다).` });
+  /* hard 신호: 여기 걸리면 결과가 "덜 정확" 한 게 아니라 아예 다른 것을 읽은 것이므로 진행을 멈춘다.
+     기준값은 샘플 17종×3해상도 + 열화 스캔(정상 60여 건)에서 오거부 0 건이 되도록 잡았다. */
+  const sig = revolveSignals(top, bottom, { x0: main.x0, y0: main.y0, x1: main.x1, y1: main.y1 }, vertical);
+  if (bigOnes.length >= 1 && sig.both > 0.55 && sig.asym > 0.25) {
+    flags.push({ kind: "asymmetric", hard: true, value: sig.asym,
+      text: `축 위와 아래의 모양이 서로 다릅니다(차이 ${Math.round(sig.asym * 100)}%). 회전체 정면도라면 축을 기준으로 위아래가 같아야 하므로, 조립체이거나 회전체가 아닌 부품으로 보입니다.` });
+  }
+  if (sig.aspect < 1.35 && sig.circleErr < 0.12) {
+    flags.push({ kind: "circle_view", hard: true, value: sig.circleErr,
+      text: "정면에서 본 원(원형 투상)으로 보입니다. 이 데모는 축이 가로로 놓인 옆모습 도면을 읽습니다." });
+  }
   if (along < 500) flags.push({ kind: "lowres", px: along, text: `부품이 가로 ${along}px 로 작습니다(권장 1,000px 이상). 저해상 JPEG 은 외형선과 치수선이 붙어 판독이 어긋납니다.` });
   if (partner) {
     /* 짝을 잡았어도 보어가 외경에 비해 너무 크면 거울상 반쪽이 아니라 별개 뷰다 */
@@ -196,7 +207,7 @@ export function measureSilhouette(img, opts = {}) {
     if (badBore > N * 0.2) flags.push({ kind: "not_section", text: "위·아래 두 성분을 전단면 반쪽으로 보기엔 안쪽 띠가 너무 넓습니다. 서로 다른 투상도일 가능성이 큽니다." });
   }
   for (const f of flags) notes.push(f.text);
-  return { ok: true, L_px: along, top, bottom, bore, sectioned: !!partner, axis, bbox: { x0: main.x0, y0: main.y0, x1: main.x1, y1: main.y1 }, vertical, hints, notes, flags, pxPerLen: along, imageSize: { w, h } };
+  return { ok: true, L_px: along, top, bottom, bore, sectioned: !!partner, axis, bbox: { x0: main.x0, y0: main.y0, x1: main.x1, y1: main.y1 }, vertical, hints, notes, flags, signals: sig, pxPerLen: along, imageSize: { w, h } };
 }
 function median(a) { const s = [...a].sort((p, q) => p - q); return s.length ? s[Math.floor(s.length / 2)] : 0; }
 function estimateStroke(mask, w, h) {
@@ -212,6 +223,27 @@ function estimateStroke(mask, w, h) {
   let best = 1, bestN = -1;
   for (let k = 1; k < 12; k++) if (hist[k] * k > bestN) { bestN = hist[k] * k; best = k; }
   return best;
+}
+
+/* 회전체 정면도가 맞는지 가리는 신호 (문자를 읽지 않고 외형만으로 판정한다)
+     both      위·아래가 둘 다 측정된 열의 비율. 낮으면 한쪽만 재진 것이라 아래 값들을 믿을 수 없다.
+     asym      그 열들에서 위·아래 반경 차이. 회전체 정면도는 축 대칭이므로 0 에 가깝다.
+     aspect    축 방향 길이 / 축 직각 길이. 1 근처면 정면에서 본 원(원형 투상)일 수 있다.
+     circleErr 외형이 반원 곡선에 얼마나 맞는가. 작을수록 "원" 이다. */
+export function revolveSignals(top, bottom, bbox, vertical = false) {
+  const n = top.length;
+  let rmax = 0;
+  for (let i = 0; i < n; i++) rmax = Math.max(rmax, top[i], bottom[i]);
+  const eps = rmax * 0.04;
+  let both = 0, dsum = 0, msum = 0, err = 0, base = 0;
+  for (let i = 0; i < n; i++) {
+    if (top[i] > eps && bottom[i] > eps) { both++; dsum += Math.abs(top[i] - bottom[i]); msum += Math.max(top[i], bottom[i]); }
+    const u = ((i + 0.5) / n) * 2 - 1;
+    err += Math.abs(Math.max(top[i], bottom[i]) - rmax * Math.sqrt(Math.max(0, 1 - u * u)));
+    base += rmax;
+  }
+  const w = bbox.x1 - bbox.x0 + 1, h = bbox.y1 - bbox.y0 + 1;
+  return { both: both / n, asym: both ? dsum / msum : 0, aspect: vertical ? h / Math.max(1, w) : w / Math.max(1, h), circleErr: base ? err / base : 1 };
 }
 
 /* ------------------------------------------------------------ 프로파일 → DSL */
@@ -474,12 +506,25 @@ export function extractHeuristic(img, opts = {}) {
   const out = profileToDSL(sil, opts);
   /* 그럴듯한 회전체인가: 세그먼트가 지나치게 많거나(잡음), 검사 실패로 피처를 다 덜어냈거나, 다중 투상도 신호가 있으면 낮은 신뢰로 표시 */
   const reasons = [];
+  /* 원통(평탄) 구간이 축 길이의 몇 %인가. 선반 부품은 원통이 대부분이고, 유기적 윤곽(밑창·바퀴·손잡이)은 거의 없다.
+     계단이 8개 이상인데 평탄이 45% 미만이면 곡선 윤곽을 계단으로 근사한 것이다(신발 밑창·캐스터에서 실측).
+     기준값은 정상 60여 건(샘플 17종×3해상도 + 열화 스캔)에서 오거부 0 건이 되도록 잡았다. */
+  const flatCover = (out.pieces || []).filter((p) => p.kind === "flat").reduce((a, p) => a + (p.x1 - p.x0), 0);
+  const flags = [...(sil.flags || [])];
+  if (flatCover < 0.45 && (out.dsl.segments || []).length >= 8) {
+    flags.push({ kind: "organic", hard: true, value: flatCover,
+      text: `외형이 계속 굽어 있어 원통 구간이 거의 없습니다(축 길이의 ${Math.round(flatCover * 100)}%). 선반에서 깎는 회전체 도면으로 보기 어렵습니다.` });
+  }
+  sil.flags = flags;
+  /* hard 신호(회전체 정면도가 아님)를 먼저 — 이유 목록의 맨 앞에 온다 */
+  const hardFlags = flags.filter((f) => f.hard);
+  for (const f of hardFlags) reasons.push(f.text);
   if ((out.dsl.segments || []).length > 14) reasons.push(`세그먼트가 ${out.dsl.segments.length}개로 너무 많습니다(잡음이 외형선에 섞였을 때의 전형).`);
   const tiny = (out.dsl.segments || []).filter((sg) => sg.length < (opts.overallLength || 100) * 0.015).length;
   if (tiny >= 3) reasons.push(`아주 짧은 세그먼트가 ${tiny}개. 치수선·지시선이 외형선에 붙어 읽혔을 가능성.`);
-  for (const f of sil.flags || []) reasons.push(f.text);
-  const plausible = reasons.length === 0 || (reasons.length === 1 && (sil.flags || []).some((f) => f.kind === "lowres"));
-  return { ok: true, method: "silhouette", plausible, reasons, dsl: out.dsl, notes: [...sil.notes, ...out.notes], silhouette: { L: sil.L_px, top: sil.top, bottom: sil.bottom, bbox: sil.bbox, axis: sil.axis, imageSize: sil.imageSize }, hints: sil.hints, flags: sil.flags || [], dims_read: [], pieces: out.pieces };
+  for (const f of sil.flags || []) if (!f.hard) reasons.push(f.text);
+  const plausible = !hardFlags.length && (reasons.length === 0 || (reasons.length === 1 && (sil.flags || []).some((f) => f.kind === "lowres")));
+  return { ok: true, method: "silhouette", plausible, verdict: hardFlags.length ? "not_revolve" : "ok", reasons, dsl: out.dsl, notes: [...sil.notes, ...out.notes], silhouette: { L: sil.L_px, top: sil.top, bottom: sil.bottom, bbox: sil.bbox, axis: sil.axis, imageSize: sil.imageSize }, hints: sil.hints, flags: sil.flags || [], dims_read: [], pieces: out.pieces };
 }
 
 /* ------------------------------------------------------------ 서버(시각 LLM) 호출 — 브라우저 전용 */
