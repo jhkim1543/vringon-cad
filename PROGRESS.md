@@ -2482,6 +2482,17 @@ fire-octo ≈4p · sar-vtol ≈3p)과 프리미티브 어휘로는 말할 수 �
 온프렘은 저장소 루트를 서빙하므로 대조표 주소가 `/docs/renders.html`이고, Pages는 `docs/`를 루트로 서빙하므로
 `/renders.html`이다. 상대 경로로 쓴 덕분에 페이지 자체는 양쪽에서 그대로 돈다.
 
+**`git archive`는 온프렘에 CRLF를 심는다 (`-c core.autocrlf=false`를 붙일 것).** 이 저장소는
+`core.autocrlf=true`라 작업 트리의 텍스트 파일이 CRLF다. 커밋된 블롭은 LF이고 Pages는 그 블롭을 그대로
+서빙하는데, `git archive`(와 작업 트리를 그냥 `tar`로 묶는 것)는 **내보낼 때 다시 CRLF로 바꾼다**. 그래서
+배포 직후 세 배포본을 md5로 대 보면 온프렘만 텍스트 파일이 어긋난다 — 처음 확인했을 때 `docs/index.html`이
+커밋본 46586B / 온프렘 47605B였다. 동작에는 차이가 없지만 "세 배포본이 같은가"를 해시로 확인할 수 없게 되므로,
+`git -c core.autocrlf=false archive`로 블롭 바이트를 그대로 보낸다. 지금은 추적 파일 386개가 온프렘·커밋본
+전부 동일하다.
+
+작업 트리와 커밋본을 비교할 때도 같은 함정이 있다. 로컬 대조는 작업 트리 파일이 아니라
+`git cat-file -p HEAD:<경로>`로 해야 한다.
+
 **Pages에서 밑줄로 시작하는 파일이 404였다 (`docs/.nojekyll` 추가).** 배포 후 스모크에서
 `/specs/_design-similarity.json`이 404로 돌아왔다. GitHub Pages는 기본으로 Jekyll을 태우고, Jekyll은
 밑줄로 시작하는 파일·폴더를 출력에서 제외한다. `_similarity.json`·`_photo-inventory.json`도 같이 빠져
