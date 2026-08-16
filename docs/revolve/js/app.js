@@ -6,19 +6,19 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
-import { validateShaft, normalizeShaft, DSL_VERSION } from "./shaft-schema.js?v=695c658e";
-import { computeMass, totalLength, maxDiameter, buildTopLine, collectEvents } from "./shaft-profile.js?v=695c658e";
-import { densityOf } from "./shaft-standards.js?v=695c658e";
-import { buildShaft3D, makeMaterials, setSectionPlanes } from "./shaft-cad.js?v=695c658e";
-import { drawShaft, toSVG } from "./shaft-drawing.js?v=695c658e";
-import { extractHeuristic, extractViaServer } from "./shaft-extract.js?v=695c658e";
-import { verifyExtraction, goldenMetrics } from "./shaft-verify.js?v=695c658e";
-import { sampleShaft } from "./shaft-sampler.js?v=695c658e";
-import { analyzeMates, matesSummary } from "./shaft-mates.js?v=695c658e";
-import { buildAssembly, createAssemblySim, assemblyChecks, makeMateMaterials, makeSpinMarker } from "./shaft-assembly.js?v=695c658e";
-import { exportSTEP, exportSTL, exportGLB, exportOBJ, exportUSDA, exportUSDZ, exportFBX, exportPLY, exportDrawingDXF, exportDrawingSVG, exportJSON, downloadBlob } from "./shaft-export.js?v=695c658e";
+import { validateShaft, normalizeShaft, DSL_VERSION } from "./shaft-schema.js?v=26efc7b8";
+import { computeMass, totalLength, maxDiameter, buildTopLine, collectEvents } from "./shaft-profile.js?v=26efc7b8";
+import { densityOf } from "./shaft-standards.js?v=26efc7b8";
+import { buildShaft3D, makeMaterials, setSectionPlanes } from "./shaft-cad.js?v=26efc7b8";
+import { drawShaft, toSVG } from "./shaft-drawing.js?v=26efc7b8";
+import { extractHeuristic, extractViaServer } from "./shaft-extract.js?v=26efc7b8";
+import { verifyExtraction, goldenMetrics } from "./shaft-verify.js?v=26efc7b8";
+import { sampleShaft } from "./shaft-sampler.js?v=26efc7b8";
+import { analyzeMates, matesSummary } from "./shaft-mates.js?v=26efc7b8";
+import { buildAssembly, createAssemblySim, assemblyChecks, makeMateMaterials, makeSpinMarker } from "./shaft-assembly.js?v=26efc7b8";
+import { exportSTEP, exportSTL, exportGLB, exportOBJ, exportUSDA, exportUSDZ, exportFBX, exportPLY, exportDrawingDXF, exportDrawingSVG, exportJSON, downloadBlob } from "./shaft-export.js?v=26efc7b8";
 
-const BUILD = "695c658e";
+const BUILD = "26efc7b8";
 const $ = (id) => document.getElementById(id);
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const fmt = (v, d = 1) => (Number.isFinite(v) ? (Math.round(v * 10 ** d) / 10 ** d).toString() : "—");
@@ -36,7 +36,7 @@ const state = {
   raster: null,        /* ImageData 로 판독용 */
   extraction: null,    /* {method, dsl, dims_read, notes, silhouette, verify?, hints, ms} */
   dsl: null, pristine: null, gold: null,
-  built: null, verify: null, mates: null, assembly: null, sim: null, marker: null,
+  built: null, verify: null, mates: null, assembly: null, sim: null, marker: null, simOn: false,
   section: false, showingDrawing: false, showingGolden: false,
 };
 /* PIPE[k] 는 k+1 단계. cta/note 는 그 단계를 "실행"하는 버튼의 말 — 다음 단계가 무엇을 하는지 미리 알린다 */
@@ -45,9 +45,9 @@ const PIPE = [
   { n: 2, label: "판독 · DSL", cta: "판독 시작", note: "도면을 읽어 파라메트릭 DSL 로 옮깁니다 (실루엣 측정 + AI 판독)" },
   { n: 3, label: "3D CAD", cta: "3D CAD 만들기", note: "DSL 을 회전(lathe) + 국부 CSG 로 컴파일합니다" },
   { n: 4, label: "검증", cta: "검증 실행", note: "DSL 을 다시 그려 도면 실루엣과 대조하고, 읽은 치수 문자를 DSL 과 대조합니다" },
-  { n: 5, label: "조립 · 시뮬", cta: "조립 · 시뮬레이션", note: "도면의 규격 표기(멈춤링 홈·키홈·나사·공차·횡구멍)에서 상대 부품과 운동을 읽어 분해·조립·회전을 보여 줍니다" },
-  { n: 6, label: "내보내기", cta: "내보내기", note: "STEP · STL · GLB · OBJ · FBX · USD/USDZ · PLY · DXF · SVG · JSON" },
 ];
+/* 조립·시뮬과 내보내기는 단계가 아니다: 내보내기는 3D 가 만들어지면 오른쪽 패널에 늘 있고,
+   조립·시뮬은 뷰포트 토글이라 언제든 켜고 끌 수 있다(끄면 부품만 남는다). */
 const pipe = { done: 0, running: 0, active: false };
 
 /* ================================================================ 뷰어 */
@@ -187,6 +187,7 @@ function renderStepper() {
   $("btnSection").classList.toggle("show", pipe.done >= 3);
   $("btnDrawing").classList.toggle("show", pipe.done >= 3);
   $("btnRegen").classList.toggle("show", pipe.done >= 2);
+  $("btnSim").classList.toggle("show", pipe.done >= 3);
 }
 function showGen(on, title, sub, steps) {
   $("gen").classList.toggle("on", on);
@@ -237,8 +238,6 @@ async function runStep(n) {
     else if (n === 2) await stepExtract();
     else if (n === 3) await stepBuild();
     else if (n === 4) await stepVerify();
-    else if (n === 5) await stepAssembly();
-    else if (n === 6) await stepExport();
     pipe.done = Math.max(pipe.done, n);
   } catch (e) {
     console.error(e); toast(`${n}단계 실패: ${e.message}`);
@@ -342,9 +341,9 @@ function applyDslChange(next, why = "") {
   if (!v.ok) { toast(`고칠 수 없습니다: ${v.errors[0]}`); return false; }
   next.meta = { ...(next.meta || {}), source: "edited" };
   setDsl(next);
-  if (pipe.done >= 3) rebuild3D();
+  if (pipe.done >= 3) { rebuild3D(); showExportPanel(); }
   if (pipe.done >= 4) computeVerify();
-  if (pipe.done >= 5 && state.assembly) renderMatePanel();
+  if (state.assembly) renderMatePanel();
   if (state.sheetMode === "regen") refreshSheet(); else drawOverlay();
   return true;
 }
@@ -464,11 +463,12 @@ async function stepBuild() {
   steps.forEach((s) => (s.state = "done")); showGen(true, "3단계 · 3D CAD", "", steps);
   showSheet(false); $("dock").style.display = "";
   fitView();
-  toast(`3D 완료 — 삼각형 ${state.built.stats.tris.toLocaleString()}개, ${state.built.stats.ms}ms${state.built.stats.csg ? ` (CSG ${state.built.stats.csg}회)` : ""}`, true);
+  showExportPanel();
+  toast(`3D 완료 — 삼각형 ${state.built.stats.tris.toLocaleString()}개, ${state.built.stats.ms}ms${state.built.stats.csg ? ` (CSG ${state.built.stats.csg}회)` : ""}. 오른쪽 패널에서 내려받고, 조립·시뮬은 위 토글로 켭니다`, true);
 }
 function rebuild3D() {
   const dsl = state.dsl; const v = validateShaft(dsl); if (!v.ok) return;
-  const hadAssembly = !!state.assembly;
+  const hadAssembly = !!state.assembly || state.simOn;
   teardownAssembly();
   clearModel();
   const built = buildShaft3D(dsl, { materials, radial: 96 });
@@ -600,19 +600,37 @@ function spawnAssembly() {
   renderSimGauge();
   return asm;
 }
-async function stepAssembly() {
-  const steps = [{ text: "도면 규격 표기에서 결합부 판정 (멈춤링·키·나사·공차·횡구멍)", state: "run" }, { text: "상대 부품 생성 (규격표 근사)" }, { text: "분해 순서·조립 점검" }];
-  showGen(true, "5단계 · 조립 · 시뮬레이션", "", steps);
-  await sleep(120);
-  teardownAssembly();
-  spawnAssembly();
-  steps.forEach((x) => (x.state = "done")); showGen(true, "5단계 · 조립 · 시뮬레이션", "", steps);
-  renderMatePanel();
-  showSheet(false);
-  $("mateBlock").style.display = ""; $("mateBlock").scrollIntoView({ behavior: "smooth", block: "start" });
-  const n = state.mates.mates.filter((m) => m.part).length;
-  toast(n ? `결합부 ${n}개 인식 — 분해 슬라이더·회전으로 확인하세요` : "상대 부품이 없는 단품입니다 — 회전만 보여 줍니다", true);
+/* 조립·시뮬 토글: 켜면 상대 부품·기준 표시가 붙고, 끄면 부품만 남는다(형상은 그대로) */
+async function setSimMode(on) {
+  if (!model || !state.dsl) return;
+  if (on) {
+    const steps = [{ text: "도면 규격 표기에서 결합부 판정 (멈춤링·키·나사·공차·횡구멍)", state: "run" }, { text: "상대 부품 생성 (규격표 근사)" }, { text: "분해 순서·조립 점검" }];
+    showGen(true, "조립 · 시뮬레이션", "", steps);
+    await sleep(100);
+    teardownAssembly();
+    spawnAssembly();
+    steps.forEach((x) => (x.state = "done"));
+    renderMatePanel();
+    showSheet(false);
+    $("mateBlock").style.display = "";
+    $("mateBlock").scrollIntoView({ behavior: "smooth", block: "start" });
+    showGen(false);
+    const n = state.mates.mates.filter((m) => m.part).length;
+    toast(n ? `결합부 ${n}개 인식 — 분해 슬라이더·회전으로 확인하세요` : "상대 부품이 없는 단품입니다 — 회전만 보여 줍니다", true);
+  } else {
+    teardownAssembly();          /* 상대 부품·기준 표시·시뮬 상태를 모두 걷어낸다 */
+    $("mateBlock").style.display = "none";
+    $("simExplode").value = 0;
+    $("btnSpin").classList.remove("on");
+    fitView();                    /* 부품만 보이도록 화면 다시 맞춤 */
+    toast("부품만 보기로 돌아왔습니다");
+  }
+  state.simOn = on;
+  $("btnSim").classList.toggle("on", on);
+  $("btnSim").textContent = on ? "조립 · 시뮬 끄기" : "조립 · 시뮬 켜기";
+  if ($("asmExportRow")) $("asmExportRow").style.display = on && state.assembly ? "flex" : "none";
 }
+$("btnSim").onclick = () => setSimMode(!state.simOn);
 const MATE_KO = { spin: "자전축", snap: "멈춤링", key: "키·허브", screw: "나사 체결", bearing: "베어링", pin: "핀", wrench: "공구", fit: "끼워맞춤" };
 function renderMatePanel() {
   const a = state.mates; if (!a) return;
@@ -661,12 +679,11 @@ $("btnSimStop").onclick = () => { if (!state.sim) return; state.sim.stop(); $("b
 $("simExplode").oninput = () => { if (!state.sim) return; state.sim.stop(); $("btnSpin").classList.remove("on"); state.sim.applyExplode(Number($("simExplode").value) / 100); renderSimGauge(); };
 $("simRpm").oninput = () => { $("simRpmV").textContent = $("simRpm").value; state.sim?.setRpm(Number($("simRpm").value)); renderSimGauge(); };
 
-/* ---- 6단계: 내보내기 */
-async function stepExport() {
-  await sleep(120);
+/* ---- 내보내기: 단계가 아니라 3D 가 있으면 늘 오른쪽 패널에 있다 */
+function showExportPanel() {
+  if (!model) return;
   renderExportPanel();
-  $("exportBlock").style.display = ""; $("exportBlock").scrollIntoView({ behavior: "smooth", block: "start" });
-  toast("내보내기 준비 완료", true);
+  $("exportBlock").style.display = "";
 }
 function exportRoot() {
   /* 조립체 포함 체크 시 상대 부품까지 한 그룹으로 (부품은 항상 첫 자식) */
@@ -685,14 +702,17 @@ function renderExportPanel() {
   const l3 = $("dlList3d"), l2 = $("dlList2d"); l3.innerHTML = ""; l2.innerHTML = "";
   /* 정답과 형상이 완전히 같으면(키 순서·메타는 무시) 미리 만든 해석적 STEP 을 그대로 준다 */
   const stepPre = state.source?.kind === "sample" && state.sample?.files?.step && state.gold && goldenMetrics(dsl, state.gold).exact;
-  if (stepPre) l3.appendChild(row("STEP", "해석적 B-rep · 파이썬 실행기(CadQuery)가 정답 DSL 로 미리 생성", async () => { const b = await fetch(`./samples/${state.sample.id}/${state.sample.files.step}?v=${BUILD}`).then((r) => r.blob()); downloadBlob(b, `${id}.step`); }));
-  if (state.mode === "live" && state.serverStep) l3.appendChild(row("STEP", "해석적 B-rep · 온프렘 실행기(CadQuery)가 지금 이 DSL 로 생성", async () => {
+  /* 해석적 STEP 은 한 줄만: 라이브 서버가 있으면 지금 DSL 로 만들고, 없으면 정답 DSL 로 미리 만든 파일을 준다.
+     (셋 다 내보내면 목록에 STEP 이 세 번 나와 무엇을 받는지 알 수 없다.) */
+  const liveStep = state.mode === "live" && state.serverStep;
+  if (stepPre && !liveStep) l3.appendChild(row("STEP", "해석적 B-rep · 파이썬 실행기(CadQuery)가 정답 DSL 로 미리 생성", async () => { const b = await fetch(`./samples/${state.sample.id}/${state.sample.files.step}?v=${BUILD}`).then((r) => r.blob()); downloadBlob(b, `${id}.step`); }));
+  if (liveStep) l3.appendChild(row("STEP", "해석적 B-rep · 온프렘 실행기(CadQuery)가 지금 이 DSL 로 생성", async () => {
     toast("서버 실행기가 STEP 을 만드는 중…");
     const r = await fetch("./api/step", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ dsl, formats: "step", download: "step" }) });
     if (!r.ok) { const j = await r.json().catch(() => ({})); return toast(`STEP 실패: ${j.error || r.status}`); }
     downloadBlob(await r.blob(), `${id}.step`); toast("STEP (해석적 B-rep) 내려받음", true);
   }));
-  l3.appendChild(row("STEP", "면분할 B-rep · 이 브라우저 메시에서 (AP214)", () => downloadBlob(exportSTEP(exportRoot(), id), `${id}_faceted.step`, "application/step")));
+  l3.appendChild(row("STEP·면분할", "삼각형 면 B-rep · 이 브라우저 메시에서 (AP214)", () => downloadBlob(exportSTEP(exportRoot(), id), `${id}_faceted.step`, "application/step")));
   l3.appendChild(row("STL", "바이너리 · 3D 프린팅", () => downloadBlob(exportSTL(exportRoot()), `${id}.stl`, "model/stl")));
   l3.appendChild(row("GLB", "재질 포함 · 웹/뷰어", async () => downloadBlob(await exportGLB(exportRoot()), `${id}.glb`, "model/gltf-binary")));
   l3.appendChild(row("OBJ", "메시 (mm)", () => downloadBlob(exportOBJ(exportRoot()), `${id}.obj`, "text/plain")));
@@ -746,6 +766,7 @@ function resetWorkspace(full = true) {
   state.source = null; state.raster = null; state.extraction = null; state.dsl = null; state.pristine = null; state.gold = null; state.built = null; state.verify = null; state.sample = null;
   state.showingGolden = false; $("btnGolden").textContent = "정답 DSL 보기"; $("btnGolden").classList.remove("on");
   state.sheetMode = "original"; $("btnRegen").textContent = "재생성 도면"; $("btnRegen").classList.remove("on");
+  state.simOn = false; $("btnSim").textContent = "조립 · 시뮬 켜기"; $("btnSim").classList.remove("on");
   pipe.done = 0; pipe.running = 0; pipe.active = false;
   showSheet(false); $("stageEmpty").style.display = ""; $("dock").style.display = "none";
   for (const id of ["extractBlock", "segBlock", "featBlock", "jsonBlock", "verifyBlock", "mateBlock", "exportBlock"]) $(id).style.display = "none";

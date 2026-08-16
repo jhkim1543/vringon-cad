@@ -8,8 +8,8 @@
    서버 실행기(pipeline/executor.py, CadQuery)는 같은 프로파일로 진짜 B-rep 을 만든다. */
 
 import * as THREE from "three";
-import { CSG } from "./csg.js?v=695c658e";
-import { buildTopLine, buildInnerLine, collectEvents, totalLength, segmentDiameters, outerDiameterAt } from "./shaft-profile.js?v=695c658e";
+import { CSG } from "./csg.js?v=26efc7b8";
+import { buildTopLine, buildInnerLine, collectEvents, totalLength, segmentDiameters, outerDiameterAt } from "./shaft-profile.js?v=26efc7b8";
 
 const DEG = Math.PI / 180;
 

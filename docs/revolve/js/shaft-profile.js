@@ -5,8 +5,8 @@
 
    출력 좌표계: x = 축 방향(왼쪽 끝 0), r = 반경(≥0). 순수 모듈. */
 
-import { segmentSpans, segmentDiameters, totalLength, maxDiameter, boreDiameterAt, outerDiameterAt } from "./shaft-schema.js?v=695c658e";
-import { parseThreadSpec, threadMinorDiameter, centerHoleDims } from "./shaft-standards.js?v=695c658e";
+import { segmentSpans, segmentDiameters, totalLength, maxDiameter, boreDiameterAt, outerDiameterAt } from "./shaft-schema.js?v=26efc7b8";
+import { parseThreadSpec, threadMinorDiameter, centerHoleDims } from "./shaft-standards.js?v=26efc7b8";
 
 const DEG = Math.PI / 180;
 

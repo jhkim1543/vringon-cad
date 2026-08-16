@@ -11,8 +11,8 @@
      motion {type: 'spin'|'axial'|'radial'|'screw', dir: [x,y,z], distance, pitch}
    순수 모듈(브라우저·Node 공용). */
 
-import { collectEvents, totalLength, maxDiameter, segmentSpans, segmentDiameters, outerDiameterAt, boreDiameterAt } from "./shaft-profile.js?v=695c658e";
-import { parseThreadSpec, keywayFor, snapRingGroove } from "./shaft-standards.js?v=695c658e";
+import { collectEvents, totalLength, maxDiameter, segmentSpans, segmentDiameters, outerDiameterAt, boreDiameterAt } from "./shaft-profile.js?v=26efc7b8";
+import { parseThreadSpec, keywayFor, snapRingGroove } from "./shaft-standards.js?v=26efc7b8";
 
 /* ISO 4032 육각 너트 근사: M → [대변 s, 높이 m] */
 const NUT_TABLE = { 3: [5.5, 2.4], 4: [7, 3.2], 5: [8, 4.7], 6: [10, 5.2], 8: [13, 6.8], 10: [16, 8.4], 12: [18, 10.8], 14: [21, 12.8], 16: [24, 14.8], 18: [27, 15.8], 20: [30, 18], 22: [34, 19.4], 24: [36, 21.5], 27: [41, 23.8], 30: [46, 25.6] };

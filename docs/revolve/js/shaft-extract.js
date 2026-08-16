@@ -9,8 +9,8 @@
    이 파일은 ①과 클라이언트 측 ②③ 호출을 담는다. 픽셀 접근은 ImageData 모양({width,height,data})만 받으므로
    Node 에서도 돌릴 수 있다(래스터화만 호출자가). */
 
-import { DSL_VERSION, validateShaft, normalizeShaft } from "./shaft-schema.js?v=695c658e";
-import { keywayFor, ISO_COARSE_PITCH, threadSpecText } from "./shaft-standards.js?v=695c658e";
+import { DSL_VERSION, validateShaft, normalizeShaft } from "./shaft-schema.js?v=26efc7b8";
+import { keywayFor, ISO_COARSE_PITCH, threadSpecText } from "./shaft-standards.js?v=26efc7b8";
 
 /* ------------------------------------------------------------ 픽셀 유틸 */
 export function inkMask(img, threshold = 110) {

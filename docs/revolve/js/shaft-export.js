@@ -10,10 +10,10 @@ import { GLTFExporter } from "three/addons/exporters/GLTFExporter.js";
 import { STLExporter } from "three/addons/exporters/STLExporter.js";
 import { PLYExporter } from "three/addons/exporters/PLYExporter.js";
 import { USDZExporter } from "three/addons/exporters/USDZExporter.js";
-import { exportFBX } from "./fbx-export.js?v=695c658e";
-import { drawShaft, toSVG, toDXF } from "./shaft-drawing.js?v=695c658e";
-import { computeMass, totalLength, maxDiameter } from "./shaft-profile.js?v=695c658e";
-import { densityOf } from "./shaft-standards.js?v=695c658e";
+import { exportFBX } from "./fbx-export.js?v=26efc7b8";
+import { drawShaft, toSVG, toDXF } from "./shaft-drawing.js?v=26efc7b8";
+import { computeMass, totalLength, maxDiameter } from "./shaft-profile.js?v=26efc7b8";
+import { densityOf } from "./shaft-standards.js?v=26efc7b8";
 
 /* 파트 삼각형 수집 (렌더 전용 뒷면/고스트 메시 제외) */
 /* 회전 마커는 화면 표시일 뿐이므로 어떤 형식으로도 내보내지 않는다 */

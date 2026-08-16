@@ -8,8 +8,8 @@
    좌표: 부품 로컬 원점은 왼쪽 끝면 x=0, 축 = +X (shaft-cad.js 와 동일). 호출자가 group 을 옮겨도 무방하다. */
 
 import * as THREE from "three";
-import { latheXY } from "./shaft-cad.js?v=695c658e";
-import { buildTopLine, totalLength, maxDiameter } from "./shaft-profile.js?v=695c658e";
+import { latheXY } from "./shaft-cad.js?v=26efc7b8";
+import { buildTopLine, totalLength, maxDiameter } from "./shaft-profile.js?v=26efc7b8";
 
 const DEG = Math.PI / 180;
 
