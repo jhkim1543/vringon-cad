@@ -5,6 +5,11 @@
 판독만 AI(시각 LLM)가 하고, 형상·도면·검증·내보내기는 전부 결정론 코드가 실행합니다.
 본체 [VRINGON CAD](../README.md) 데모의 디자인 시스템(`css/vringon.css`)과 5단계 스텝퍼 UI 를 그대로 씁니다.
 
+## 두 갈래
+- **Part 1 (`revolve.html`)** — 단일 도면 회전체. 아래 설명이 전부 여기에 해당합니다.
+- **Part 2 (`assembly.html`)** — 다시점 도면에서 뷰를 나눠 **부품 단위**로 3D 를 만듭니다(회전체 · 판 · 윤곽 압출).
+  기하만으로는 뷰가 무엇인지 알 수 없으므로 사람이 유형을 정하는 반자동입니다. 진입 화면(`index.html`)에서 고릅니다.
+
 | | 주소 | 비고 |
 |---|---|---|
 | 공개 데모 (정적, 로그인 없음) | https://jhkim1543.github.io/vringon-cad/revolve/ | 샘플은 미리 판독한 결과를 재생 · 올린 도면은 브라우저 외형 판독 · **보호 빌드**(한 파일로 묶고 주석·QA 훅 제거) |
@@ -37,7 +42,11 @@ js/shaft-verify.js           검증기: 실루엣 IoU · 치수 정합 · 신뢰
 js/shaft-mates.js            도면 → 결합부·자전축·분해 순서 판정 (결정론, 근거·신뢰도 포함)
 js/shaft-assembly.js         상대 부품 3D 생성 + 분해·조립·자전·나사 체결 시뮬레이션
 js/shaft-export.js, fbx-export.js  STEP(면분할)·STL·GLB·OBJ·FBX·USDA/USDZ·PLY·DXF·SVG·JSON
-js/tour.js                   첫 방문 사용법 안내 (사용 순서대로 짚는 툴팁)
+js/tour.js                   첫 방문 사용법 안내 (Part 1·2 각각의 순서)
+index.html                   진입 화면 (Part 1 / Part 2 고르기)
+assembly.html, js/part2.js   ★ Part 2 워크스페이스
+js/views.js                  뷰 분할 + 뷰별 신호(대칭·평탄·원형) + 윤곽·구멍 추적
+js/part2-cad.js              뷰 → 부품 3D (회전 / 압출), 부피, 나란히 배치
 deploy/, DEPLOY.md           외부 도메인 배포 한 벌 (컨테이너·자동 HTTPS·접근 코드) 와 안내
 guide.html, assets/guide/    업로드 안내 (되는/안 되는 도면 삽화 + 치수 기준 그림)
 js/shaft-standards.js        규격표 (재질 밀도 포함)

@@ -2,10 +2,10 @@
    처음 열었을 때 한 번 자동으로 뜨고(기억은 localStorage), 위쪽 "사용법" 버튼으로 다시 볼 수 있다.
    구멍(스포트라이트)은 대상의 화면 좌표에 맞춰 그리며, 아직 나타나지 않은 버튼은 대체 영역을 짚는다. */
 
-const KEY = "vringon.revolve.tour.v1";
+const KEYS = { part1: "vringon.revolve.tour.v1", part2: "vringon.part2.tour.v1" };
 const $ = (id) => document.getElementById(id);
 
-const STEPS = [
+const STEPS_P1 = [
   { el: "chips", place: "right", title: "샘플 도면으로 시작",
     body: "카드를 누르면 그 도면으로 바로 진행됩니다. 처음이라면 여기서 시작하세요." },
   { el: "drop", place: "right", title: "내 도면 올리기",
@@ -21,7 +21,23 @@ const STEPS = [
     body: "판독한 치수를 고치면 3D와 도면이 함께 바뀝니다. 3D가 만들어지면 맨 아래 내보내기에서 STEP, STL, GLB 등으로 받습니다." },
 ];
 
-let i = 0, root = null, onKey = null;
+const STEPS_P2 = [
+  { el: "chips", place: "right", title: "예시 도면으로 시작",
+    body: "여러 투상도가 한 장에 있는 도면들입니다. Part 1 이 읽지 못하는 부류를 여기서 다룹니다." },
+  { el: "drop", place: "right", title: "내 도면 올리기",
+    body: "정면 · 평면 · 측면이 함께 있어도 됩니다. 올리면 뷰를 자동으로 나눕니다." },
+  { el: "viewBlock", fallback: "stage", fallbackBox: { left: 40, top: 90, w: 260, h: 120 }, place: "right", title: "나눈 뷰 고르기",
+    body: "도면 위 상자를 누르거나 목록에서 고릅니다. 회전 점수는 참고일 뿐, 그 뷰가 무엇인지는 사람이 압니다." },
+  { el: "scaleBlock", fallback: "drop", place: "right", title: "축척 한 번만",
+    body: "고른 뷰의 가로 실제 길이를 넣으면 도면 전체 치수가 정해집니다. 넣기 전에는 실제 치수를 만들지 않습니다." },
+  { el: "makeBlock", fallback: "sideRight", fallbackBox: { right: 20, top: 120, w: 260, h: 200 }, place: "left", title: "유형을 정하고 만들기",
+    body: "회전체 · 판 · 윤곽 압출 중에서 고르고, 판이면 두께를 넣습니다. 두께는 한 뷰만으로는 알 수 없습니다." },
+  { el: "sideRight", place: "left", title: "쌓고 내려받기",
+    body: "부품이 목록에 쌓이고, 아래에서 STEP · STL · GLB 등으로 한 번에 받습니다. 배치는 보기용이며 조립 위치가 아닙니다." },
+];
+let STEPS = STEPS_P1;
+
+let i = 0, root = null, onKey = null, KEY = KEYS.part1;
 
 function rectOf(step) {
   const el = $(step.el);
@@ -110,7 +126,9 @@ export function startTour() {
   render();
 }
 
-export function initTour() {
+export function initTour(which = "part1") {
+  STEPS = which === "part2" ? STEPS_P2 : STEPS_P1;
+  KEY = KEYS[which] || KEYS.part1;
   const btn = $("btnTour");
   if (btn) btn.onclick = () => { root ? close() : startTour(); };
   let seen = false;

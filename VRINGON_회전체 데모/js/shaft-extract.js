@@ -210,7 +210,7 @@ export function measureSilhouette(img, opts = {}) {
   return { ok: true, L_px: along, top, bottom, bore, sectioned: !!partner, axis, bbox: { x0: main.x0, y0: main.y0, x1: main.x1, y1: main.y1 }, vertical, hints, notes, flags, signals: sig, pxPerLen: along, imageSize: { w, h } };
 }
 function median(a) { const s = [...a].sort((p, q) => p - q); return s.length ? s[Math.floor(s.length / 2)] : 0; }
-function estimateStroke(mask, w, h) {
+export function estimateStroke(mask, w, h) {
   const hist = new Array(12).fill(0);
   for (let y = 0; y < h; y += 2) {
     let run = 0;

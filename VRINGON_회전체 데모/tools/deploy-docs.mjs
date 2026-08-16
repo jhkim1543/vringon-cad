@@ -26,8 +26,8 @@ const V = h.digest("hex").slice(0, 8);
 rmSync(DST, { recursive: true, force: true });
 mkdirSync(DST, { recursive: true });
 for (const d of ["css", "assets", "samples", "schema"]) cpSync(join(SRC, d), join(DST, d), { recursive: true });
-cpSync(join(SRC, "index.html"), join(DST, "index.html"));
-cpSync(join(SRC, "guide.html"), join(DST, "guide.html"));
+const PAGES = readdirSync(SRC).filter((f) => f.endsWith(".html"));
+for (const f of PAGES) cpSync(join(SRC, f), join(DST, f));
 /* samples 는 통째로(도면·정답·판독·STEP·USDA), prompts/·pipeline/·eval/ 은 정적 데모에 필요 없어 뺀다 */
 
 const stampImports = (src) => src.replace(/(from\s+")(\.\/[^"?]+\.js)(\?v=[0-9a-f]+)?(")/g, `$1$2?v=${V}$4`).replace(/(src=")(\.\/js\/app\.js)(\?v=[0-9a-f]+)?(")/g, `$1$2?v=${V}$4`);
@@ -35,7 +35,7 @@ const stampImports = (src) => src.replace(/(from\s+")(\.\/[^"?]+\.js)(\?v=[0-9a-
 if (RAW) {
   /* ---- 원본 그대로 (모듈 + vendor 복사) */
   for (const d of ["js", "vendor"]) cpSync(join(SRC, d), join(DST, d), { recursive: true });
-  writeFileSync(join(DST, "index.html"), stampImports(readFileSync(join(DST, "index.html"), "utf8")));
+  for (const f of PAGES) writeFileSync(join(DST, f), stampImports(readFileSync(join(DST, f), "utf8")));
   for (const f of readdirSync(join(DST, "js"))) {
     if (!f.endsWith(".js")) continue;
     const p = join(DST, "js", f);
@@ -53,8 +53,8 @@ if (RAW) {
     setup(b) {
       b.onResolve({ filter: /^three$/ }, () => ({ path: join(threeDir, "three.module.js") }));
       b.onResolve({ filter: /^three\/addons\// }, (a) => ({ path: join(threeDir, a.path.slice("three/".length)) }));
-      /* app.js 만 로드 시점에 손본다: QA 훅 제거 + 빌드 스탬프 */
-      b.onLoad({ filter: /[\\/]js[\\/]app\.js$/ }, (a) => {
+      /* 진입점만 로드 시점에 손본다: QA 훅 제거 + 빌드 스탬프 */
+      b.onLoad({ filter: /[\\/]js[\\/](app|part2)\.js$/ }, (a) => {
         let s = readFileSync(a.path, "utf8");
         s = s.replace(/\/\* qa:start \*\/[\s\S]*?\/\* qa:end \*\//, "");
         s = s.replace(/const BUILD = "[^"]*";/, `const BUILD = "${V}";`);
@@ -62,23 +62,26 @@ if (RAW) {
       });
     },
   };
-  const out = await esbuild.build({
-    entryPoints: [join(SRC, "js", "app.js")],
-    bundle: true, format: "esm", minify: true, legalComments: "none", target: ["es2022"],
-    plugins: [vendorResolve], write: false, logLevel: "warning",
-  });
   mkdirSync(join(DST, "js"), { recursive: true });
-  writeFileSync(join(DST, "js", "app.js"), out.outputFiles[0].text);
+  for (const entry of ["app.js", "part2.js"]) {
+    const out = await esbuild.build({
+      entryPoints: [join(SRC, "js", entry)],
+      bundle: true, format: "esm", minify: true, legalComments: "none", target: ["es2022"],
+      plugins: [vendorResolve], write: false, logLevel: "warning",
+    });
+    writeFileSync(join(DST, "js", entry), out.outputFiles[0].text);
+  }
   /* three 는 번들에 들어갔지만 폰트는 CSS 가 직접 부른다 */
   cpSync(join(SRC, "vendor", "fonts"), join(DST, "vendor", "fonts"), { recursive: true });
 
-  /* index.html: 모듈 지도(importmap) 제거, 주석 제거, 인라인 CSS 최소화 */
-  let html = readFileSync(join(DST, "index.html"), "utf8");
-  html = html.replace(/<script type="importmap">[\s\S]*?<\/script>\s*/, "");
-  html = await squeezeHtml(html, esbuild);
-  html = html.replace(/(src=")(\.\/js\/app\.js)(")/, `$1$2?v=${V}$3`);
-  writeFileSync(join(DST, "index.html"), html);
-  writeFileSync(join(DST, "guide.html"), await squeezeHtml(readFileSync(join(DST, "guide.html"), "utf8"), esbuild));
+  /* html: 모듈 지도(importmap) 제거, 주석 제거, 인라인 CSS/JS 최소화, 진입점에 버전 스탬프 */
+  for (const f of PAGES) {
+    let html = readFileSync(join(DST, f), "utf8");
+    html = html.replace(/<script type="importmap">[\s\S]*?<\/script>\s*/, "");
+    html = await squeezeHtml(html, esbuild);
+    html = html.replace(/(src=")(\.\/js\/(?:app|part2)\.js)(")/, `$1$2?v=${V}$3`);
+    writeFileSync(join(DST, f), html);
+  }
   /* 라이선스 고지: 번들에 포함된 오픈소스 (MIT 는 고지 유지가 조건이다) */
   writeFileSync(join(DST, "LICENSES.txt"), readFileSync(join(threeDir, "LICENSE"), "utf8"));
 }
