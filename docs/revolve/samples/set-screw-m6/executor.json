@@ -1,0 +1,25 @@
+{
+ "ok": true,
+ "valid": true,
+ "solids": 1,
+ "faces": 12,
+ "edges": 25,
+ "volume_mm3": 305.306,
+ "volume_analytic_mm3": 305.306,
+ "bbox_mm": [
+  12.0,
+  6.0,
+  6.0
+ ],
+ "length_mm": 12.0,
+ "max_diameter_mm": 6,
+ "notes": [],
+ "warnings": [],
+ "files": {
+  "step": "model.step",
+  "usda": "model.usda",
+  "usdc": "model.usdc"
+ },
+ "ms": 69,
+ "tris": 716
+}

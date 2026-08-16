@@ -37,10 +37,10 @@ export const EXTRACT_RESPONSE_SCHEMA = {
           segments: { type: "array", items: { type: "object", required: ["length", "diameter", "tolerance"], properties: { length: num("길이"), diameter: num("지름"), tolerance: str("공차 예 H7") } } },
           chamfer_left: num("왼쪽 입구 모따기"), chamfer_right: num("오른쪽 입구 모따기") } },
         features: { type: "array", description: "키홈·센터구멍·횡구멍·평면·육각·널링. 없으면 []. 해당 없는 숫자는 0, 문자는 빈 문자열.", items: { type: "object", required: ["type", "segment", "offset", "length", "width", "depth", "angle", "end", "form", "d", "position", "diameter", "through", "count", "across_flats", "pitch"], properties: {
-          type: str("keyway|center_hole|cross_hole|flat|hex|knurl", FEATURE_TYPES), segment: int("세그먼트 인덱스(keyway/flat/hex/knurl)"), offset: num("세그먼트 시작에서 피처 시작까지"),
+          type: str("keyway|center_hole|cross_hole|flat|hex|knurl|hex_socket", FEATURE_TYPES), segment: int("세그먼트 인덱스(keyway/flat/hex/knurl)"), offset: num("세그먼트 시작에서 피처 시작까지"),
           length: num("길이"), width: num("keyway 폭 b"), depth: num("keyway t1 / flat 깊이"), angle: num("둘레 각도(정면 0)"), end: str("center_hole 끝면 left|right (아니면 빈 문자열)"),
           form: str("center_hole 형식 A|B|R (아니면 빈 문자열)"), d: num("center_hole 파일럿 지름"), position: num("cross_hole 중심 x(왼쪽 끝 기준)"), diameter: num("cross_hole 지름"),
-          through: { type: "boolean", description: "cross_hole 관통" }, count: int("flat 개수 1|2"), across_flats: num("hex 대변"), pitch: num("knurl 피치") } } },
+          through: { type: "boolean", description: "cross_hole 관통" }, count: int("flat 개수 1|2"), across_flats: num("hex 대변 / hex_socket 대변 S"), pitch: num("knurl 피치") } } },
       },
     },
     dims_read: { type: "array", description: "도면에서 읽은 치수 문자열 전부 (검증용 근거).", items: { type: "object", required: ["text", "kind", "value", "where"], properties: {
@@ -62,7 +62,8 @@ export const EXTRACT_SYSTEM = `당신은 기계 제도를 읽는 CAD 엔지니�
   round(radius) 는 끝면 볼록 라운드, undercut(width, depth) 는 단차 옆 도피홈(DIN 76 나사 도피홈·DIN 509 연삭 도피홈). depth 는 반경 방향 = (세그먼트 지름 − 도피홈 지름)/2.
 - grooves: 세그먼트 안의 환형 홈. offset 은 그 세그먼트 왼쪽 시작에서 홈 왼쪽 벽까지. 도면이 위치를 세그먼트 오른쪽 끝에서 쟀으면 offset = 세그먼트 길이 − 위치 − 폭 으로 환산. depth = (세그먼트 지름 − 홈 지름)/2.
 - bore: 단면도(해칭)에 보이는 중심 보어. 관통이면 through:true, segments 길이 합 = 전체 길이. 막힌 보어면 from(left|right) 과 깊이.
-- features: keyway(segment, offset, length, width=b, depth=t1), center_hole(end, form A, d), cross_hole(position=왼쪽 끝 기준 x, diameter, through), flat(segment, offset, length, depth, count), hex(segment, across_flats), knurl.
+- features: keyway(segment, offset, length, width=b, depth=t1), center_hole(end, form A, d), cross_hole(position=왼쪽 끝 기준 x, diameter, through), flat(segment, offset, length, depth, count), hex(segment, across_flats), knurl, hex_socket(end, across_flats=S, depth: 끝면의 육각 렌치 구멍).
+- 볼트·나사류: 육각 머리 = 머리 세그먼트(cyl, 지름은 대각≈대변/0.866) + hex 피처(across_flats=대변 s); 접시(카운터싱크) 머리 = taper 세그먼트(d_start 머리 지름 → d_end 나사 지름); 둥근/원통 머리(캡 스크루) = cyl 세그먼트 + 끝면 hex_socket; 세트 스크루 = 전체가 thread + hex_socket; 스터드 = 양끝 thread. 나사부 길이·호칭은 그대로.
 
 [읽는 법]
 1. 부품 아래에는 치수가 두 줄이다. 윗줄(연쇄)이 세그먼트 길이, 맨 아랫줄의 가장 긴 수평 치수(보조선이 부품 양 끝면에서 내려옴)가 전체 길이(overall)다.
@@ -82,6 +83,15 @@ export const EXTRACT_SYSTEM = `당신은 기계 제도를 읽는 CAD 엔지니�
 12. 표제란: 품명→name_ko, 재질→material, 도번→drawing_number.
 13. dims_read 에는 도면에 적힌 치수 문자열을 빠짐없이 종류·값과 함께 적는다(검증기가 DSL 과 대조한다).
 14. 확신이 없는 항목은 notes 에 이유를 쓰고 confidence 를 낮춘다. 읽을 수 없는 것을 추정으로 채우지 말고 notes 에 적어라.
+
+[적합성 — 먼저 판단]
+이 데모는 선반 가공 회전체(축·부시·핀·롤러·스페이서·플랜지·슬리브·볼트/나사류) 한 부품의 정면도를 읽는다.
+도면이 그것이 아니면 — 조립체(캐스터·베어링 유닛·밸브), 판금·하우징·브래킷, 여러 부품이 한 장, 등각투상 그림, 사진, 손그림 —
+segments 를 빈 배열 [] 로 내고 notes 첫 항목에 "회전체 아님: <무엇으로 보이는지와 이유>" 를 쓴다. 억지로 세그먼트를 만들지 마라.
+회전체이지만 DSL 에 없는 피처(볼트 원 위의 축방향 구멍, 스플라인, 편심, 내부 홈, 곡면 프로파일)가 있으면 나머지는 최대한 옮기고
+notes 에 "미지원 피처: …" 를 적고 confidence 를 낮춘다. 여러 투상도가 있으면 정면도(축이 가로로 긴 뷰)를 읽고 단면도·측면도는 보조로만 쓴다.
+주의: 해칭이 있는 **전단면도(부시·슬리브·스페이서·플랜지)는 회전체 정면도다** — 보어(관통·막힌·단붙이)는 완전히 지원하는 피처이므로 "단면도" 나 "보어" 를 이유로 거부하지 마라.
+거부는 조립체·비회전체·다중 부품·사진·등각투상에만 쓴다.
 
 [실루엣 힌트가 주어지면]
 브라우저가 도면 외형선만으로 잰 세그먼트 비율 초안이다(문자는 못 읽음). 세그먼트 개수·순서·길이 비율·지름 비율은 이 측정과 어긋나지 않게 하고,
@@ -166,6 +176,7 @@ export function postprocessExtracted(raw) {
     dropZero(f, ["segment", "offset", "length", "width", "depth", "end", "form", "d", "position", "diameter", "count", "across_flats", "pitch"]);
     if (f.type === "keyway") { delete f.end; delete f.form; delete f.d; delete f.position; delete f.diameter; delete f.through; delete f.count; delete f.across_flats; delete f.pitch; if (f.offset === undefined) f.offset = 0; if (f.segment === undefined) f.segment = 0; }
     if (f.type === "center_hole") { for (const k of ["segment", "offset", "length", "width", "depth", "angle", "position", "diameter", "through", "count", "across_flats", "pitch"]) delete f[k]; if (!f.form) f.form = "A"; }
+    if (f.type === "hex_socket") { for (const k of ["segment", "offset", "length", "width", "angle", "form", "d", "position", "diameter", "through", "count", "pitch"]) delete f[k]; }
     if (f.type === "cross_hole") { for (const k of ["segment", "offset", "length", "width", "end", "form", "d", "count", "across_flats", "pitch"]) delete f[k]; if (f.through === undefined) f.through = true; if (f.through) delete f.depth; }
     if (f.type === "flat") { for (const k of ["width", "end", "form", "d", "position", "diameter", "through", "across_flats", "pitch"]) delete f[k]; if (f.offset === undefined) f.offset = 0; if (f.segment === undefined) f.segment = 0; }
     if (f.type === "hex") { for (const k of ["offset", "length", "width", "depth", "end", "form", "d", "position", "diameter", "through", "count", "pitch"]) delete f[k]; if (f.segment === undefined) f.segment = 0; }

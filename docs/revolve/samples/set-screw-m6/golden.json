@@ -1,0 +1,49 @@
+{
+  "dsl": "vringon-shaft/1.0",
+  "id": "set-screw-m6",
+  "name": "Socket set screw M6x12",
+  "name_ko": "세트 스크루 M6×12",
+  "part_class": "other",
+  "units": "mm",
+  "material": "S45C",
+  "drawing": {
+    "number": "VR-RB-015",
+    "scale": "5:1",
+    "projection": "third"
+  },
+  "segments": [
+    {
+      "type": "thread",
+      "length": 12,
+      "diameter": 6,
+      "spec": "M6",
+      "pitch": 1
+    }
+  ],
+  "transitions": [
+    {
+      "at": 0,
+      "type": "chamfer",
+      "size": 0.5
+    },
+    {
+      "at": 1,
+      "type": "chamfer",
+      "size": 1
+    }
+  ],
+  "grooves": [],
+  "bore": null,
+  "features": [
+    {
+      "type": "hex_socket",
+      "end": "left",
+      "across_flats": 3,
+      "depth": 3
+    }
+  ],
+  "meta": {
+    "source": "golden",
+    "difficulty": 2
+  }
+}

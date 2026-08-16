@@ -4,3 +4,5 @@ cadquery==2.8.0
 jsonschema>=4.20
 numpy>=1.26
 pillow>=10
+usd-core>=25.5      # 선택: OpenUSD 바이너리(usdc) 출력. 없으면 usda 만.
+ezdxf>=1.3          # 선택: DXF 검사

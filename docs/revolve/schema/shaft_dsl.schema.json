@@ -354,14 +354,15 @@
         "properties": {
           "type": {
             "type": "string",
-            "description": "keyway=키홈, center_hole=센터구멍, cross_hole=횡구멍, flat=평면가공(D컷), hex=육각, knurl=널링.",
+            "description": "keyway=키홈, center_hole=센터구멍, cross_hole=횡구멍, flat=평면가공(D컷), hex=육각, knurl=널링, hex_socket=끝면 육각 소켓(렌치 구멍).",
             "enum": [
               "keyway",
               "center_hole",
               "cross_hole",
               "flat",
               "hex",
-              "knurl"
+              "knurl",
+              "hex_socket"
             ]
           },
           "segment": {
@@ -387,7 +388,7 @@
           "depth": {
             "type": "number",
             "exclusiveMinimum": 0,
-            "description": "keyway 깊이 t1 · flat 깊이 (mm)."
+            "description": "keyway 깊이 t1 · flat 깊이 · hex_socket 깊이 (mm)."
           },
           "angle": {
             "type": "number",
@@ -405,7 +406,7 @@
           },
           "end": {
             "type": "string",
-            "description": "center_hole 이 있는 끝면.",
+            "description": "center_hole·hex_socket 이 있는 끝면.",
             "enum": [
               "left",
               "right"
@@ -448,7 +449,7 @@
           "across_flats": {
             "type": "number",
             "exclusiveMinimum": 0,
-            "description": "hex 대변 거리 (mm)."
+            "description": "hex·hex_socket 대변 거리 (mm)."
           },
           "pitch": {
             "type": "number",

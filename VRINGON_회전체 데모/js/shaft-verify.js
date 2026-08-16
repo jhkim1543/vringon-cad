@@ -60,6 +60,7 @@ export function dimensionConsistency(dsl, dimsRead = [], tol = 0.051) {
     if (f.type === "hex") add("length", f.across_flats, `features[${i}].across_flats`);
     if (f.type === "cross_hole") { add("diameter", f.diameter, `features[${i}].diameter`); add("length", f.position, `features[${i}].position`); add("length", L - f.position, `features[${i}].position_from_right`); }
     if (f.type === "center_hole") add("length", f.d, `features[${i}].d`);
+    if (f.type === "hex_socket") { add("length", f.across_flats, `features[${i}].across_flats`); add("length", f.depth, `features[${i}].depth`); }
   });
   if (ev.bore) { ev.bore.segments.forEach((b, i) => { add("diameter", b.diameter, `bore.segments[${i}].diameter`); add("length", b.x1 - b.x0, `bore.segments[${i}].length`); }); if (!ev.bore.through) add("length", ev.bore.segments.reduce((a, b) => a + (b.x1 - b.x0), 0), "bore.depth"); }
 
@@ -74,6 +75,7 @@ export function dimensionConsistency(dsl, dimsRead = [], tol = 0.051) {
     if (/DIN\s*76|DIN\s*509|도피홈/i.test(txt) && !/×|x\d/.test(txt)) { results.push({ ...d, matched: (dsl.transitions || []).some((t) => t.type === "undercut"), ref: "transitions.undercut" }); continue; }
     if (/DIN\s*6885|키홈/i.test(txt) && !/\d/.test(txt.replace(/DIN\s*6885/i, ""))) { results.push({ ...d, matched: hasFeat("keyway"), ref: "features.keyway" }); continue; }
     if (/널링|knurl/i.test(txt)) { results.push({ ...d, matched: hasFeat("knurl"), ref: "features.knurl" }); continue; }
+    if (/육각\s*소켓|hex\s*socket/i.test(txt) && !/\d/.test(txt.replace(/육각\s*소켓|hex\s*socket/i, ""))) { results.push({ ...d, matched: hasFeat("hex_socket"), ref: "features.hex_socket" }); continue; }
     if (/관통|THRU/i.test(txt) && !/⌀|Ø|\d/.test(txt)) { results.push({ ...d, matched: hasFeat("cross_hole"), ref: "features.cross_hole" }); continue; }
     if (kind === "thread") {
       const want = normalizeThread(String(value || d.text || ""));
@@ -149,6 +151,7 @@ function featKey(f) {
   if (f.type === "flat") return ["flat", f.depth, f.length];
   if (f.type === "hex") return ["hex", f.across_flats];
   if (f.type === "knurl") return ["knurl", f.length];
+  if (f.type === "hex_socket") return ["hex_socket", f.end, f.across_flats, f.depth];
   return [f.type];
 }
 function featEq(a, b) {
@@ -177,7 +180,7 @@ export function dimensionSet(dsl) {
   ev.segments.forEach((s) => { out.push(["length", s.x1 - s.x0]); if (s.type === "thread") out.push(["thread", normalizeThread(s.spec)]); else if (s.type === "taper") out.push(["diameter", s.ds], ["diameter", s.de]); else out.push(["diameter", s.ds]); });
   ev.transitions.forEach((t) => { if (t.type === "chamfer") out.push(["chamfer", t.size]); if (t.type === "fillet" || t.type === "round") out.push(["radius", t.radius]); if (t.type === "undercut") out.push(["undercut_w", t.width], ["undercut_d", t.depth]); });
   ev.grooves.forEach((g) => out.push(["groove_w", g.width], ["groove_dia", 2 * g.r_floor], ["groove_off", g.offset]));
-  ev.features.forEach((f) => { if (f.type === "keyway") out.push(["kw_w", f.width], ["kw_t", f.depth], ["kw_l", f.length], ["kw_off", f.offset || 0]); if (f.type === "flat") out.push(["flat_d", f.depth], ["flat_l", f.length]); if (f.type === "hex") out.push(["hex_af", f.across_flats]); if (f.type === "cross_hole") out.push(["hole_d", f.diameter], ["hole_x", f.position]); if (f.type === "center_hole") out.push(["center_d", f.d]); });
+  ev.features.forEach((f) => { if (f.type === "keyway") out.push(["kw_w", f.width], ["kw_t", f.depth], ["kw_l", f.length], ["kw_off", f.offset || 0]); if (f.type === "flat") out.push(["flat_d", f.depth], ["flat_l", f.length]); if (f.type === "hex") out.push(["hex_af", f.across_flats]); if (f.type === "cross_hole") out.push(["hole_d", f.diameter], ["hole_x", f.position]); if (f.type === "center_hole") out.push(["center_d", f.d]); if (f.type === "hex_socket") out.push(["socket_af", f.across_flats], ["socket_depth", f.depth]); });
   if (ev.bore) { ev.bore.segments.forEach((b) => out.push(["bore_dia", b.diameter], ["bore_len", b.x1 - b.x0])); }
   return out;
 }

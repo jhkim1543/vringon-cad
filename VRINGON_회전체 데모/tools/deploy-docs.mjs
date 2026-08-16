@@ -19,6 +19,7 @@ rmSync(DST, { recursive: true, force: true });
 mkdirSync(DST, { recursive: true });
 for (const d of ["css", "js", "vendor", "assets", "samples", "schema"]) cpSync(join(SRC, d), join(DST, d), { recursive: true });
 cpSync(join(SRC, "index.html"), join(DST, "index.html"));
+cpSync(join(SRC, "guide.html"), join(DST, "guide.html"));
 /* samples 는 통째로(도면·정답·판독·STEP·USDA), prompts/·pipeline/·eval/ 은 정적 데모에 필요 없어 뺀다 */
 const stampImports = (src) => src.replace(/(from\s+")(\.\/[^"?]+\.js)(\?v=[0-9a-f]+)?(")/g, `$1$2?v=${V}$4`).replace(/(src=")(\.\/js\/app\.js)(\?v=[0-9a-f]+)?(")/g, `$1$2?v=${V}$4`);
 let html = readFileSync(join(DST, "index.html"), "utf8");

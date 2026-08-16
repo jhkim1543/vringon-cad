@@ -1,0 +1,191 @@
+{
+ "dsl": {
+  "name_ko": "육각구멍붙이 볼트 M8×30",
+  "part_class": "other",
+  "material": "SCM435",
+  "segments": [
+   {
+    "type": "cyl",
+    "length": 8,
+    "diameter": 13,
+    "label": "머리"
+   },
+   {
+    "type": "cyl",
+    "length": 8,
+    "diameter": 8,
+    "label": "원통부"
+   },
+   {
+    "type": "thread",
+    "length": 22,
+    "diameter": 8,
+    "spec": "M8",
+    "pitch": 1.25,
+    "label": "나사부"
+   }
+  ],
+  "transitions": [
+   {
+    "at": 0,
+    "type": "chamfer",
+    "size": 0.5,
+    "angle": 45
+   },
+   {
+    "at": 1,
+    "type": "fillet",
+    "radius": 0.5
+   },
+   {
+    "at": 3,
+    "type": "chamfer",
+    "size": 1,
+    "angle": 45
+   }
+  ],
+  "grooves": [],
+  "bore": null,
+  "features": [
+   {
+    "type": "hex_socket",
+    "depth": 4,
+    "end": "left",
+    "across_flats": 6
+   }
+  ],
+  "drawing": {
+   "number": "VR-RB-014"
+  },
+  "dsl": "vringon-shaft/1.0",
+  "units": "mm",
+  "meta": {
+   "source": "extracted",
+   "provider": "primary",
+   "tier": "text"
+  },
+  "id": "extracted"
+ },
+ "dims_read": [
+  {
+   "text": "38",
+   "kind": "overall",
+   "value": 38,
+   "where": "전체 길이"
+  },
+  {
+   "text": "8",
+   "kind": "length",
+   "value": 8,
+   "where": "원통부 길이"
+  },
+  {
+   "text": "22",
+   "kind": "length",
+   "value": 22,
+   "where": "나사부 길이"
+  },
+  {
+   "text": "⌀13",
+   "kind": "diameter",
+   "value": 13,
+   "where": "머리 지름"
+  },
+  {
+   "text": "⌀8",
+   "kind": "diameter",
+   "value": 8,
+   "where": "원통부 지름"
+  },
+  {
+   "text": "M8",
+   "kind": "thread",
+   "value": 8,
+   "where": "나사부"
+  },
+  {
+   "text": "C0.5",
+   "kind": "chamfer",
+   "value": 0.5,
+   "where": "머리 왼쪽 모서리"
+  },
+  {
+   "text": "R0.5",
+   "kind": "radius",
+   "value": 0.5,
+   "where": "머리-원통부 단차"
+  },
+  {
+   "text": "C1",
+   "kind": "chamfer",
+   "value": 1,
+   "where": "나사 끝단 모서리"
+  },
+  {
+   "text": "육각 소켓 S6 깊이 4",
+   "kind": "other",
+   "value": 6,
+   "where": "머리 육각 소켓"
+  }
+ ],
+ "notes": [
+  "전체 길이 38에서 원통부(8)와 나사부(22)를 제외한 머리 세그먼트 길이는 8mm입니다.",
+  "M8 표준 피치인 1.25mm를 적용했습니다."
+ ],
+ "confidence_self": 1,
+ "provider": "primary",
+ "tier": "text",
+ "repaired": false,
+ "elapsed_ms": 9864,
+ "validation": {
+  "ok": true,
+  "errors": [],
+  "warnings": []
+ },
+ "verify": {
+  "iou": 0.994488332769947,
+  "dims": {
+   "rate": 0.9,
+   "matched": 9,
+   "total": 10,
+   "unmatched": [
+    "M8"
+   ]
+  },
+  "confidence": 0.9619685830234709
+ },
+ "evaluated": {
+  "tier": "text",
+  "metrics": {
+   "valid": true,
+   "segment": {
+    "precision": 1,
+    "recall": 1,
+    "f1": 1
+   },
+   "feature": {
+    "precision": 1,
+    "recall": 1,
+    "f1": 1
+   },
+   "transition": {
+    "precision": 1,
+    "recall": 1,
+    "f1": 1
+   },
+   "groove": {
+    "precision": 1,
+    "recall": 1,
+    "f1": 1
+   },
+   "dim_rate": 1,
+   "dims_total": 12,
+   "iou": 1,
+   "iou_abs": 1,
+   "bore_ok": true,
+   "length_ok": true,
+   "exact": true
+  },
+  "date": "2026-08-16"
+ }
+}

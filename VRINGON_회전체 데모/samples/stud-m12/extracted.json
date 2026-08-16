@@ -1,0 +1,153 @@
+{
+ "dsl": {
+  "name_ko": "스터드 볼트 M12×60",
+  "part_class": "other",
+  "material": "SCM435",
+  "segments": [
+   {
+    "type": "thread",
+    "length": 15,
+    "diameter": 12,
+    "spec": "M12",
+    "pitch": 1.75
+   },
+   {
+    "type": "cyl",
+    "length": 23,
+    "diameter": 12
+   },
+   {
+    "type": "thread",
+    "length": 22,
+    "diameter": 12,
+    "spec": "M12",
+    "pitch": 1.75
+   }
+  ],
+  "transitions": [
+   {
+    "at": 0,
+    "type": "chamfer",
+    "size": 1.5,
+    "angle": 45
+   },
+   {
+    "at": 3,
+    "type": "chamfer",
+    "size": 1.5,
+    "angle": 45
+   }
+  ],
+  "grooves": [],
+  "bore": null,
+  "features": [],
+  "drawing": {
+   "number": "VR-RB-017"
+  },
+  "dsl": "vringon-shaft/1.0",
+  "units": "mm",
+  "meta": {
+   "source": "extracted",
+   "provider": "primary",
+   "tier": "text"
+  },
+  "id": "extracted"
+ },
+ "dims_read": [
+  {
+   "text": "M12",
+   "kind": "thread",
+   "value": 12,
+   "where": "양쪽 나사부호칭"
+  },
+  {
+   "text": "⌀12",
+   "kind": "diameter",
+   "value": 12,
+   "where": "중앙 원통부 지름"
+  },
+  {
+   "text": "15",
+   "kind": "length",
+   "value": 15,
+   "where": "좌측 나사부 길이"
+  },
+  {
+   "text": "22",
+   "kind": "length",
+   "value": 22,
+   "where": "우측 나사부 길이"
+  },
+  {
+   "text": "60",
+   "kind": "overall",
+   "value": 60,
+   "where": "전체 길이"
+  },
+  {
+   "text": "C1.5",
+   "kind": "chamfer",
+   "value": 1.5,
+   "where": "양 끝 모따기"
+  }
+ ],
+ "notes": [
+  "수리 라운드: 기각 (신뢰도 0.94 → 0.91)"
+ ],
+ "confidence_self": 1,
+ "provider": "primary",
+ "tier": "text",
+ "repaired": false,
+ "elapsed_ms": 19329,
+ "validation": {
+  "ok": true,
+  "errors": [],
+  "warnings": []
+ },
+ "verify": {
+  "iou": 0.9933753461734193,
+  "dims": {
+   "rate": 0.8333333333333334,
+   "matched": 5,
+   "total": 6,
+   "unmatched": [
+    "M12"
+   ]
+  },
+  "confidence": 0.9380231070620474
+ },
+ "evaluated": {
+  "tier": "text",
+  "metrics": {
+   "valid": true,
+   "segment": {
+    "precision": 1,
+    "recall": 1,
+    "f1": 1
+   },
+   "feature": {
+    "precision": 1,
+    "recall": 1,
+    "f1": 1
+   },
+   "transition": {
+    "precision": 1,
+    "recall": 1,
+    "f1": 1
+   },
+   "groove": {
+    "precision": 1,
+    "recall": 1,
+    "f1": 1
+   },
+   "dim_rate": 1,
+   "dims_total": 9,
+   "iou": 1,
+   "iou_abs": 1,
+   "bore_ok": true,
+   "length_ok": true,
+   "exact": true
+  },
+  "date": "2026-08-16"
+ }
+}

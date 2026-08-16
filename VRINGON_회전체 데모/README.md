@@ -12,11 +12,11 @@
 | 소스 | 이 폴더 (`VRINGON_회전체 데모/`) | 정적 사본은 `../docs/revolve/` (자동 생성, 손대지 않음) |
 
 ## 5단계
-1. **도면 입력** — 샘플 12종(정답 DSL 에서 렌더한 KS/ISO 관례 도면), 업로드(PNG/JPG/SVG), 또는 샘플러가 즉석에서 만든 **무작위 합성 도면**
+1. **도면 입력** — 샘플 17종(정답 DSL 에서 렌더한 KS/ISO 관례 도면; 볼트·스크루 5종 포함), 업로드(PNG/JPG/SVG — [올리기 안내](guide.html)), 또는 샘플러가 즉석에서 만든 **무작위 합성 도면**
 2. **판독 · DSL** — ① 브라우저 실루엣 측정(외형선만 남겨 r(x) → RDP 세그먼트) → ② 온프렘 시각 LLM 판독(스키마 제약 + 합성 few-shot 3장 + 실루엣 힌트) → ③ 스키마·기하 검증에 걸리거나 실루엣/치수 정합이 나쁘면 오류·측정치를 넣어 **1회 자기 수리**
 3. **3D CAD** — DSL → 반단면 프로파일 → 회전(lathe) 밴드 + 키홈·평면·육각·횡구멍 국부 CSG (브라우저, 수십 ms) · 단면 보기 · 세그먼트 표/JSON 편집 즉시 반영
 4. **검증** — DSL 을 다시 그린 외형과 도면 실루엣의 IoU, 읽은 치수 문자 ↔ DSL 정합, 실행기 유효성 → 신뢰도·판정. 정답이 있는 도면(샘플·합성)은 정답 대비 F1 까지 표시
-5. **내보내기** — STEP(해석적 B-rep: 파이썬 CadQuery 실행기 / 면분할: 브라우저) · STL · GLB · OBJ · **USD(usda, DSL 파라미터를 custom 속성으로)** · DXF/SVG(다시 그린 제작 도면) · JSON(DSL)
+5. **내보내기** — STEP(해석적 B-rep: 파이썬 CadQuery 실행기 / 면분할: 브라우저) · STL · GLB · OBJ · **FBX(ASCII 7.4)** · **OpenUSD(usda + DSL 파라미터 custom 속성 · usdz · 실행기 usdc)** · PLY · DXF/SVG(다시 그린 제작 도면) · JSON(DSL)
 
 ## 폴더
 ```
@@ -28,7 +28,8 @@ js/shaft-drawing.js          DSL → 제작 도면 (그리기 목록 → SVG / D
 js/shaft-sampler.js          표준 규격(DIN 471/6885/332/76, ISO 261) 기반 시드 샘플러 (10 아키타입)
 js/shaft-extract.js          판독기: 실루엣(결정론) / 재생 / 서버 호출
 js/shaft-verify.js           검증기: 실루엣 IoU · 치수 정합 · 신뢰도 · 정답 지표(F1)
-js/shaft-export.js           STEP(면분할)·STL·GLB·OBJ·USDA·DXF·SVG·JSON
+js/shaft-export.js, fbx-export.js  STEP(면분할)·STL·GLB·OBJ·FBX·USDA/USDZ·PLY·DXF·SVG·JSON
+guide.html, assets/guide/    업로드 안내 (되는/안 되는 도면 삽화 + 치수 기준 그림)
 js/shaft-standards.js        규격표 (재질 밀도 포함)
 server.mjs                   온프렘 서버: /api/status /api/extract /api/step (의존성 없음)
 tools/extract-prompt.mjs     판독 프롬프트·응답 스키마·few-shot 로더 (서버·평가 공용)

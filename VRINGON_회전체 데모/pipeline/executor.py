@@ -89,6 +89,17 @@ def build_solid(dsl, radial_hint=None):
                 cyl = cyl.translate((0, 0, Dx + max(1.5, Dx * 0.1) - length))
             cyl = cyl.rotate((0, 0, 0), (1, 0, 0), -angle).translate((f["position"], 0, 0))
             ops.append(("cut", cyl, "cross_hole"))
+        elif t == "hex_socket":
+            ac = f["across_flats"] / math.cos(30 * DEG)
+            depth = f["depth"]
+            prism = cq.Workplane("YZ").polygon(6, ac).extrude(depth + 1)
+            # polygon(6) 첫 꼭짓점이 로컬 +x(월드 Y) → 플랫이 ±Z 를 보게 30° 회전
+            prism = prism.rotate((0, 0, 0), (1, 0, 0), 30)
+            if f["end"] == "left":
+                prism = prism.translate((-1, 0, 0))
+            else:
+                prism = prism.translate((L - depth, 0, 0))
+            ops.append(("cut", prism, "hex_socket"))
         elif t == "knurl":
             notes.append("knurl: 장식 표현(형상 없음)")
     for kind, obj, name in ops:
@@ -137,6 +148,42 @@ def write_usda(path, dsl, verts, tris, summary):
     Path(path).write_text("\n".join(lines), encoding="utf-8")
 
 
+def write_usd_crate(path, dsl, verts, tris, summary):
+    """OpenUSD 바이너리(usdc) — usd-core(pxr) 가 있을 때만. usda 와 같은 내용을 정식 API 로 쓴다."""
+    from pxr import Usd, UsdGeom, Sdf, Gf, Vt
+    name = "".join(ch if ch.isalnum() or ch == "_" else "_" for ch in (dsl.get("id") or "shaft")) or "shaft"
+    stage = Usd.Stage.CreateNew(str(path))
+    UsdGeom.SetStageMetersPerUnit(stage, 0.001)
+    UsdGeom.SetStageUpAxis(stage, UsdGeom.Tokens.y)
+    xform = UsdGeom.Xform.Define(stage, f"/{name}")
+    stage.SetDefaultPrim(xform.GetPrim())
+    Usd.ModelAPI(xform.GetPrim()).SetKind("component")
+    mesh = UsdGeom.Mesh.Define(stage, f"/{name}/body")
+    mesh.CreatePointsAttr(Vt.Vec3fArray([Gf.Vec3f(*map(float, v)) for v in verts]))
+    mesh.CreateFaceVertexCountsAttr(Vt.IntArray([3] * len(tris)))
+    mesh.CreateFaceVertexIndicesAttr(Vt.IntArray([int(i) for t in tris for i in t]))
+    mesh.CreateSubdivisionSchemeAttr(UsdGeom.Tokens.none)
+    mesh.CreateDisplayColorAttr(Vt.Vec3fArray([Gf.Vec3f(0.72, 0.74, 0.77)]))
+    if verts:
+        xs = [v[0] for v in verts]; ys = [v[1] for v in verts]; zs = [v[2] for v in verts]
+        mesh.CreateExtentAttr(Vt.Vec3fArray([Gf.Vec3f(min(xs), min(ys), min(zs)), Gf.Vec3f(max(xs), max(ys), max(zs))]))
+    prim = xform.GetPrim()
+    def attr(nm, typ, val):
+        prim.CreateAttribute(f"vringon:{nm}", typ, custom=True).Set(val)
+    attr("dsl_version", Sdf.ValueTypeNames.String, dsl.get("dsl", "vringon-shaft/1.0"))
+    attr("dsl_json", Sdf.ValueTypeNames.String, json.dumps(dsl, ensure_ascii=False, separators=(",", ":")))
+    attr("name_ko", Sdf.ValueTypeNames.String, dsl.get("name_ko", ""))
+    attr("material", Sdf.ValueTypeNames.String, dsl.get("material", ""))
+    attr("length_mm", Sdf.ValueTypeNames.Double, float(S.total_length(dsl)))
+    attr("max_diameter_mm", Sdf.ValueTypeNames.Double, float(S.max_diameter(dsl)))
+    attr("volume_mm3", Sdf.ValueTypeNames.Double, float(summary["volume_mm3"]))
+    attr("segment_lengths_mm", Sdf.ValueTypeNames.DoubleArray, Vt.DoubleArray([float(s["length"]) for s in dsl["segments"]]))
+    attr("segment_types", Sdf.ValueTypeNames.StringArray, Vt.StringArray([s["type"] for s in dsl["segments"]]))
+    attr("threads", Sdf.ValueTypeNames.StringArray, Vt.StringArray([s.get("spec", "") for s in dsl["segments"] if s["type"] == "thread"]))
+    attr("features", Sdf.ValueTypeNames.StringArray, Vt.StringArray([f["type"] for f in (dsl.get("features") or [])]))
+    stage.GetRootLayer().Save()
+
+
 def run(dsl, out_dir, formats=("step", "stl", "usda")):
     import cadquery as cq
     from cadquery import exporters
@@ -167,10 +214,20 @@ def run(dsl, out_dir, formats=("step", "stl", "usda")):
         "length_mm": S.total_length(dsl), "max_diameter_mm": S.max_diameter(dsl),
         "notes": notes, "warnings": warnings, "files": files, "ms": int((time.time() - t0) * 1000),
     }
-    if "usda" in formats:
+    if "usda" in formats or "usdc" in formats:
         verts, tris = tessellate(shape, 0.05, 0.2)
-        write_usda(out / "model.usda", dsl, verts, tris, summary)
-        files["usda"] = "model.usda"; summary["tris"] = len(tris)
+        summary["tris"] = len(tris)
+        if "usda" in formats:
+            write_usda(out / "model.usda", dsl, verts, tris, summary)
+            files["usda"] = "model.usda"
+        if "usdc" in formats:
+            try:
+                write_usd_crate(out / "model.usdc", dsl, verts, tris, summary)
+                files["usdc"] = "model.usdc"
+            except ImportError:
+                summary.setdefault("notes", []).append("usdc: usd-core(pxr) 미설치 — usda 만 생성")
+            except Exception as e:  # noqa
+                summary.setdefault("notes", []).append(f"usdc 실패: {e}")
     (out / "summary.json").write_text(json.dumps(summary, ensure_ascii=False, indent=1), encoding="utf-8")
     return summary
 

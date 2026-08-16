@@ -1,0 +1,582 @@
+{
+ "date": "2026-08-16T00:16:43.823Z",
+ "method": "both",
+ "tier": "text",
+ "n": 5,
+ "silhouette": {
+  "n": 5,
+  "valid_rate": 1,
+  "segment_f1": 0,
+  "segment_precision": 0,
+  "segment_recall": 0,
+  "feature_f1": 0.2,
+  "transition_f1": 0.7666666666666666,
+  "groove_f1": 1,
+  "dim_rate": 0.5051948051948052,
+  "iou": 0.9792558221298677,
+  "iou_abs": 0.9795581260832094,
+  "length_ok_rate": 1,
+  "bore_ok_rate": 1,
+  "exact_rate": 0
+ },
+ "server": {
+  "n": 5,
+  "valid_rate": 1,
+  "segment_f1": 1,
+  "segment_precision": 1,
+  "segment_recall": 1,
+  "feature_f1": 1,
+  "transition_f1": 1,
+  "groove_f1": 1,
+  "dim_rate": 1,
+  "iou": 1,
+  "iou_abs": 1,
+  "length_ok_rate": 1,
+  "bore_ok_rate": 1,
+  "exact_rate": 1
+ },
+ "server_ms_mean": 15239,
+ "server_repaired": 2,
+ "calibration": [
+  {
+   "id": "hex-bolt-m10",
+   "confidence": 0.9628822917823346,
+   "iou_reported": 0.9961496214224266,
+   "dim_rate_reported": 0.9,
+   "seg_f1": 1,
+   "exact": true
+  },
+  {
+   "id": "socket-cap-m8",
+   "confidence": 0.9619685830234709,
+   "iou_reported": 0.994488332769947,
+   "dim_rate_reported": 0.9,
+   "seg_f1": 1,
+   "exact": true
+  },
+  {
+   "id": "set-screw-m6",
+   "confidence": 0.9192092956886048,
+   "iou_reported": 0.9803805376156449,
+   "dim_rate_reported": 0.8,
+   "seg_f1": 1,
+   "exact": true
+  },
+  {
+   "id": "countersunk-m6",
+   "confidence": 0.949275734877897,
+   "iou_reported": 0.9873195179598127,
+   "dim_rate_reported": 0.875,
+   "seg_f1": 1,
+   "exact": true
+  },
+  {
+   "id": "stud-m12",
+   "confidence": 0.9380231070620474,
+   "iou_reported": 0.9933753461734193,
+   "dim_rate_reported": 0.8333333333333334,
+   "seg_f1": 1,
+   "exact": true
+  }
+ ],
+ "rows": [
+  {
+   "id": "hex-bolt-m10",
+   "kind": "golden",
+   "L": 46.4,
+   "archetype": "other",
+   "silhouette": {
+    "ms": 178,
+    "metrics": {
+     "valid": true,
+     "segment": {
+      "precision": 0,
+      "recall": 0,
+      "f1": 0
+     },
+     "feature": {
+      "precision": 0,
+      "recall": 0,
+      "f1": 0
+     },
+     "transition": {
+      "precision": 0.6666666666666666,
+      "recall": 0.6666666666666666,
+      "f1": 0.6666666666666666
+     },
+     "groove": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "dim_rate": 0.45454545454545453,
+     "dims_total": 11,
+     "iou": 0.9888489606549031,
+     "iou_abs": 0.9903604804216126,
+     "bore_ok": true,
+     "length_ok": true,
+     "exact": false
+    },
+    "self": {
+     "valid": true,
+     "errors": [],
+     "warnings": [],
+     "iou": 0.990992247502444,
+     "dims": null,
+     "confidence": 0.8,
+     "verdict": "review"
+    }
+   },
+   "server": {
+    "ms": 11573,
+    "provider": "primary",
+    "repaired": false,
+    "valid": true,
+    "verify": {
+     "iou": 0.9961496214224266,
+     "dims": {
+      "rate": 0.9,
+      "matched": 9,
+      "total": 10,
+      "unmatched": [
+       "M10"
+      ]
+     },
+     "confidence": 0.9628822917823346
+    },
+    "metrics": {
+     "valid": true,
+     "segment": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "feature": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "transition": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "groove": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "dim_rate": 1,
+     "dims_total": 11,
+     "iou": 1,
+     "iou_abs": 1,
+     "bore_ok": true,
+     "length_ok": true,
+     "exact": true
+    },
+    "notes": []
+   }
+  },
+  {
+   "id": "socket-cap-m8",
+   "kind": "golden",
+   "L": 38,
+   "archetype": "other",
+   "silhouette": {
+    "ms": 233,
+    "metrics": {
+     "valid": true,
+     "segment": {
+      "precision": 0,
+      "recall": 0,
+      "f1": 0
+     },
+     "feature": {
+      "precision": 0,
+      "recall": 0,
+      "f1": 0
+     },
+     "transition": {
+      "precision": 0.6666666666666666,
+      "recall": 0.6666666666666666,
+      "f1": 0.6666666666666666
+     },
+     "groove": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "dim_rate": 0.5,
+     "dims_total": 12,
+     "iou": 0.9767195422286958,
+     "iou_abs": 0.9767195422286965,
+     "bore_ok": true,
+     "length_ok": true,
+     "exact": false
+    },
+    "self": {
+     "valid": true,
+     "errors": [],
+     "warnings": [],
+     "iou": 0.9734456938408482,
+     "dims": null,
+     "confidence": 0.8,
+     "verdict": "review"
+    }
+   },
+   "server": {
+    "ms": 10042,
+    "provider": "primary",
+    "repaired": false,
+    "valid": true,
+    "verify": {
+     "iou": 0.994488332769947,
+     "dims": {
+      "rate": 0.9,
+      "matched": 9,
+      "total": 10,
+      "unmatched": [
+       "M8"
+      ]
+     },
+     "confidence": 0.9619685830234709
+    },
+    "metrics": {
+     "valid": true,
+     "segment": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "feature": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "transition": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "groove": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "dim_rate": 1,
+     "dims_total": 12,
+     "iou": 1,
+     "iou_abs": 1,
+     "bore_ok": true,
+     "length_ok": true,
+     "exact": true
+    },
+    "notes": [
+     "전체 길이 38에서 원통부(8)와 나사부(22)를 제외한 머리 세그먼트 길이는 8mm입니다.",
+     "M8 표준 피치인 1.25mm를 적용했습니다."
+    ]
+   }
+  },
+  {
+   "id": "set-screw-m6",
+   "kind": "golden",
+   "L": 12,
+   "archetype": "other",
+   "silhouette": {
+    "ms": 188,
+    "metrics": {
+     "valid": true,
+     "segment": {
+      "precision": 0,
+      "recall": 0,
+      "f1": 0
+     },
+     "feature": {
+      "precision": 0,
+      "recall": 0,
+      "f1": 0
+     },
+     "transition": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "groove": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "dim_rate": 0.5714285714285714,
+     "dims_total": 7,
+     "iou": 1,
+     "iou_abs": 1,
+     "bore_ok": true,
+     "length_ok": true,
+     "exact": false
+    },
+    "self": {
+     "valid": true,
+     "errors": [],
+     "warnings": [],
+     "iou": 0.9803805376156449,
+     "dims": null,
+     "confidence": 0.8,
+     "verdict": "review"
+    }
+   },
+   "server": {
+    "ms": 16243,
+    "provider": "primary",
+    "repaired": true,
+    "valid": true,
+    "verify": {
+     "iou": 0.9803805376156449,
+     "dims": {
+      "rate": 0.8,
+      "matched": 4,
+      "total": 5,
+      "unmatched": [
+       "M6"
+      ]
+     },
+     "confidence": 0.9192092956886048
+    },
+    "metrics": {
+     "valid": true,
+     "segment": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "feature": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "transition": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "groove": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "dim_rate": 1,
+     "dims_total": 7,
+     "iou": 1,
+     "iou_abs": 1,
+     "bore_ok": true,
+     "length_ok": true,
+     "exact": true
+    },
+    "notes": [
+     "dims_read 배열을 완벽히 포함하여 도면에서 읽은 치수와 DSL 호환성을 검증했습니다.",
+     "M6 나사의 표준 피치 1.0mm를 적용하였습니다.",
+     "수리 라운드: 채택 (신뢰도 0.92 → 0.92)"
+    ]
+   }
+  },
+  {
+   "id": "countersunk-m6",
+   "kind": "golden",
+   "L": 23.3,
+   "archetype": "other",
+   "silhouette": {
+    "ms": 155,
+    "metrics": {
+     "valid": true,
+     "segment": {
+      "precision": 0,
+      "recall": 0,
+      "f1": 0
+     },
+     "feature": {
+      "precision": 0,
+      "recall": 0,
+      "f1": 0
+     },
+     "transition": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "groove": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "dim_rate": 0.5555555555555556,
+     "dims_total": 9,
+     "iou": 0.9307106077657389,
+     "iou_abs": 0.9307106077657379,
+     "bore_ok": true,
+     "length_ok": true,
+     "exact": false
+    },
+    "self": {
+     "valid": true,
+     "errors": [],
+     "warnings": [],
+     "iou": 0.9309384081280545,
+     "dims": null,
+     "confidence": 0.8,
+     "verdict": "review"
+    }
+   },
+   "server": {
+    "ms": 18831,
+    "provider": "primary",
+    "repaired": true,
+    "valid": true,
+    "verify": {
+     "iou": 0.9873195179598127,
+     "dims": {
+      "rate": 0.875,
+      "matched": 7,
+      "total": 8,
+      "unmatched": [
+       "M6"
+      ]
+     },
+     "confidence": 0.949275734877897
+    },
+    "metrics": {
+     "valid": true,
+     "segment": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "feature": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "transition": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "groove": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "dim_rate": 1,
+     "dims_total": 9,
+     "iou": 1,
+     "iou_abs": 1,
+     "bore_ok": true,
+     "length_ok": true,
+     "exact": true
+    },
+    "notes": [
+     "도면의 M6 지시 치수를 thread 세그먼트의 spec(M6) 및 diameter(6)에 올바르게 매칭하였습니다.",
+     "dims_read에 도면의 모든 치수를 기술하여 DSL 검증 연동성을 보장했습니다.",
+     "수리 라운드: 채택 (신뢰도 0.95 → 0.95)"
+    ]
+   }
+  },
+  {
+   "id": "stud-m12",
+   "kind": "golden",
+   "L": 60,
+   "archetype": "other",
+   "silhouette": {
+    "ms": 167,
+    "metrics": {
+     "valid": true,
+     "segment": {
+      "precision": 0,
+      "recall": 0,
+      "f1": 0
+     },
+     "feature": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "transition": {
+      "precision": 0.5,
+      "recall": 0.5,
+      "f1": 0.5
+     },
+     "groove": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "dim_rate": 0.4444444444444444,
+     "dims_total": 9,
+     "iou": 1,
+     "iou_abs": 1,
+     "bore_ok": true,
+     "length_ok": true,
+     "exact": false
+    },
+    "self": {
+     "valid": true,
+     "errors": [],
+     "warnings": [],
+     "iou": 0.9933753461734193,
+     "dims": null,
+     "confidence": 0.8,
+     "verdict": "review"
+    }
+   },
+   "server": {
+    "ms": 19508,
+    "provider": "primary",
+    "repaired": false,
+    "valid": true,
+    "verify": {
+     "iou": 0.9933753461734193,
+     "dims": {
+      "rate": 0.8333333333333334,
+      "matched": 5,
+      "total": 6,
+      "unmatched": [
+       "M12"
+      ]
+     },
+     "confidence": 0.9380231070620474
+    },
+    "metrics": {
+     "valid": true,
+     "segment": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "feature": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "transition": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "groove": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "dim_rate": 1,
+     "dims_total": 9,
+     "iou": 1,
+     "iou_abs": 1,
+     "bore_ok": true,
+     "length_ok": true,
+     "exact": true
+    },
+    "notes": [
+     "수리 라운드: 기각 (신뢰도 0.94 → 0.91)"
+    ]
+   }
+  }
+ ]
+}

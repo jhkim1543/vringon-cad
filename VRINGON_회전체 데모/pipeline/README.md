@@ -6,7 +6,7 @@ JS 쪽(`../js/shaft-profile.js`)과 프로파일 좌표가 1e-6 안에서 같도
 | 파일 | 역할 |
 |---|---|
 | `shaft_dsl.py` | 스키마 로드·검증, 프로파일 빌더(JS 거울), 해석 부피, 실루엣·IoU |
-| `executor.py` | **M1 실행기** — DSL → CadQuery 회전 B-rep(+키홈·평면·육각·횡구멍 불리언) → `model.step` · `model.stl` · `model.usda`(DSL 파라미터를 custom 속성으로) · `summary.json` |
+| `executor.py` | **M1 실행기** — DSL → CadQuery 회전 B-rep(+키홈·평면·육각·횡구멍·육각소켓 불리언) → `model.step` · `model.stl` · `model.usda`(DSL 파라미터를 custom 속성으로) · `model.usdc`(usd-core 있을 때, pxr API) · `summary.json` |
 | `build_samples.py` | 골든 12종의 STEP/USDA 를 `../samples/<id>/` 에 미리 생성 (공개 데모의 '해석적 STEP' 내려받기) |
 | `m0_deepcad_filter.py` | **M0** — DeepCAD/Fusion360 재구성 JSON 에서 동축 원기둥 적층(=회전체)만 걸러 DSL 로 변환 (`--selftest` 로 형식 확인) |
 | `tests/test_golden.py` | 골든 테스트: JS↔Py 프로파일 일치, 12종 유효 솔리드, STEP 왕복, 부피 ±2% |

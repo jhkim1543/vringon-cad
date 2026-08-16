@@ -26,7 +26,14 @@ export const ARCHETYPES = [
   { id: "spacer", ko: "스페이서", w: 5 },
   { id: "taper_shaft", ko: "테이퍼 축", w: 5 },
   { id: "hex_shaft", ko: "육각 단붙이 축", w: 4 },
+  { id: "hex_bolt", ko: "육각 볼트", w: 6 },
+  { id: "socket_cap_screw", ko: "육각구멍붙이 볼트", w: 5 },
+  { id: "set_screw", ko: "세트 스크루", w: 3 },
+  { id: "countersunk_screw", ko: "접시머리 나사", w: 3 },
+  { id: "stud", ko: "스터드 볼트", w: 3 },
 ];
+/* ISO 4014/4762/4026 근사 머리 치수: M → [육각 대변 s, 육각머리 높이 k, 캡 머리 지름 dk, 캡 머리 높이 k2, 소켓 대변 s2] */
+const BOLT_TABLE = { 4: [7, 2.8, 7, 4, 3], 5: [8, 3.5, 8.5, 5, 4], 6: [10, 4, 10, 6, 5], 8: [13, 5.3, 13, 8, 6], 10: [16, 6.4, 16, 10, 8], 12: [18, 7.5, 18, 12, 10], 16: [24, 10, 24, 16, 14], 20: [30, 12.5, 30, 20, 17] };
 const MATERIALS = ["S45C", "S45C", "SCM440", "SUS304", "SUS303", "A6061", "C3604", "SUJ2", "SM45C"];
 
 function pickArchetype(rnd, force) {
@@ -239,6 +246,48 @@ export function sampleShaft(seed = 1, opts = {}) {
       for (const t of T) { if (t.type === "round") delete t.size; else delete t.radius; }
     }
     dsl.material = pick(rnd, ["S45C", "SUS303", "SCM435"]);
+  } else if (["hex_bolt", "socket_cap_screw", "set_screw", "countersunk_screw", "stud"].includes(arch.id)) {
+    dsl.part_class = "other";
+    const M = pick(rnd, [4, 5, 6, 8, 10, 12, 16, 20]);
+    const [s, k, dk, k2, s2] = BOLT_TABLE[M];
+    const pitch = ISO_COARSE_PITCH[M];
+    const Ln = roundTo(M * (2.5 + rnd() * 5), 5);   /* 호칭 길이 */
+    const spec = threadSpecText(M, pitch);
+    if (arch.id === "hex_bolt") {
+      const ac = +(s / Math.cos(Math.PI / 6)).toFixed(2);   /* 대각 = 머리 원통 지름 */
+      const shank = Ln > 3 * M && chance(rnd, 0.6) ? roundTo(Ln - Math.min(Ln * 0.6, 2 * M + 6), 1) : 0;   /* 나사 없는 생크 */
+      S.push({ type: "cyl", length: k, diameter: ac, label: "육각 머리" });
+      if (shank > 0) S.push({ type: "cyl", length: shank, diameter: M });
+      S.push({ type: "thread", length: Ln - shank, diameter: M, spec, pitch });
+      F.push({ type: "hex", segment: 0, across_flats: s });
+      T.push({ at: 0, type: "chamfer", size: Math.max(0.5, roundTo(k * 0.15, 0.5)), angle: 30 }, { at: S.length, type: "chamfer", size: Math.max(0.5, roundTo(pitch, 0.5)) });
+      T.push({ at: 1, type: "fillet", radius: Math.max(0.5, roundTo(M * 0.06, 0.5)) });
+    } else if (arch.id === "socket_cap_screw") {
+      const shank = Ln > 3 * M && chance(rnd, 0.5) ? roundTo(Ln - Math.min(Ln * 0.6, 2 * M + 6), 1) : 0;
+      S.push({ type: "cyl", length: k2, diameter: dk, label: "원통 머리" });
+      if (shank > 0) S.push({ type: "cyl", length: shank, diameter: M });
+      S.push({ type: "thread", length: Ln - shank, diameter: M, spec, pitch });
+      F.push({ type: "hex_socket", end: "left", across_flats: s2, depth: +(k2 * 0.55).toFixed(1) });
+      T.push({ at: 0, type: "chamfer", size: Math.max(0.5, roundTo(dk * 0.05, 0.5)) }, { at: S.length, type: "chamfer", size: Math.max(0.5, roundTo(pitch, 0.5)) });
+      T.push({ at: 1, type: "fillet", radius: Math.max(0.5, roundTo(M * 0.06, 0.5)) });
+    } else if (arch.id === "set_screw") {
+      const Ls = roundTo(M * (1 + rnd() * 2.5), 1);
+      S.push({ type: "thread", length: Ls, diameter: M, spec, pitch });
+      F.push({ type: "hex_socket", end: "left", across_flats: Math.max(1.5, s2 - 2), depth: +(Math.min(Ls * 0.4, M * 0.6)).toFixed(1) });
+      T.push({ at: 0, type: "chamfer", size: Math.max(0.3, roundTo(pitch * 0.5, 0.1)) }, { at: 1, type: "chamfer", size: Math.max(0.5, roundTo(pitch, 0.5)) });
+    } else if (arch.id === "countersunk_screw") {
+      const dkc = +(1.9 * M).toFixed(1), kh = +(0.55 * M).toFixed(1);   /* 90° 접시: 지름 ≈ 1.9M, 높이 ≈ 0.55M */
+      S.push({ type: "taper", length: kh, d_start: dkc, d_end: M, label: "접시 머리" });
+      S.push({ type: "thread", length: Ln, diameter: M, spec, pitch });
+      F.push({ type: "hex_socket", end: "left", across_flats: Math.max(2, s2 - 1), depth: +(kh * 0.6).toFixed(1) });
+      T.push({ at: 2, type: "chamfer", size: Math.max(0.5, roundTo(pitch, 0.5)) });
+    } else {   /* stud */
+      const l1 = roundTo(M * 1.25, 1), l2 = roundTo(M * 1.5 + 4, 1);
+      const mid = Math.max(6, Ln - l1 - l2);
+      S.push({ type: "thread", length: l1, diameter: M, spec, pitch, label: "식입측" }, { type: "cyl", length: mid, diameter: M }, { type: "thread", length: l2, diameter: M, spec, pitch, label: "너트측" });
+      T.push({ at: 0, type: "chamfer", size: Math.max(0.5, roundTo(pitch, 0.5)) }, { at: 3, type: "chamfer", size: Math.max(0.5, roundTo(pitch, 0.5)) });
+    }
+    dsl.material = pick(rnd, ["SCM435", "S45C", "SUS304", "SWCH10R"]);
   } else if (arch.id === "roller") {
     dsl.part_class = "roller";
     const D = pick(rnd, [30, 35, 40, 45, 50, 60]);

@@ -17,8 +17,9 @@
  "warnings": [],
  "files": {
   "step": "model.step",
-  "usda": "model.usda"
+  "usda": "model.usda",
+  "usdc": "model.usdc"
  },
- "ms": 43,
+ "ms": 96,
  "tris": 2639
 }

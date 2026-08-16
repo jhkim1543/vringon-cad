@@ -1,0 +1,65 @@
+{
+  "dsl": "vringon-shaft/1.0",
+  "id": "hex-bolt-m10",
+  "name": "Hex bolt M10x40",
+  "name_ko": "육각 볼트 M10×40",
+  "part_class": "other",
+  "units": "mm",
+  "material": "SCM435",
+  "drawing": {
+    "number": "VR-RB-013",
+    "scale": "2:1",
+    "projection": "third"
+  },
+  "segments": [
+    {
+      "type": "cyl",
+      "length": 6.4,
+      "diameter": 18.48,
+      "label": "육각 머리"
+    },
+    {
+      "type": "cyl",
+      "length": 14,
+      "diameter": 10
+    },
+    {
+      "type": "thread",
+      "length": 26,
+      "diameter": 10,
+      "spec": "M10",
+      "pitch": 1.5
+    }
+  ],
+  "transitions": [
+    {
+      "at": 0,
+      "type": "chamfer",
+      "size": 1,
+      "angle": 30
+    },
+    {
+      "at": 1,
+      "type": "fillet",
+      "radius": 0.6
+    },
+    {
+      "at": 3,
+      "type": "chamfer",
+      "size": 1.5
+    }
+  ],
+  "grooves": [],
+  "bore": null,
+  "features": [
+    {
+      "type": "hex",
+      "segment": 0,
+      "across_flats": 16
+    }
+  ],
+  "meta": {
+    "source": "golden",
+    "difficulty": 3
+  }
+}

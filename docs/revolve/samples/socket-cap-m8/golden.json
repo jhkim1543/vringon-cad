@@ -1,0 +1,65 @@
+{
+  "dsl": "vringon-shaft/1.0",
+  "id": "socket-cap-m8",
+  "name": "Socket head cap screw M8x30",
+  "name_ko": "육각구멍붙이 볼트 M8×30",
+  "part_class": "other",
+  "units": "mm",
+  "material": "SCM435",
+  "drawing": {
+    "number": "VR-RB-014",
+    "scale": "2:1",
+    "projection": "third"
+  },
+  "segments": [
+    {
+      "type": "cyl",
+      "length": 8,
+      "diameter": 13,
+      "label": "원통 머리"
+    },
+    {
+      "type": "cyl",
+      "length": 8,
+      "diameter": 8
+    },
+    {
+      "type": "thread",
+      "length": 22,
+      "diameter": 8,
+      "spec": "M8",
+      "pitch": 1.25
+    }
+  ],
+  "transitions": [
+    {
+      "at": 0,
+      "type": "chamfer",
+      "size": 0.5
+    },
+    {
+      "at": 1,
+      "type": "fillet",
+      "radius": 0.5
+    },
+    {
+      "at": 3,
+      "type": "chamfer",
+      "size": 1
+    }
+  ],
+  "grooves": [],
+  "bore": null,
+  "features": [
+    {
+      "type": "hex_socket",
+      "end": "left",
+      "across_flats": 6,
+      "depth": 4
+    }
+  ],
+  "meta": {
+    "source": "golden",
+    "difficulty": 3
+  }
+}

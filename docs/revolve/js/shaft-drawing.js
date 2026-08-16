@@ -7,9 +7,9 @@
    정면도 = +Z 에서 본 모습. 키홈·평면·횡구멍의 angle 0 은 관찰자를 향한다.
    순수 모듈(브라우저·Node 공용). */
 
-import { totalLength, segmentDiameters, boreDiameterAt } from "./shaft-schema.js?v=e9bdacdd";
-import { buildTopLine, buildInnerLine, collectEvents } from "./shaft-profile.js?v=e9bdacdd";
-import { parseThreadSpec, centerHoleDims } from "./shaft-standards.js?v=e9bdacdd";
+import { totalLength, segmentDiameters, boreDiameterAt } from "./shaft-schema.js?v=2ebcdab1";
+import { buildTopLine, buildInnerLine, collectEvents } from "./shaft-profile.js?v=2ebcdab1";
+import { parseThreadSpec, centerHoleDims } from "./shaft-standards.js?v=2ebcdab1";
 
 const DEG = Math.PI / 180;
 const fmt = (v) => {
@@ -341,6 +341,13 @@ export function drawShaft(dsl, userOpts = {}) {
         }
         if (f.through === false) D.line(f.position - f.diameter / 2, R - (f.depth || R), f.position + f.diameter / 2, R - (f.depth || R), "hidden");
       }
+    } else if (f.type === "hex_socket") {
+      /* 육각 소켓: 끝면에서 depth 까지 숨은선(±대변/2)과 바닥선 */
+      const a = f.across_flats / 2;
+      if (O.showHidden) {
+        D.line(f.x0, a, f.x1, a, "hidden"); D.line(f.x0, -a, f.x1, -a, "hidden");
+        D.line(f.end === "left" ? f.x1 : f.x0, -a, f.end === "left" ? f.x1 : f.x0, a, "hidden");
+      }
     } else if (f.type === "knurl") {
       /* 널링: 해칭 표시(관례) 구간 */
       const R = f.D / 2;
@@ -493,6 +500,17 @@ export function drawShaft(dsl, userOpts = {}) {
       const ref = fromLeft ? 0 : L, pos = fromLeft ? f.position : L - f.position;
       dimLinear(D, { x: ref, y: R }, { x: f.position, y: R }, R + M(9), fmt(pos), { label: { kind: "cross_hole_position", feature: k, value: pos, from: fromLeft ? "left_end" : "right_end" }, narrowSide: fromLeft ? "left" : "right" });
     }
+  }
+  /* 육각 소켓 호출 */
+  for (const [k, f] of ev.features.entries()) {
+    if (f.type !== "hex_socket" || omit("hex_socket")) continue;
+    const R = f.D / 2;
+    const text = `육각 소켓 S${fmt(f.across_flats)} 깊이 ${fmt(f.depth)}`;
+    const s = f.end === "left" ? -1 : 1;
+    const px = f.end === "left" ? f.x1 * 0.5 : L - f.depth * 0.5, py = f.across_flats / 2;
+    const tx = px + s * M(6);
+    const ty = D.freeY(tx + s * textWidth(text, O.noteSize) / (2 * scale), R + M(14), text, O.noteSize, M(4));
+    leader(D, px, py, tx, ty, text, { size: O.noteSize, label: { kind: "hex_socket", feature: k, value: f.across_flats, depth: f.depth } });
   }
   /* 센터구멍 호출 */
   if (O.centerHoleCallout) for (const c of ev.centerHoles) {

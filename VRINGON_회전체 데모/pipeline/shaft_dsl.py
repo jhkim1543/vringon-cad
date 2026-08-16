@@ -183,6 +183,14 @@ def validate(dsl):
         if t == "cross_hole":
             if f["position"] - f["diameter"] / 2 < -1e-9 or f["position"] + f["diameter"] / 2 > L + 1e-9:
                 errors.append(f"features[{i}]: 횡구멍이 부품 밖")
+        if t == "hex_socket":
+            x = 1e-6 if f.get("end") == "left" else L - 1e-6
+            if f.get("end") not in ("left", "right"):
+                errors.append(f"features[{i}]: hex_socket end 필요")
+            elif bore_diameter_at(dsl, x) > 0:
+                errors.append(f"features[{i}]: 보어 끝에 육각 소켓 불가")
+            elif f["across_flats"] / math.cos(math.pi / 6) >= 0.85 * outer_diameter_at(dsl, x):
+                errors.append(f"features[{i}]: 육각 소켓이 끝면 지름에 비해 큼")
     return len(errors) == 0, errors, warnings
 
 
@@ -396,6 +404,8 @@ def volume_mm3(dsl, arc_n=12):
             R = min(segment_diameters(s)) / 2
             ln = s["length"] if f["type"] == "hex" else f["length"]
             v -= cross_section_removed(R, f) * ln
+        elif f["type"] == "hex_socket":
+            v -= (math.sqrt(3) / 2) * f["across_flats"] ** 2 * f["depth"]
         elif f["type"] == "cross_hole":
             D = outer_diameter_at(dsl, f["position"]); db = bore_diameter_at(dsl, f["position"])
             ln = min(f.get("depth") or 0, D) if f.get("through") is False else max(0.0, D - db)

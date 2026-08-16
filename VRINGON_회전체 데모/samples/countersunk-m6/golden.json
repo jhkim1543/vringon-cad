@@ -1,0 +1,51 @@
+{
+  "dsl": "vringon-shaft/1.0",
+  "id": "countersunk-m6",
+  "name": "Countersunk socket screw M6x20",
+  "name_ko": "접시머리 나사 M6×20",
+  "part_class": "other",
+  "units": "mm",
+  "material": "SUS304",
+  "drawing": {
+    "number": "VR-RB-016",
+    "scale": "5:1",
+    "projection": "third"
+  },
+  "segments": [
+    {
+      "type": "taper",
+      "length": 3.3,
+      "d_start": 12,
+      "d_end": 6,
+      "label": "접시 머리 90°"
+    },
+    {
+      "type": "thread",
+      "length": 20,
+      "diameter": 6,
+      "spec": "M6",
+      "pitch": 1
+    }
+  ],
+  "transitions": [
+    {
+      "at": 2,
+      "type": "chamfer",
+      "size": 1
+    }
+  ],
+  "grooves": [],
+  "bore": null,
+  "features": [
+    {
+      "type": "hex_socket",
+      "end": "left",
+      "across_flats": 4,
+      "depth": 2
+    }
+  ],
+  "meta": {
+    "source": "golden",
+    "difficulty": 3
+  }
+}

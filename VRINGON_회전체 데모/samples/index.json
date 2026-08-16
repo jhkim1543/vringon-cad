@@ -1,6 +1,6 @@
 {
- "built": "2026-08-15",
- "count": 12,
+ "built": "2026-08-16",
+ "count": 17,
  "samples": [
   {
    "id": "spacer",
@@ -26,7 +26,8 @@
     "labels": "labels.json",
     "extracted": "extracted.json",
     "step": "model.step",
-    "usda": "model.usda"
+    "usda": "model.usda",
+    "usdc": "model.usdc"
    }
   },
   {
@@ -55,7 +56,8 @@
     "labels": "labels.json",
     "extracted": "extracted.json",
     "step": "model.step",
-    "usda": "model.usda"
+    "usda": "model.usda",
+    "usdc": "model.usdc"
    }
   },
   {
@@ -84,7 +86,8 @@
     "labels": "labels.json",
     "extracted": "extracted.json",
     "step": "model.step",
-    "usda": "model.usda"
+    "usda": "model.usda",
+    "usdc": "model.usdc"
    }
   },
   {
@@ -111,7 +114,8 @@
     "labels": "labels.json",
     "extracted": "extracted.json",
     "step": "model.step",
-    "usda": "model.usda"
+    "usda": "model.usda",
+    "usdc": "model.usdc"
    }
   },
   {
@@ -141,7 +145,8 @@
     "labels": "labels.json",
     "extracted": "extracted.json",
     "step": "model.step",
-    "usda": "model.usda"
+    "usda": "model.usda",
+    "usdc": "model.usdc"
    }
   },
   {
@@ -171,7 +176,8 @@
     "labels": "labels.json",
     "extracted": "extracted.json",
     "step": "model.step",
-    "usda": "model.usda"
+    "usda": "model.usda",
+    "usdc": "model.usdc"
    }
   },
   {
@@ -200,7 +206,8 @@
     "labels": "labels.json",
     "extracted": "extracted.json",
     "step": "model.step",
-    "usda": "model.usda"
+    "usda": "model.usda",
+    "usdc": "model.usdc"
    }
   },
   {
@@ -227,7 +234,8 @@
     "labels": "labels.json",
     "extracted": "extracted.json",
     "step": "model.step",
-    "usda": "model.usda"
+    "usda": "model.usda",
+    "usdc": "model.usdc"
    }
   },
   {
@@ -257,7 +265,8 @@
     "labels": "labels.json",
     "extracted": "extracted.json",
     "step": "model.step",
-    "usda": "model.usda"
+    "usda": "model.usda",
+    "usdc": "model.usdc"
    }
   },
   {
@@ -289,7 +298,8 @@
     "labels": "labels.json",
     "extracted": "extracted.json",
     "step": "model.step",
-    "usda": "model.usda"
+    "usda": "model.usda",
+    "usdc": "model.usdc"
    }
   },
   {
@@ -321,7 +331,8 @@
     "labels": "labels.json",
     "extracted": "extracted.json",
     "step": "model.step",
-    "usda": "model.usda"
+    "usda": "model.usda",
+    "usdc": "model.usdc"
    }
   },
   {
@@ -351,7 +362,156 @@
     "labels": "labels.json",
     "extracted": "extracted.json",
     "step": "model.step",
-    "usda": "model.usda"
+    "usda": "model.usda",
+    "usdc": "model.usdc"
+   }
+  },
+  {
+   "id": "hex-bolt-m10",
+   "name": "Hex bolt M10x40",
+   "name_ko": "육각 볼트 M10×40",
+   "part_class": "other",
+   "material": "SCM435",
+   "difficulty": 3,
+   "L": 46.4,
+   "Dmax": 18.48,
+   "mass_g": 35.4,
+   "scale": 2,
+   "segments": 3,
+   "features": [
+    "hex"
+   ],
+   "grooves": 0,
+   "bore": false,
+   "files": {
+    "golden": "golden.json",
+    "svg": "drawing.svg",
+    "png": "drawing.png",
+    "thumb": "thumb.webp",
+    "dxf": "drawing.dxf",
+    "labels": "labels.json",
+    "extracted": "extracted.json",
+    "step": "model.step",
+    "usda": "model.usda",
+    "usdc": "model.usdc"
+   }
+  },
+  {
+   "id": "socket-cap-m8",
+   "name": "Socket head cap screw M8x30",
+   "name_ko": "육각구멍붙이 볼트 M8×30",
+   "part_class": "other",
+   "material": "SCM435",
+   "difficulty": 3,
+   "L": 38,
+   "Dmax": 13,
+   "mass_g": 19.1,
+   "scale": 2,
+   "segments": 3,
+   "features": [
+    "hex_socket"
+   ],
+   "grooves": 0,
+   "bore": false,
+   "files": {
+    "golden": "golden.json",
+    "svg": "drawing.svg",
+    "png": "drawing.png",
+    "thumb": "thumb.webp",
+    "dxf": "drawing.dxf",
+    "labels": "labels.json",
+    "extracted": "extracted.json",
+    "step": "model.step",
+    "usda": "model.usda",
+    "usdc": "model.usdc"
+   }
+  },
+  {
+   "id": "set-screw-m6",
+   "name": "Socket set screw M6x12",
+   "name_ko": "세트 스크루 M6×12",
+   "part_class": "other",
+   "material": "S45C",
+   "difficulty": 2,
+   "L": 12,
+   "Dmax": 6,
+   "mass_g": 2.4,
+   "scale": 2,
+   "segments": 1,
+   "features": [
+    "hex_socket"
+   ],
+   "grooves": 0,
+   "bore": false,
+   "files": {
+    "golden": "golden.json",
+    "svg": "drawing.svg",
+    "png": "drawing.png",
+    "thumb": "thumb.webp",
+    "dxf": "drawing.dxf",
+    "labels": "labels.json",
+    "extracted": "extracted.json",
+    "step": "model.step",
+    "usda": "model.usda",
+    "usdc": "model.usdc"
+   }
+  },
+  {
+   "id": "countersunk-m6",
+   "name": "Countersunk socket screw M6x20",
+   "name_ko": "접시머리 나사 M6×20",
+   "part_class": "other",
+   "material": "SUS304",
+   "difficulty": 3,
+   "L": 23.3,
+   "Dmax": 12,
+   "mass_g": 5.9,
+   "scale": 2,
+   "segments": 2,
+   "features": [
+    "hex_socket"
+   ],
+   "grooves": 0,
+   "bore": false,
+   "files": {
+    "golden": "golden.json",
+    "svg": "drawing.svg",
+    "png": "drawing.png",
+    "thumb": "thumb.webp",
+    "dxf": "drawing.dxf",
+    "labels": "labels.json",
+    "extracted": "extracted.json",
+    "step": "model.step",
+    "usda": "model.usda",
+    "usdc": "model.usdc"
+   }
+  },
+  {
+   "id": "stud-m12",
+   "name": "Double-end stud M12x60",
+   "name_ko": "스터드 볼트 M12×60",
+   "part_class": "other",
+   "material": "SCM435",
+   "difficulty": 2,
+   "L": 60,
+   "Dmax": 12,
+   "mass_g": 52.7,
+   "scale": 2,
+   "segments": 3,
+   "features": [],
+   "grooves": 0,
+   "bore": false,
+   "files": {
+    "golden": "golden.json",
+    "svg": "drawing.svg",
+    "png": "drawing.png",
+    "thumb": "thumb.webp",
+    "dxf": "drawing.dxf",
+    "labels": "labels.json",
+    "extracted": "extracted.json",
+    "step": "model.step",
+    "usda": "model.usda",
+    "usdc": "model.usdc"
    }
   }
  ]

@@ -8,6 +8,9 @@
 import * as THREE from "three";
 import { GLTFExporter } from "three/addons/exporters/GLTFExporter.js";
 import { STLExporter } from "three/addons/exporters/STLExporter.js";
+import { PLYExporter } from "three/addons/exporters/PLYExporter.js";
+import { USDZExporter } from "three/addons/exporters/USDZExporter.js";
+import { exportFBX } from "./fbx-export.js";
 import { drawShaft, toSVG, toDXF } from "./shaft-drawing.js";
 import { computeMass, totalLength, maxDiameter } from "./shaft-profile.js";
 import { densityOf } from "./shaft-standards.js";
@@ -139,6 +142,16 @@ export function exportGLB(root) {
   root.traverse((n) => { if (n.isMesh && !n.name.endsWith(":cut") && !n.name.startsWith("ghost")) { const m = new THREE.Mesh(n.geometry, n.material); m.name = n.name; m.applyMatrix4(n.matrixWorld); g.add(m); } });
   return new Promise((resolve, reject) => new GLTFExporter().parse(g, resolve, reject, { binary: true }));
 }
+
+/* PLY (바이너리) · USDZ (three.js USDZExporter — usda 를 usdz 컨테이너로) · FBX (ASCII 7.4, fbx-export.js) */
+function cleanGroup(root) {
+  const g = new THREE.Group();
+  root.traverse((n) => { if (n.isMesh && !n.name.endsWith(":cut") && !n.name.startsWith("ghost")) { const m = new THREE.Mesh(n.geometry, n.material); m.name = n.name; m.applyMatrix4(n.matrixWorld); g.add(m); } });
+  return g;
+}
+export function exportPLY(root) { return new PLYExporter().parse(cleanGroup(root), null, { binary: false }); }
+export function exportUSDZ(root) { return new USDZExporter().parseAsync(cleanGroup(root), { includeAnchoringProperties: false }); }
+export { exportFBX };
 
 /* ------------------------------------------------------------ USDA (OpenUSD ASCII)
    메시 + DSL 파라미터를 custom 속성으로. metersPerUnit=0.001 로 mm 를 선언한다.

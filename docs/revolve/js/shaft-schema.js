@@ -19,7 +19,7 @@ const nullable = (schema) => ({ ...schema, type: [schema.type, "null"] });
 export const SEGMENT_TYPES = ["cyl", "taper", "thread"];
 export const TRANSITION_TYPES = ["chamfer", "fillet", "round", "undercut"];
 export const GROOVE_KINDS = ["snap_ring", "relief", "o_ring", "generic"];
-export const FEATURE_TYPES = ["keyway", "center_hole", "cross_hole", "flat", "hex", "knurl"];
+export const FEATURE_TYPES = ["keyway", "center_hole", "cross_hole", "flat", "hex", "knurl", "hex_socket"];
 export const PART_CLASSES = ["shaft", "bushing", "pin", "roller", "spacer", "flange", "sleeve", "spindle", "other"];
 
 export const SHAFT_SCHEMA = {
@@ -128,22 +128,22 @@ export const SHAFT_SCHEMA = {
       items: {
         type: "object", additionalProperties: false, required: ["type"],
         properties: {
-          type: str("keyway=키홈, center_hole=센터구멍, cross_hole=횡구멍, flat=평면가공(D컷), hex=육각, knurl=널링.", { enum: FEATURE_TYPES }),
+          type: str("keyway=키홈, center_hole=센터구멍, cross_hole=횡구멍, flat=평면가공(D컷), hex=육각, knurl=널링, hex_socket=끝면 육각 소켓(렌치 구멍).", { enum: FEATURE_TYPES }),
           segment: { type: "integer", minimum: 0, description: "keyway·flat·hex·knurl 이 놓이는 세그먼트." },
           offset: num("세그먼트 시작에서 피처 시작까지 (mm).", { minimum: 0 }),
           length: pos("keyway·flat·knurl 길이 (mm)."),
           width: pos("keyway 폭 b (mm)."),
-          depth: pos("keyway 깊이 t1 · flat 깊이 (mm)."),
+          depth: pos("keyway 깊이 t1 · flat 깊이 · hex_socket 깊이 (mm)."),
           angle: num("둘레 각도 (도). 0=정면(+Z), 90=위(+Y).", { minimum: 0, maximum: 360 }),
           kind: str("keyway 형식.", { enum: ["parallel", "woodruff"] }),
-          end: str("center_hole 이 있는 끝면.", { enum: ["left", "right"] }),
+          end: str("center_hole·hex_socket 이 있는 끝면.", { enum: ["left", "right"] }),
           form: str("center_hole 형식 (DIN 332).", { enum: ["A", "B", "R"] }),
           d: pos("center_hole 파일럿 지름 (mm)."),
           position: num("cross_hole 중심의 x 위치 (왼쪽 끝 기준, mm).", { minimum: 0 }),
           diameter: pos("cross_hole 지름 (mm)."),
           through: { type: "boolean", description: "cross_hole 관통 여부." },
           count: { type: "integer", minimum: 1, maximum: 2, description: "flat 개수 (2=마주보는 두 면)." },
-          across_flats: pos("hex 대변 거리 (mm)."),
+          across_flats: pos("hex·hex_socket 대변 거리 (mm)."),
           pitch: pos("knurl 피치 (mm)."),
           pattern: str("knurl 무늬.", { enum: ["straight", "diamond"] }),
           standard: str("규격 표기 (예: DIN 6885 8×7, DIN 332-A2.5)."),
@@ -214,7 +214,7 @@ export function validateSchema(value, schema = SHAFT_SCHEMA, path = "$", errors 
    스키마가 통과해도 만들 수 없는 형상은 여기서 걸린다. 오류(errors)는 실행기가
    거부하고, 경고(warnings)는 만들되 알려준다. 판독기의 수리 루프는 이 문장을
    그대로 모델에 되돌려 준다. */
-import { parseThreadSpec } from "./shaft-standards.js?v=e9bdacdd";
+import { parseThreadSpec } from "./shaft-standards.js?v=2ebcdab1";
 
 export function segmentDiameters(seg) {
   if (seg.type === "taper") return [seg.d_start, seg.d_end];
@@ -434,6 +434,18 @@ export function checkGeometry(dsl) {
     } else if (f.type === "knurl") {
       if (!(f.length > 0)) errors.push(`${p}: knurl 은 length 가 필요합니다.`);
       else if ((f.offset || 0) + f.length > s.length + 1e-9) errors.push(`${p}: 널링 구간이 세그먼트 길이 ${s.length} 를 넘습니다.`);
+    } else if (f.type === "hex_socket") {
+      if (!["left", "right"].includes(f.end)) errors.push(`${p}: hex_socket 은 end(left|right) 가 필요합니다.`);
+      else if (!(f.across_flats > 0 && f.depth > 0)) errors.push(`${p}: hex_socket 은 across_flats·depth 가 필요합니다.`);
+      else {
+        const x = f.end === "left" ? 1e-6 : L - 1e-6;
+        const D2 = outerDiameterAt(dsl, x);
+        if (boreDiameterAt(dsl, x) > 0) errors.push(`${p}: ${f.end} 끝에 보어가 있어 육각 소켓을 둘 수 없습니다.`);
+        if (ends.has(f.end)) errors.push(`${p}: ${f.end} 끝에 센터구멍과 육각 소켓이 함께 있습니다.`);
+        const ac = f.across_flats / Math.cos(Math.PI / 6);
+        if (ac >= D2 * 0.85) errors.push(`${p}: 육각 소켓 대각 ${ac.toFixed(1)} 이 끝면 지름 ⌀${D2} 에 비해 큽니다.`);
+        if (f.depth >= L * 0.6) errors.push(`${p}: 육각 소켓 깊이 ${f.depth} 가 전체 길이의 60% 를 넘습니다.`);
+      }
     }
   });
   return { ok: errors.length === 0, errors, warnings };
@@ -478,6 +490,7 @@ export function normalizeShaft(input) {
   }
   for (const f of dsl.features) {
     if (f.type === "center_hole" && !f.form) f.form = "A";
+    if (f.type === "hex_socket") { delete f.form; delete f.d; }
     if (f.type === "cross_hole" && f.through === undefined) f.through = true;
     if (f.type === "keyway" && !f.kind) f.kind = "parallel";
     if (f.angle === undefined) delete f.angle;

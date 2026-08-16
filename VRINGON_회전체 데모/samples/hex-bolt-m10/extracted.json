@@ -1,0 +1,185 @@
+{
+ "dsl": {
+  "name_ko": "육각 볼트 M10×40",
+  "part_class": "other",
+  "material": "SCM435",
+  "segments": [
+   {
+    "type": "cyl",
+    "length": 6.4,
+    "diameter": 18.48,
+    "label": "머리"
+   },
+   {
+    "type": "cyl",
+    "length": 14,
+    "diameter": 10
+   },
+   {
+    "type": "thread",
+    "length": 26,
+    "diameter": 10,
+    "spec": "M10",
+    "pitch": 1.5
+   }
+  ],
+  "transitions": [
+   {
+    "at": 0,
+    "type": "chamfer",
+    "size": 1,
+    "angle": 30
+   },
+   {
+    "at": 1,
+    "type": "fillet",
+    "radius": 0.6
+   },
+   {
+    "at": 3,
+    "type": "chamfer",
+    "size": 1.5,
+    "angle": 45
+   }
+  ],
+  "grooves": [],
+  "bore": null,
+  "features": [
+   {
+    "type": "hex",
+    "across_flats": 16,
+    "segment": 0
+   }
+  ],
+  "drawing": {
+   "number": "VR-RB-013"
+  },
+  "dsl": "vringon-shaft/1.0",
+  "units": "mm",
+  "meta": {
+   "source": "extracted",
+   "provider": "primary",
+   "tier": "text"
+  },
+  "id": "extracted"
+ },
+ "dims_read": [
+  {
+   "text": "⌀18.48",
+   "kind": "diameter",
+   "value": 18.48,
+   "where": "머리 지름"
+  },
+  {
+   "text": "6.4",
+   "kind": "length",
+   "value": 6.4,
+   "where": "머리 두께"
+  },
+  {
+   "text": "46.4",
+   "kind": "overall",
+   "value": 46.4,
+   "where": "전체 길이"
+  },
+  {
+   "text": "26",
+   "kind": "length",
+   "value": 26,
+   "where": "나사부 길이"
+  },
+  {
+   "text": "⌀10",
+   "kind": "diameter",
+   "value": 10,
+   "where": "샹크 지름"
+  },
+  {
+   "text": "M10",
+   "kind": "thread",
+   "value": 10,
+   "where": "나사부"
+  },
+  {
+   "text": "1×30°",
+   "kind": "chamfer",
+   "value": 1,
+   "where": "머리 좌측 모따기"
+  },
+  {
+   "text": "R0.6",
+   "kind": "radius",
+   "value": 0.6,
+   "where": "머리 밑 필렛"
+  },
+  {
+   "text": "C1.5",
+   "kind": "chamfer",
+   "value": 1.5,
+   "where": "나사 끝 모따기"
+  },
+  {
+   "text": "16",
+   "kind": "other",
+   "value": 16,
+   "where": "A-A 단면 대변 치수"
+  }
+ ],
+ "notes": [],
+ "confidence_self": 1,
+ "provider": "primary",
+ "tier": "text",
+ "repaired": false,
+ "elapsed_ms": 11357,
+ "validation": {
+  "ok": true,
+  "errors": [],
+  "warnings": []
+ },
+ "verify": {
+  "iou": 0.9961496214224266,
+  "dims": {
+   "rate": 0.9,
+   "matched": 9,
+   "total": 10,
+   "unmatched": [
+    "M10"
+   ]
+  },
+  "confidence": 0.9628822917823346
+ },
+ "evaluated": {
+  "tier": "text",
+  "metrics": {
+   "valid": true,
+   "segment": {
+    "precision": 1,
+    "recall": 1,
+    "f1": 1
+   },
+   "feature": {
+    "precision": 1,
+    "recall": 1,
+    "f1": 1
+   },
+   "transition": {
+    "precision": 1,
+    "recall": 1,
+    "f1": 1
+   },
+   "groove": {
+    "precision": 1,
+    "recall": 1,
+    "f1": 1
+   },
+   "dim_rate": 1,
+   "dims_total": 11,
+   "iou": 1,
+   "iou_abs": 1,
+   "bore_ok": true,
+   "length_ok": true,
+   "exact": true
+  },
+  "date": "2026-08-16"
+ }
+}

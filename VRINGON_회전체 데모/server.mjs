@@ -136,6 +136,13 @@ async function handleExtract(body) {
   const messages = buildExtractMessages({ image, hints, overallLength, fewShot });
   const first = await callVision(messages, EXTRACT_RESPONSE_SCHEMA, tier);
   let out = first.json || {};
+  /* 회전체가 아니라고 판단하면 억지 형상 대신 사유를 돌려준다 */
+  if (!Array.isArray(out.dsl?.segments) || out.dsl.segments.length === 0) {
+    const notes = Array.isArray(out.notes) ? out.notes : [];
+    const reason = notes.find((n) => /회전체 아님|not a? ?revol|not turned/i.test(String(n))) || notes[0] || "판독기가 회전체 정면도로 보지 않았습니다.";
+    try { await mkdir(join(rootDir, "data"), { recursive: true }); await appendFile(join(rootDir, "data/telemetry.jsonl"), JSON.stringify({ ts: new Date().toISOString(), kind: "extract", not_revolve: true, tier, provider: first.provider, ms: Date.now() - t0, reason }) + "\n"); } catch {}
+    return { not_revolve: true, reason, notes, dims_read: Array.isArray(out.dims_read) ? out.dims_read : [], provider: first.provider, tier, elapsed_ms: Date.now() - t0 };
+  }
   let dsl = normalizeShaft(postprocessExtracted(out.dsl || {}));
   if (!dsl.id) dsl.id = "extracted";
   dsl.meta = { ...(dsl.meta || {}), source: "extracted", provider: first.provider, tier };
@@ -207,7 +214,7 @@ async function handleStep(body) {
 }
 
 /* ------------------------------------------------------------ http */
-const MIME = { ".html": "text/html; charset=utf-8", ".css": "text/css; charset=utf-8", ".js": "text/javascript; charset=utf-8", ".mjs": "text/javascript; charset=utf-8", ".json": "application/json; charset=utf-8", ".svg": "image/svg+xml", ".png": "image/png", ".jpg": "image/jpeg", ".webp": "image/webp", ".woff2": "font/woff2", ".glb": "model/gltf-binary", ".step": "application/step", ".stp": "application/step", ".stl": "model/stl", ".dxf": "application/dxf", ".usda": "text/plain; charset=utf-8", ".md": "text/markdown; charset=utf-8", ".txt": "text/plain; charset=utf-8", ".py": "text/plain; charset=utf-8" };
+const MIME = { ".html": "text/html; charset=utf-8", ".css": "text/css; charset=utf-8", ".js": "text/javascript; charset=utf-8", ".mjs": "text/javascript; charset=utf-8", ".json": "application/json; charset=utf-8", ".svg": "image/svg+xml", ".png": "image/png", ".jpg": "image/jpeg", ".webp": "image/webp", ".woff2": "font/woff2", ".glb": "model/gltf-binary", ".step": "application/step", ".stp": "application/step", ".stl": "model/stl", ".dxf": "application/dxf", ".usda": "text/plain; charset=utf-8", ".usdc": "model/vnd.usd", ".usdz": "model/vnd.usdz+zip", ".fbx": "application/octet-stream", ".ply": "text/plain; charset=utf-8", ".md": "text/markdown; charset=utf-8", ".txt": "text/plain; charset=utf-8", ".py": "text/plain; charset=utf-8" };
 async function readBody(req, limit = 16e6) {
   return new Promise((resolve, reject) => {
     const chunks = []; let n = 0;
@@ -229,7 +236,7 @@ const server = createServer(async (req, res) => {
       const body = await readBody(req);
       const { dir, id, summary } = await handleStep(body);
       const fmt = (body.download || "step").toLowerCase();
-      const file = fmt === "usda" ? "model.usda" : fmt === "stl" ? "model.stl" : "model.step";
+      const file = fmt === "usda" ? "model.usda" : fmt === "usdc" ? "model.usdc" : fmt === "stl" ? "model.stl" : "model.step";
       const buf = await readFile(join(dir, file));
       res.writeHead(200, { "Content-Type": MIME["." + fmt] || "application/octet-stream", "Content-Disposition": `attachment; filename="${(body.dsl?.id || "shaft")}.${fmt}"`, "X-Executor-Summary": encodeURIComponent(JSON.stringify(summary)), "Cache-Control": "no-store" });
       return res.end(buf);

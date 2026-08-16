@@ -191,6 +191,16 @@ export function featureCutter(f, ctx) {
     mesh.rotation.x = -(f.angle || 0) * DEG;   /* angle: +Z 기준, +Y 로 도는 방향 = X 축 기준 음의 회전 */
     return { mesh, op: "intersect" };
   }
+  if (f.type === "hex_socket") {
+    const ac = f.across_flats / Math.cos(30 * DEG);
+    const g = new THREE.CylinderGeometry(ac / 2, ac / 2, f.depth + 2, 6, 1, false);
+    g.rotateY(30 * DEG);
+    g.rotateZ(-90 * DEG);   /* 축 → X */
+    const mesh = new THREE.Mesh(g);
+    /* 끝면에서 depth 만큼 안으로 (여유 1mm 는 바깥으로) */
+    mesh.position.x = f.end === "left" ? f.depth / 2 - 1 : ctx.L - f.depth / 2 + 1;
+    return { mesh, op: "subtract" };
+  }
   if (f.type === "cross_hole") {
     const through = f.through !== false;
     const len = through ? R * 2 + 4 : (f.depth || R) + margin;
@@ -226,7 +236,7 @@ export function buildShaft3D(dsl, opts = {}) {
   for (const f of ev.features) {
     if (f.type === "knurl") { cuts.add(f.x0); cuts.add(f.x1); bandsSpecial.push({ xa: f.x0, xb: f.x1, kind: "knurl" }); continue; }
     if (f.type === "center_hole") continue;
-    const pad = f.type === "hex" ? 0 : Math.min(1.0, Math.max(0.2, (f.x1 - f.x0) * 0.05));
+    const pad = f.type === "hex" || f.type === "hex_socket" ? 0 : Math.min(1.0, Math.max(0.2, (f.x1 - f.x0) * 0.05));
     const xa = Math.max(0, f.x0 - pad), xb = Math.min(L, f.x1 + pad);
     cuts.add(xa); cuts.add(xb);
     bandsSpecial.push({ xa, xb, kind: "feature", f });

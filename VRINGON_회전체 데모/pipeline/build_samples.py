@@ -7,7 +7,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from executor import run
 
 ROOT = Path(__file__).resolve().parent.parent
-ap = argparse.ArgumentParser(); ap.add_argument("--formats", default="step,usda"); a = ap.parse_args()
+ap = argparse.ArgumentParser(); ap.add_argument("--formats", default="step,usda,usdc"); a = ap.parse_args()
 formats = tuple(x for x in a.formats.split(",") if x)
 for d in sorted((ROOT / "samples").iterdir()):
     g = d / "golden.json"

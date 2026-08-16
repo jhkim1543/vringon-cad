@@ -5,8 +5,8 @@
 
    출력 좌표계: x = 축 방향(왼쪽 끝 0), r = 반경(≥0). 순수 모듈. */
 
-import { segmentSpans, segmentDiameters, totalLength, maxDiameter, boreDiameterAt, outerDiameterAt } from "./shaft-schema.js?v=e9bdacdd";
-import { parseThreadSpec, threadMinorDiameter, centerHoleDims } from "./shaft-standards.js?v=e9bdacdd";
+import { segmentSpans, segmentDiameters, totalLength, maxDiameter, boreDiameterAt, outerDiameterAt } from "./shaft-schema.js?v=2ebcdab1";
+import { parseThreadSpec, threadMinorDiameter, centerHoleDims } from "./shaft-standards.js?v=2ebcdab1";
 
 const DEG = Math.PI / 180;
 
@@ -272,6 +272,7 @@ export function collectEvents(dsl) {
     if (f.type === "keyway" || f.type === "flat" || f.type === "knurl") { item.x0 = x0 + (f.offset || 0); item.x1 = item.x0 + f.length; }
     if (f.type === "hex") { item.x0 = x0; item.x1 = spans[f.segment][1]; }
     if (f.type === "cross_hole") { item.x0 = f.position - f.diameter / 2; item.x1 = f.position + f.diameter / 2; }
+    if (f.type === "hex_socket") { const Lt = totalLength(dsl); item.x0 = f.end === "left" ? 0 : Lt - f.depth; item.x1 = f.end === "left" ? f.depth : Lt; item.D = outerDiameterAt(dsl, f.end === "left" ? 1e-6 : Lt - 1e-6); }
     ev.features.push(item);
   }
   if (dsl.bore) {
@@ -339,6 +340,10 @@ export function computeVolume(dsl, arcN = 12) {
       const a = crossSectionRemoved(R, f);
       removed.push({ type: f.type, mm3: a * len });
       v -= a * len;
+    } else if (f.type === "hex_socket") {
+      const mm3 = (Math.sqrt(3) / 2) * f.across_flats * f.across_flats * f.depth;
+      removed.push({ type: f.type, mm3 });
+      v -= mm3;
     } else if (f.type === "cross_hole") {
       const D = outerDiameterAt(dsl, f.position), db = boreDiameterAt(dsl, f.position);
       const len = f.through === false ? Math.min(f.depth || 0, D) : Math.max(0, D - db);

@@ -32,7 +32,8 @@ async function pngDataUrl(svg, widthPx = 1800) {
   return `data:image/png;base64,${buf.toString("base64")}`;
 }
 
-const cases = GOLDENS.map((g) => ({ id: g.id, gold: g, kind: "golden" }));
+const only = (opt("--only", "") || "").split(",").map((x) => x.trim()).filter(Boolean);
+const cases = GOLDENS.filter((g) => !only.length || only.includes(g.id)).map((g) => ({ id: g.id, gold: g, kind: "golden" }));
 for (let k = 0; k < nSyn; k++) { const g = sampleShaft(1000 + k); if (g.meta.valid) cases.push({ id: g.id, gold: g, kind: "synthetic" }); }
 
 const rows = [];
@@ -75,7 +76,8 @@ const report = {
   calibration: rows.filter((r) => r.server?.verify).map((r) => ({ id: r.id, confidence: r.server.verify.confidence, iou_reported: r.server.verify.iou, dim_rate_reported: r.server.verify.dims?.rate ?? null, seg_f1: r.server.metrics.segment.f1, exact: r.server.metrics.exact })),
   rows,
 };
-const fname = `${ROOT}eval/report-${method}-${tier}.json`;
+const suffix = only.length ? "-" + only.join("_").slice(0, 40) : "";
+const fname = `${ROOT}eval/report-${method}-${tier}${suffix}.json`;
 writeFileSync(fname, JSON.stringify(report, null, 1));
 /* 마크다운 요약 */
 const pct = (v) => (v == null ? "-" : `${(v * 100).toFixed(0)}%`);
@@ -88,5 +90,5 @@ if (report.server) { const V = report.server; md.push(`| 시각 LLM (${tier} 티
 md.push("", `평균 응답 시간: ${report.server_ms_mean ?? "-"} ms · 수리 라운드 발동: ${report.server_repaired}/${report.n}`, "");
 md.push(`| 샘플 | 종류 | 실루엣 segF1 | 서버 segF1 | 서버 피처F1 | 서버 치수 | 서버 IoU | 완전일치 | ms |`, `|---|---|---|---|---|---|---|---|---|`);
 for (const r of rows) md.push(`| ${r.id} | ${r.kind} | ${r.silhouette?.metrics ? pct(r.silhouette.metrics.segment.f1) : "-"} | ${r.server?.metrics ? pct(r.server.metrics.segment.f1) : "-"} | ${r.server?.metrics ? pct(r.server.metrics.feature.f1) : "-"} | ${r.server?.metrics ? pct(r.server.metrics.dim_rate) : "-"} | ${r.server?.metrics ? r.server.metrics.iou.toFixed(3) : "-"} | ${r.server?.metrics ? (r.server.metrics.exact ? "✓" : "✗") : "-"} | ${r.server?.ms ?? "-"} |`);
-writeFileSync(`${ROOT}eval/report-${method}-${tier}.md`, md.join("\n") + "\n");
+writeFileSync(`${ROOT}eval/report-${method}-${tier}${suffix}.md`, md.join("\n") + "\n");
 console.log(`\n${md.slice(0, 6).join("\n")}\n→ ${fname}`);

@@ -14,7 +14,7 @@ import { drawShaft, toSVG } from "./shaft-drawing.js";
 import { extractHeuristic, extractViaServer } from "./shaft-extract.js";
 import { verifyExtraction, goldenMetrics } from "./shaft-verify.js";
 import { sampleShaft } from "./shaft-sampler.js";
-import { exportSTEP, exportSTL, exportGLB, exportOBJ, exportUSDA, exportDrawingDXF, exportDrawingSVG, exportJSON, downloadBlob } from "./shaft-export.js";
+import { exportSTEP, exportSTL, exportGLB, exportOBJ, exportUSDA, exportUSDZ, exportFBX, exportPLY, exportDrawingDXF, exportDrawingSVG, exportJSON, downloadBlob } from "./shaft-export.js";
 
 const BUILD = "dev";
 const $ = (id) => document.getElementById(id);
@@ -108,6 +108,23 @@ $("btnSection").onclick = () => {
 function showSheet(on) { $("sheet").classList.toggle("show", on); state.showingDrawing = on; $("btnDrawing").classList.toggle("on", on); }
 $("btnDrawing").onclick = () => showSheet(!state.showingDrawing);
 function setSheetImage(dataUrl, cap) { const img = $("sheetImg"); img.src = dataUrl; $("sheetCap").textContent = cap || ""; $("overlay").innerHTML = ""; }
+/* 시트 모드: 원본(올린 이미지 + 판독 외형 오버레이) ↔ 재생성(지금 DSL 로 렌더러가 다시 그린 도면).
+   파라메트릭 수정은 DSL → 3D·재생성 도면·검증 으로 한 방향으로만 흐른다. 원본 이미지는 고치지 않는다. */
+state.sheetMode = "original";
+function refreshSheet() {
+  if (!state.source) return;
+  if (state.sheetMode === "regen" && state.dsl && validateShaft(state.dsl).ok) {
+    const svg = toSVG(drawShaft(state.dsl, { scale: "auto", seed: 1 }));
+    setSheetImage(svgToDataUrl(svg), `재생성 도면 · 지금 DSL 에서 렌더러가 다시 그림 (원본이 아님)`);
+    $("overlay").innerHTML = "";
+  } else {
+    setSheetImage(state.source.svg ? svgToDataUrl(state.source.svg) : state.source.image, state.source.kind === "sample" ? `샘플 도면 · ${state.source.name}` : state.source.kind === "synthetic" ? `합성 도면 · ${state.source.name}` : `업로드 · ${state.source.name}`);
+    drawOverlay();
+  }
+  $("btnRegen").classList.toggle("on", state.sheetMode === "regen");
+  $("btnRegen").textContent = state.sheetMode === "regen" ? "원본 도면" : "재생성 도면";
+}
+$("btnRegen").onclick = () => { state.sheetMode = state.sheetMode === "regen" ? "original" : "regen"; showSheet(true); refreshSheet(); };
 /* 판독한 DSL 을 도면 위에 겹쳐 그린다: 측정한 부품 bbox 안에 외형선을 맞춘다 */
 function drawOverlay() {
   const ov = $("overlay"); ov.innerHTML = "";
@@ -154,6 +171,7 @@ function renderStepper() {
   $("btnGolden").classList.toggle("show", !!state.gold && pipe.done >= 2);
   $("btnSection").classList.toggle("show", pipe.done >= 3);
   $("btnDrawing").classList.toggle("show", pipe.done >= 3);
+  $("btnRegen").classList.toggle("show", pipe.done >= 2);
 }
 function showGen(on, title, sub, steps) {
   $("gen").classList.toggle("on", on);
@@ -241,9 +259,14 @@ async function stepExtract() {
     const hints = sil.ok ? { draft: sil.dsl, silhouette: { L: sil.silhouette.L, top: Array.from(sil.silhouette.top), bottom: Array.from(sil.silhouette.bottom) }, sectioned: !!sil.dsl.bore } : null;
     const tier = $("tierPlan").checked ? "plan" : "text";
     const j = await extractViaServer(state.source.image, { hints, overallLength: Number($("overallLen").value) || null, tier });
+    if (j.not_revolve) {
+      showUnsuitable(`AI 판독기가 회전체 정면도로 보지 않았습니다 — ${j.reason}`, (j.notes || []).filter((n) => n !== j.reason));
+      throw new Error("회전체 도면이 아닙니다: " + j.reason);
+    }
     ex = { method: "server", dsl: normalizeShaft(j.dsl), dims_read: j.dims_read || [], notes: j.notes || [], serverVerify: j.verify, provider: j.provider, tier: j.tier, repaired: j.repaired, ms: j.elapsed_ms };
   } else {
-    if (!sil.ok) throw new Error(sil.notes?.join(" ") || "실루엣을 찾지 못했습니다");
+    if (!sil.ok) { showUnsuitable("도면에서 부품 외형을 찾지 못했습니다.", sil.notes || []); throw new Error(sil.notes?.join(" ") || "실루엣을 찾지 못했습니다"); }
+    if (sil.plausible === false) showUnsuitable("실루엣 판독 결과가 회전체 정면도답지 않습니다 — 결과는 참고용입니다.", sil.reasons || []);
     ex = { method: "silhouette", dsl: sil.dsl, dims_read: [], notes: sil.notes, ms: performance.now() - t0 };
     if (!L) ex.notes.unshift("전체 길이를 입력하지 않아 100mm 로 가정했습니다. 왼쪽 '전체 길이'에 값을 넣고 다시 판독하면 절대 치수가 맞습니다.");
   }
@@ -263,6 +286,14 @@ async function stepExtract() {
   drawOverlay();
   toast(`판독 완료 — 세그먼트 ${ex.dsl.segments.length}개${ex.dims_read?.length ? `, 치수 문자 ${ex.dims_read.length}개` : ""}`, true);
   $("jsonBlock").scrollIntoView({ behavior: "smooth", block: "start" });
+}
+/* 적합하지 않은 입력: 억지로 3D 를 만들기보다 왜 안 되는지와 안내를 보여준다 */
+function showUnsuitable(title, reasons) {
+  const box = $("unsuitable"); if (!box) return;
+  box.style.display = "block";
+  box.innerHTML = `<b>${escapeHtml(title)}</b>${reasons?.length ? `<ul style="margin:6px 0 0 16px">${reasons.slice(0, 5).map((r) => `<li>${escapeHtml(r)}</li>`).join("")}</ul>` : ""}
+    <div style="margin-top:8px"><a href="./guide.html" target="_blank" class="btn btn-ghost btn-sm">어떤 도면을 올려야 하나요 →</a></div>`;
+  toast(title);
 }
 function renderExtractPanel() {
   const ex = state.extraction; if (!ex) return;
@@ -297,7 +328,7 @@ function applyDslChange(next, why = "") {
   setDsl(next);
   if (pipe.done >= 3) rebuild3D();
   if (pipe.done >= 4) computeVerify();
-  drawOverlay();
+  if (state.sheetMode === "regen") refreshSheet(); else drawOverlay();
   return true;
 }
 $("btnBuild").onclick = () => {
@@ -367,7 +398,7 @@ function renderFeatList() {
   const rows = [];
   (dsl.transitions || []).forEach((t, i) => rows.push({ kind: "transitions", i, k: { chamfer: "모따기", fillet: "필렛", round: "라운드", undercut: "도피홈" }[t.type] || t.type, v: `경계 ${t.at} · ${t.type === "chamfer" ? `C${t.size}${t.angle && t.angle !== 45 ? `×${t.angle}°` : ""}` : t.type === "undercut" ? `${t.width}×${t.depth}` : `R${t.radius}`}` }));
   (dsl.grooves || []).forEach((g, i) => rows.push({ kind: "grooves", i, k: "홈", v: `seg ${g.segment + 1} · +${g.offset} · ${g.width}×${g.depth}${g.kind ? ` (${g.kind})` : ""}` }));
-  (dsl.features || []).forEach((f, i) => rows.push({ kind: "features", i, k: { keyway: "키홈", center_hole: "센터구멍", cross_hole: "횡구멍", flat: "평면", hex: "육각", knurl: "널링" }[f.type] || f.type, v: f.type === "keyway" ? `seg ${f.segment + 1} · +${f.offset || 0} · ${f.width}×${f.depth} L${f.length}` : f.type === "center_hole" ? `${f.end === "left" ? "왼쪽" : "오른쪽"} · ${f.form || "A"}${f.d}` : f.type === "cross_hole" ? `x${f.position} · ⌀${f.diameter}${f.through === false ? ` 깊이 ${f.depth}` : " 관통"}` : f.type === "flat" ? `seg ${f.segment + 1} · +${f.offset || 0} · L${f.length} 깊이 ${f.depth}${f.count === 2 ? " ×2" : ""}` : f.type === "hex" ? `seg ${f.segment + 1} · 대변 ${f.across_flats}` : `seg ${f.segment + 1} · L${f.length}` }));
+  (dsl.features || []).forEach((f, i) => rows.push({ kind: "features", i, k: { keyway: "키홈", center_hole: "센터구멍", cross_hole: "횡구멍", flat: "평면", hex: "육각", knurl: "널링", hex_socket: "육각 소켓" }[f.type] || f.type, v: f.type === "keyway" ? `seg ${f.segment + 1} · +${f.offset || 0} · ${f.width}×${f.depth} L${f.length}` : f.type === "center_hole" ? `${f.end === "left" ? "왼쪽" : "오른쪽"} · ${f.form || "A"}${f.d}` : f.type === "hex_socket" ? `${f.end === "left" ? "왼쪽" : "오른쪽"} · S${f.across_flats} 깊이 ${f.depth}` : f.type === "cross_hole" ? `x${f.position} · ⌀${f.diameter}${f.through === false ? ` 깊이 ${f.depth}` : " 관통"}` : f.type === "flat" ? `seg ${f.segment + 1} · +${f.offset || 0} · L${f.length} 깊이 ${f.depth}${f.count === 2 ? " ×2" : ""}` : f.type === "hex" ? `seg ${f.segment + 1} · 대변 ${f.across_flats}` : `seg ${f.segment + 1} · L${f.length}` }));
   if (dsl.bore) rows.push({ kind: "bore", i: 0, k: "보어", v: `${dsl.bore.through ? "관통" : `막힘(${dsl.bore.from})`} · ${dsl.bore.segments.map((b) => `⌀${b.diameter}×${b.length}`).join(" + ")}` });
   host.innerHTML = rows.length ? rows.map((r) => `<div class="feat" data-kind="${r.kind}" data-i="${r.i}"><span class="k">${r.k}</span><span class="v">${escapeHtml(r.v)}</span>${r.kind !== "bore" ? `<button class="x" title="삭제">×</button>` : ""}</div>`).join("") : `<div class="hint">전이·홈·피처가 없습니다.</div>`;
 }
@@ -485,7 +516,8 @@ function renderExportPanel() {
   const dsl = state.dsl; const id = (dsl.id || "shaft").replace(/[^A-Za-z0-9_-]/g, "_");
   const row = (f, n, fn) => { const d = document.createElement("div"); d.className = "exp"; d.innerHTML = `<span class="f">${f}</span><span class="n">${n}</span><button title="내려받기"><svg><use href="#i-dl"/></svg></button>`; d.querySelector("button").onclick = fn; return d; };
   const l3 = $("dlList3d"), l2 = $("dlList2d"); l3.innerHTML = ""; l2.innerHTML = "";
-  const stepPre = state.source?.kind === "sample" && state.sample?.files?.step && JSON.stringify(dsl) === JSON.stringify(state.gold);
+  /* 정답과 형상이 완전히 같으면(키 순서·메타는 무시) 미리 만든 해석적 STEP 을 그대로 준다 */
+  const stepPre = state.source?.kind === "sample" && state.sample?.files?.step && state.gold && goldenMetrics(dsl, state.gold).exact;
   if (stepPre) l3.appendChild(row("STEP", "해석적 B-rep · 파이썬 실행기(CadQuery)가 정답 DSL 로 미리 생성", async () => { const b = await fetch(`./samples/${state.sample.id}/${state.sample.files.step}?v=${BUILD}`).then((r) => r.blob()); downloadBlob(b, `${id}.step`); }));
   if (state.mode === "live" && state.serverStep) l3.appendChild(row("STEP", "해석적 B-rep · 온프렘 실행기(CadQuery)가 지금 이 DSL 로 생성", async () => {
     toast("서버 실행기가 STEP 을 만드는 중…");
@@ -497,7 +529,10 @@ function renderExportPanel() {
   l3.appendChild(row("STL", "바이너리 · 3D 프린팅", () => downloadBlob(exportSTL(model), `${id}.stl`, "model/stl")));
   l3.appendChild(row("GLB", "재질 포함 · 웹/뷰어", async () => downloadBlob(await exportGLB(model), `${id}.glb`, "model/gltf-binary")));
   l3.appendChild(row("OBJ", "메시 (mm)", () => downloadBlob(exportOBJ(model), `${id}.obj`, "text/plain")));
+  l3.appendChild(row("FBX", "ASCII 7.4 · Maya/3ds Max/Unity/Unreal/Omniverse (Blender 는 GLB 권장)", () => downloadBlob(exportFBX(model), `${id}.fbx`, "application/octet-stream")));
   l3.appendChild(row("USD", "usda · 메시 + DSL 파라미터를 custom 속성으로 (Omniverse/Isaac)", () => downloadBlob(exportUSDA(model, dsl), `${id}.usda`, "text/plain")));
+  l3.appendChild(row("USDZ", "OpenUSD 패키지 · three.js r185 USDZExporter (AR Quick Look/Omniverse)", async () => downloadBlob(await exportUSDZ(model), `${id}.usdz`, "model/vnd.usdz+zip")));
+  l3.appendChild(row("PLY", "ASCII 정점/면 (점군·해석 도구)", () => downloadBlob(exportPLY(model), `${id}.ply`, "text/plain")));
   l2.appendChild(row("DXF", "이 DSL 로 다시 그린 제작 도면 (R12, 레이어·치수)", () => downloadBlob(exportDrawingDXF(dsl), `${id}_drawing.dxf`, "application/dxf")));
   l2.appendChild(row("SVG", "이 DSL 로 다시 그린 제작 도면", () => downloadBlob(exportDrawingSVG(dsl), `${id}_drawing.svg`, "image/svg+xml")));
   l2.appendChild(row("JSON", "DSL 사양 (스키마: schema/shaft_dsl.schema.json)", () => downloadBlob(exportJSON(dsl), `${id}.dsl.json`, "application/json")));
@@ -539,8 +574,10 @@ async function startRun(src) {
 }
 function resetWorkspace(full = true) {
   clearModel(); highlightSegment(-1);
+  if ($("unsuitable")) { $("unsuitable").style.display = "none"; $("unsuitable").innerHTML = ""; }
   state.source = null; state.raster = null; state.extraction = null; state.dsl = null; state.pristine = null; state.gold = null; state.built = null; state.verify = null; state.sample = null;
   state.showingGolden = false; $("btnGolden").textContent = "정답 DSL 보기"; $("btnGolden").classList.remove("on");
+  state.sheetMode = "original"; $("btnRegen").textContent = "재생성 도면"; $("btnRegen").classList.remove("on");
   pipe.done = 0; pipe.running = 0; pipe.active = false;
   showSheet(false); $("stageEmpty").style.display = ""; $("dock").style.display = "none";
   for (const id of ["extractBlock", "segBlock", "featBlock", "jsonBlock", "verifyBlock", "exportBlock"]) $(id).style.display = "none";

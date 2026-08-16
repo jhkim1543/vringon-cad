@@ -44,7 +44,7 @@ for (const g of GOLDENS) {
     L: totalLength(g), Dmax: maxDiameter(g), mass_g: +mass.mass_g.toFixed(1), scale: dr.scale,
     segments: g.segments.length, features: (g.features || []).map((f) => f.type), grooves: (g.grooves || []).length, bore: !!g.bore,
     files: { golden: "golden.json", svg: "drawing.svg", png: png ? "drawing.png" : null, thumb: png ? "thumb.webp" : null, dxf: "drawing.dxf", labels: "labels.json",
-      extracted: has("extracted.json") ? "extracted.json" : null, step: has("model.step") ? "model.step" : null, usda: has("model.usda") ? "model.usda" : null },
+      extracted: has("extracted.json") ? "extracted.json" : null, step: has("model.step") ? "model.step" : null, usda: has("model.usda") ? "model.usda" : null, usdc: has("model.usdc") ? "model.usdc" : null },
   });
   console.log(`✓ ${g.id.padEnd(16)} L${totalLength(g)} ⌀${maxDiameter(g)} scale ${dr.scale}  items ${dr.items.length} labels ${dr.labels.length}${v.warnings.length ? "  ⚠ " + v.warnings.join(" / ") : ""}`);
 }

@@ -101,7 +101,8 @@ export function measureSilhouette(img, opts = {}) {
       if (c === main) continue;
       const ov = Math.min(c.x1, main.x1) - Math.max(c.x0, main.x0);
       const disjoint = c.y0 > main.y1 || c.y1 < main.y0;
-      if (ov > 0.85 * Math.min(c.w, main.w) && disjoint && c.n > main.n * 0.4 && c.n < main.n * 2.5 && Math.abs(c.w - main.w) < main.w * 0.15) { partner = c; break; }
+      /* 거울상 반쪽은 폭·높이·픽셀 수가 비슷하다. 높이가 다르면(예: 정면도+평면도가 위아래로 놓인 다중 투상도) 짝이 아니다 */
+      if (ov > 0.85 * Math.min(c.w, main.w) && disjoint && c.n > main.n * 0.4 && c.n < main.n * 2.5 && Math.abs(c.w - main.w) < main.w * 0.15 && Math.abs(c.h - main.h) < Math.max(c.h, main.h) * 0.35) { partner = c; break; }
     }
   }
   const upper = partner ? (partner.y0 < main.y0 ? partner : main) : null, lower = partner ? (upper === main ? partner : main) : null;
@@ -184,7 +185,18 @@ export function measureSilhouette(img, opts = {}) {
       if (!hints.some((h) => h.type === "thread" && Math.abs(h.relX0 - a.relX0) < 0.03)) hints.push({ type: "thread", relX0: Math.min(a.relX0, b.relX0), relX1: Math.max(a.relX1, b.relX1), minor_px: (ra + rb) / 2 });
     }
   }
-  return { ok: true, L_px: along, top, bottom, bore, sectioned: !!partner, axis, bbox: { x0: main.x0, y0: main.y0, x1: main.x1, y1: main.y1 }, vertical, hints, notes, pxPerLen: along, imageSize: { w, h } };
+  /* 입력 적합성 신호: 큰 성분이 여럿(다중 투상도·조립체), 저해상, 짝 없이 위아래로 큰 성분이 더 있음 */
+  const bigOnes = cands.filter((c) => c.w >= w * 0.22 || c.n >= main.n * 0.35).filter((c) => c.id !== main.id && c.id !== partner?.id);
+  const flags = [];
+  if (bigOnes.length >= 1) flags.push({ kind: "multiview", n: bigOnes.length + 1 + (partner ? 1 : 0), text: `큰 성분이 ${bigOnes.length + 1}개 — 여러 투상도나 조립체로 보입니다. 이 데모는 회전체 정면도 한 장을 읽습니다(단면도·키홈 단면은 옆에 있어도 됩니다).` });
+  if (along < 500) flags.push({ kind: "lowres", px: along, text: `부품이 가로 ${along}px 로 작습니다(권장 1,000px 이상). 저해상 JPEG 은 외형선과 치수선이 붙어 판독이 어긋납니다.` });
+  if (partner) {
+    /* 짝을 잡았어도 보어가 외경에 비해 너무 크면 거울상 반쪽이 아니라 별개 뷰다 */
+    let badBore = 0; for (let i = 0; i < N; i++) if (bore[i] > 0.92 * Math.min(top[i], bottom[i])) badBore++;
+    if (badBore > N * 0.2) flags.push({ kind: "not_section", text: "위·아래 두 성분을 전단면 반쪽으로 보기엔 안쪽 띠가 너무 넓습니다 — 서로 다른 투상도일 가능성이 큽니다." });
+  }
+  for (const f of flags) notes.push(f.text);
+  return { ok: true, L_px: along, top, bottom, bore, sectioned: !!partner, axis, bbox: { x0: main.x0, y0: main.y0, x1: main.x1, y1: main.y1 }, vertical, hints, notes, flags, pxPerLen: along, imageSize: { w, h } };
 }
 function median(a) { const s = [...a].sort((p, q) => p - q); return s.length ? s[Math.floor(s.length / 2)] : 0; }
 function estimateStroke(mask, w, h) {
@@ -460,7 +472,14 @@ export function extractHeuristic(img, opts = {}) {
   const sil = measureSilhouette(img, opts);
   if (!sil.ok) return { ok: false, notes: sil.notes, method: "silhouette" };
   const out = profileToDSL(sil, opts);
-  return { ok: true, method: "silhouette", dsl: out.dsl, notes: [...sil.notes, ...out.notes], silhouette: { L: sil.L_px, top: sil.top, bottom: sil.bottom, bbox: sil.bbox, axis: sil.axis, imageSize: sil.imageSize }, hints: sil.hints, dims_read: [], pieces: out.pieces };
+  /* 그럴듯한 회전체인가: 세그먼트가 지나치게 많거나(잡음), 검사 실패로 피처를 다 덜어냈거나, 다중 투상도 신호가 있으면 낮은 신뢰로 표시 */
+  const reasons = [];
+  if ((out.dsl.segments || []).length > 14) reasons.push(`세그먼트가 ${out.dsl.segments.length}개로 너무 많습니다(잡음이 외형선에 섞였을 때의 전형).`);
+  const tiny = (out.dsl.segments || []).filter((sg) => sg.length < (opts.overallLength || 100) * 0.015).length;
+  if (tiny >= 3) reasons.push(`아주 짧은 세그먼트가 ${tiny}개 — 치수선·지시선이 외형선에 붙어 읽혔을 가능성.`);
+  for (const f of sil.flags || []) reasons.push(f.text);
+  const plausible = reasons.length === 0 || (reasons.length === 1 && (sil.flags || []).some((f) => f.kind === "lowres"));
+  return { ok: true, method: "silhouette", plausible, reasons, dsl: out.dsl, notes: [...sil.notes, ...out.notes], silhouette: { L: sil.L_px, top: sil.top, bottom: sil.bottom, bbox: sil.bbox, axis: sil.axis, imageSize: sil.imageSize }, hints: sil.hints, flags: sil.flags || [], dims_read: [], pieces: out.pieces };
 }
 
 /* ------------------------------------------------------------ 서버(시각 LLM) 호출 — 브라우저 전용 */

@@ -1,42 +1,42 @@
 {
- "date": "2026-08-15T15:20:59.953Z",
+ "date": "2026-08-16T00:43:00.148Z",
  "method": "both",
  "tier": "text",
- "n": 12,
+ "n": 17,
  "silhouette": {
-  "n": 12,
+  "n": 17,
   "valid_rate": 1,
-  "segment_f1": 0.7120726495726496,
-  "segment_precision": 0.7093253968253969,
-  "segment_recall": 0.7152777777777778,
-  "feature_f1": 0.4222222222222222,
-  "transition_f1": 0.6620370370370371,
-  "groove_f1": 0.5833333333333334,
-  "dim_rate": 0.7343872340185862,
-  "iou": 0.9970915746254705,
-  "iou_abs": 0.9970915746254686,
+  "segment_f1": 0.5026395173453997,
+  "segment_precision": 0.5007002801120448,
+  "segment_recall": 0.5049019607843137,
+  "feature_f1": 0.3568627450980392,
+  "transition_f1": 0.6928104575163399,
+  "groove_f1": 0.7058823529411765,
+  "dim_rate": 0.6669776961292389,
+  "iou": 0.9918457650679403,
+  "iou_abs": 0.9919346779953924,
   "length_ok_rate": 1,
-  "bore_ok_rate": 0.9166666666666666,
-  "exact_rate": 0.08333333333333333
+  "bore_ok_rate": 0.9411764705882353,
+  "exact_rate": 0.058823529411764705
  },
  "server": {
-  "n": 12,
+  "n": 17,
   "valid_rate": 1,
-  "segment_f1": 1,
-  "segment_precision": 1,
-  "segment_recall": 1,
-  "feature_f1": 0.9583333333333334,
-  "transition_f1": 1,
-  "groove_f1": 0.8333333333333334,
-  "dim_rate": 0.9791983232284956,
-  "iou": 0.9999001564431103,
-  "iou_abs": 0.9999001564431104,
+  "segment_f1": 0.980392156862745,
+  "segment_precision": 0.980392156862745,
+  "segment_recall": 0.980392156862745,
+  "feature_f1": 1,
+  "transition_f1": 0.9568627450980391,
+  "groove_f1": 0.9411764705882353,
+  "dim_rate": 0.9681981068289386,
+  "iou": 0.9985008565443674,
+  "iou_abs": 0.9985008565443674,
   "length_ok_rate": 1,
-  "bore_ok_rate": 1,
-  "exact_rate": 0.5833333333333334
+  "bore_ok_rate": 0.9411764705882353,
+  "exact_rate": 0.7058823529411765
  },
- "server_ms_mean": 17675,
- "server_repaired": 4,
+ "server_ms_mean": 13896,
+ "server_repaired": 6,
  "calibration": [
   {
    "id": "spacer",
@@ -64,17 +64,17 @@
   },
   {
    "id": "flanged-bushing",
-   "confidence": 0.9970855832799824,
-   "iou_reported": 0.9947010605090589,
+   "confidence": 0.9970103229947198,
+   "iou_reported": 0.9945642236267632,
    "dim_rate_reported": 1,
    "seg_f1": 1,
-   "exact": true
+   "exact": false
   },
   {
    "id": "roller",
-   "confidence": 0.965657855883559,
+   "confidence": 0.9974760377017409,
    "iou_reported": 0.9954109776395288,
-   "dim_rate_reported": 0.9090909090909091,
+   "dim_rate_reported": 1,
    "seg_f1": 1,
    "exact": true
   },
@@ -84,13 +84,13 @@
    "iou_reported": 0.988891153465711,
    "dim_rate_reported": 0.8461538461538461,
    "seg_f1": 1,
-   "exact": false
+   "exact": true
   },
   {
    "id": "threaded-shaft",
-   "confidence": 0.9468389655372743,
+   "confidence": 0.9435056322039409,
    "iou_reported": 0.9881920585526198,
-   "dim_rate_reported": 0.8666666666666667,
+   "dim_rate_reported": 0.8571428571428571,
    "seg_f1": 1,
    "exact": true
   },
@@ -100,39 +100,79 @@
    "iou_reported": 0.9937803928157274,
    "dim_rate_reported": 1,
    "seg_f1": 1,
-   "exact": true
+   "exact": false
   },
   {
    "id": "taper-shaft",
-   "confidence": 0.9501221123084447,
-   "iou_reported": 0.9941614163183843,
-   "dim_rate_reported": 0.8666666666666667,
+   "confidence": 0.9671660870843203,
+   "iou_reported": 0.9857565219714916,
+   "dim_rate_reported": 0.9285714285714286,
    "seg_f1": 1,
    "exact": false
   },
   {
    "id": "motor-shaft",
-   "confidence": 0.9915168737713344,
-   "iou_reported": 0.9845761341296989,
+   "confidence": 0.9886314738272035,
+   "iou_reported": 0.9793299524130974,
    "dim_rate_reported": 1,
-   "seg_f1": 1,
+   "seg_f1": 0.6666666666666666,
    "exact": false
   },
   {
    "id": "stepped-shaft",
-   "confidence": 0.9492257499866157,
-   "iou_reported": 0.9944600412979789,
-   "dim_rate_reported": 0.8636363636363636,
+   "confidence": 0.975421463186145,
+   "iou_reported": 0.9856147815505666,
+   "dim_rate_reported": 0.9523809523809523,
    "seg_f1": 1,
    "exact": false
   },
   {
    "id": "spindle",
-   "confidence": 0.9648211019294756,
-   "iou_reported": 0.9938896068139227,
-   "dim_rate_reported": 0.9090909090909091,
+   "confidence": 0.9823662014704876,
+   "iou_reported": 0.9944536996433109,
+   "dim_rate_reported": 0.9583333333333334,
    "seg_f1": 1,
-   "exact": false
+   "exact": true
+  },
+  {
+   "id": "hex-bolt-m10",
+   "confidence": 0.9628822917823346,
+   "iou_reported": 0.9961496214224266,
+   "dim_rate_reported": 0.9,
+   "seg_f1": 1,
+   "exact": true
+  },
+  {
+   "id": "socket-cap-m8",
+   "confidence": 0.9619685830234709,
+   "iou_reported": 0.994488332769947,
+   "dim_rate_reported": 0.9,
+   "seg_f1": 1,
+   "exact": true
+  },
+  {
+   "id": "set-screw-m6",
+   "confidence": 0.9192092956886048,
+   "iou_reported": 0.9803805376156449,
+   "dim_rate_reported": 0.8,
+   "seg_f1": 1,
+   "exact": true
+  },
+  {
+   "id": "countersunk-m6",
+   "confidence": 0.9541368459890079,
+   "iou_reported": 0.9873195179598127,
+   "dim_rate_reported": 0.8888888888888888,
+   "seg_f1": 1,
+   "exact": true
+  },
+  {
+   "id": "stud-m12",
+   "confidence": 0.9088564403953806,
+   "iou_reported": 0.9933753461734193,
+   "dim_rate_reported": 0.75,
+   "seg_f1": 1,
+   "exact": true
   }
  ],
  "rows": [
@@ -142,7 +182,7 @@
    "L": 12,
    "archetype": "spacer",
    "silhouette": {
-    "ms": 79,
+    "ms": 169,
     "metrics": {
      "valid": true,
      "segment": {
@@ -179,12 +219,12 @@
      "warnings": [],
      "iou": 0.9992615401177583,
      "dims": null,
-     "confidence": 0.9993751493304108,
-     "verdict": "pass"
+     "confidence": 0.8,
+     "verdict": "review"
     }
    },
    "server": {
-    "ms": 10015,
+    "ms": 4775,
     "provider": "primary",
     "repaired": false,
     "valid": true,
@@ -228,9 +268,7 @@
      "length_ok": true,
      "exact": true
     },
-    "notes": [
-     "단순 관통 스페이서 부품으로, 외경 24mm, 내경 16mm(H8), 길이 12mm에 양단 모따기 C0.5가 적용되어 있습니다."
-    ]
+    "notes": []
    }
   },
   {
@@ -239,7 +277,7 @@
    "L": 51,
    "archetype": "pin",
    "silhouette": {
-    "ms": 86,
+    "ms": 215,
     "metrics": {
      "valid": true,
      "segment": {
@@ -276,12 +314,12 @@
      "warnings": [],
      "iou": 0.9957342024310334,
      "dims": null,
-     "confidence": 0.9963904789801051,
-     "verdict": "pass"
+     "confidence": 0.8,
+     "verdict": "review"
     }
    },
    "server": {
-    "ms": 6158,
+    "ms": 6506,
     "provider": "primary",
     "repaired": false,
     "valid": true,
@@ -334,7 +372,7 @@
    "L": 25,
    "archetype": "bushing",
    "silhouette": {
-    "ms": 134,
+    "ms": 178,
     "metrics": {
      "valid": true,
      "segment": {
@@ -371,12 +409,12 @@
      "warnings": [],
      "iou": 0.9990906218721873,
      "dims": null,
-     "confidence": 0.9992305261995431,
-     "verdict": "pass"
+     "confidence": 0.8,
+     "verdict": "review"
     }
    },
    "server": {
-    "ms": 10266,
+    "ms": 6001,
     "provider": "primary",
     "repaired": false,
     "valid": true,
@@ -420,9 +458,7 @@
      "length_ok": true,
      "exact": true
     },
-    "notes": [
-     "상단 횡구멍(cross_hole)은 관통하지 않고 깊이 3.5mm로 유입 구멍(oil hole) 역할을 합니다."
-    ]
+    "notes": []
    }
   },
   {
@@ -431,7 +467,7 @@
    "L": 30,
    "archetype": "bushing",
    "silhouette": {
-    "ms": 64,
+    "ms": 212,
     "metrics": {
      "valid": true,
      "segment": {
@@ -468,24 +504,24 @@
      "warnings": [],
      "iou": 0.9894908784419321,
      "dims": null,
-     "confidence": 0.9911076663739424,
-     "verdict": "pass"
+     "confidence": 0.8,
+     "verdict": "review"
     }
    },
    "server": {
-    "ms": 7775,
+    "ms": 6930,
     "provider": "primary",
     "repaired": false,
     "valid": true,
     "verify": {
-     "iou": 0.9947010605090589,
+     "iou": 0.9945642236267632,
      "dims": {
       "rate": 1,
       "matched": 6,
       "total": 6,
       "unmatched": []
      },
-     "confidence": 0.9970855832799824
+     "confidence": 0.9970103229947198
     },
     "metrics": {
      "valid": true,
@@ -501,23 +537,25 @@
      },
      "transition": {
       "precision": 1,
-      "recall": 1,
-      "f1": 1
+      "recall": 0.6666666666666666,
+      "f1": 0.8
      },
      "groove": {
       "precision": 1,
       "recall": 1,
       "f1": 1
      },
-     "dim_rate": 1,
+     "dim_rate": 0.9,
      "dims_total": 10,
-     "iou": 1,
-     "iou_abs": 1,
+     "iou": 0.9997097924324924,
+     "iou_abs": 0.9997097924324923,
      "bore_ok": true,
      "length_ok": true,
-     "exact": true
+     "exact": false
     },
-    "notes": []
+    "notes": [
+     "전체 길이 30mm에서 플랜지 두께 5mm를 차감하여 원통부 길이를 25mm로 산출함."
+    ]
    }
   },
   {
@@ -526,7 +564,7 @@
    "L": 110,
    "archetype": "roller",
    "silhouette": {
-    "ms": 84,
+    "ms": 192,
     "metrics": {
      "valid": true,
      "segment": {
@@ -563,26 +601,24 @@
      "warnings": [],
      "iou": 0.9955257151476509,
      "dims": null,
-     "confidence": 0.9962140666633968,
-     "verdict": "pass"
+     "confidence": 0.8,
+     "verdict": "review"
     }
    },
    "server": {
-    "ms": 10977,
+    "ms": 10459,
     "provider": "primary",
     "repaired": false,
     "valid": true,
     "verify": {
      "iou": 0.9954109776395288,
      "dims": {
-      "rate": 0.9090909090909091,
-      "matched": 10,
+      "rate": 1,
+      "matched": 11,
       "total": 11,
-      "unmatched": [
-       "센터구멍 A2 (DIN 332)"
-      ]
+      "unmatched": []
      },
-     "confidence": 0.965657855883559
+     "confidence": 0.9974760377017409
     },
     "metrics": {
      "valid": true,
@@ -615,8 +651,8 @@
      "exact": true
     },
     "notes": [
-     "중앙 세그먼트 길이는 전체 길이(110) - 양쪽 세그먼트(20+20) = 70mm로 계산되었습니다.",
-     "오른쪽 홈의 offset은 세그먼트 길이(20) - 위치(6) - 홈폭(1.3) = 12.7mm로 구했습니다."
+     "중앙 세그먼트의 길이는 전체 길이(110)에서 양쪽 축 길이(20+20)를 뺀 70mm입니다.",
+     "오른쪽 홈의 offset은 세그먼트 시작 기준 20 - 6 - 1.3 = 12.7mm로 계산되었습니다."
     ]
    }
   },
@@ -626,7 +662,7 @@
    "L": 57,
    "archetype": "shaft",
    "silhouette": {
-    "ms": 81,
+    "ms": 194,
     "metrics": {
      "valid": true,
      "segment": {
@@ -663,12 +699,12 @@
      "warnings": [],
      "iou": 0.98844107855167,
      "dims": null,
-     "confidence": 0.9902193741591054,
-     "verdict": "pass"
+     "confidence": 0.8,
+     "verdict": "review"
     }
    },
    "server": {
-    "ms": 20875,
+    "ms": 23036,
     "provider": "primary",
     "repaired": true,
     "valid": true,
@@ -693,9 +729,9 @@
       "f1": 1
      },
      "feature": {
-      "precision": 0.5,
-      "recall": 0.5,
-      "f1": 0.5
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
      },
      "transition": {
       "precision": 1,
@@ -707,16 +743,17 @@
       "recall": 1,
       "f1": 1
      },
-     "dim_rate": 0.9230769230769231,
+     "dim_rate": 1,
      "dims_total": 13,
      "iou": 1,
      "iou_abs": 1,
      "bore_ok": true,
      "length_ok": true,
-     "exact": false
+     "exact": true
     },
     "notes": [
-     "dims_read에 도면에서 읽은 'M10'나사 치수와 '5' 위치 치수, '10.5' 평면 가공 치수를 명확히 기록하고 DSL의 thread 세그먼트(M10) 및 flat 피처(offset 5, depth 0.75)에 완벽 대응시켰습니다.",
+     "평면(flat) 피처의 시작 위치 offset 5mm 및 길이 12mm, 깊이 1.5mm (12 - 10.5)를 DSL features 및 dims_read에 명확히 매핑함.",
+     "나사부 M10(피치 1.5, 길이 12mm)을 thread 세그먼트와 dims_read에 일치하도록 반영함.",
      "수리 라운드: 채택 (신뢰도 0.94 → 0.94)"
     ]
    }
@@ -727,7 +764,7 @@
    "L": 118,
    "archetype": "shaft",
    "silhouette": {
-    "ms": 93,
+    "ms": 228,
     "metrics": {
      "valid": true,
      "segment": {
@@ -764,27 +801,27 @@
      "warnings": [],
      "iou": 0.9889313826287893,
      "dims": null,
-     "confidence": 0.9906342468397449,
-     "verdict": "pass"
+     "confidence": 0.8,
+     "verdict": "review"
     }
    },
    "server": {
-    "ms": 29884,
+    "ms": 20669,
     "provider": "primary",
     "repaired": true,
     "valid": true,
     "verify": {
      "iou": 0.9881920585526198,
      "dims": {
-      "rate": 0.8666666666666667,
-      "matched": 13,
-      "total": 15,
+      "rate": 0.8571428571428571,
+      "matched": 12,
+      "total": 14,
       "unmatched": [
        "M12",
        "M12×1.25"
       ]
      },
-     "confidence": 0.9468389655372743
+     "confidence": 0.9435056322039409
     },
     "metrics": {
      "valid": true,
@@ -817,10 +854,9 @@
      "exact": true
     },
     "notes": [
-     "M12 보통나사 및 M12x1.25 가는나사 치수를 dims_read 및 DSL thread 세그먼트에 완벽히 일치하도록 등록했습니다.",
-     "118mm 전체 길이에 대해 중앙 세그먼트 길이는 118 - 20 - 20 - 18 = 60mm로 정확히 구했습니다.",
-     "횡구멍 위치는 오른쪽 끝에서 28mm (x = 90mm, segment 2 offset = 10mm) 위치에 해당합니다.",
-     "수리 라운드: 채택 (신뢰도 0.94 → 0.95)"
+     "dims_read 배열을 추가하여 도면에서 읽은 M12, M12x1.25 나사 치수 및 전체 치수를 명시함",
+     "횡구멍 위치 position = 전체 길이 118 - 28 = 90으로 변환하여 DSL에 정확히 대조함",
+     "수리 라운드: 채택 (신뢰도 0.94 → 0.94)"
     ]
    }
   },
@@ -830,7 +866,7 @@
    "L": 60,
    "archetype": "sleeve",
    "silhouette": {
-    "ms": 77,
+    "ms": 178,
     "metrics": {
      "valid": true,
      "segment": {
@@ -867,12 +903,12 @@
      "warnings": [],
      "iou": 0.9934519555332845,
      "dims": null,
-     "confidence": 0.9944593469897023,
-     "verdict": "pass"
+     "confidence": 0.8,
+     "verdict": "review"
     }
    },
    "server": {
-    "ms": 12255,
+    "ms": 10716,
     "provider": "primary",
     "repaired": false,
     "valid": true,
@@ -908,16 +944,17 @@
       "recall": 1,
       "f1": 1
      },
-     "dim_rate": 1,
+     "dim_rate": 0.8333333333333334,
      "dims_total": 12,
      "iou": 1,
      "iou_abs": 1,
-     "bore_ok": true,
+     "bore_ok": false,
      "length_ok": true,
-     "exact": true
+     "exact": false
     },
     "notes": [
-     "보어 내부 단차 위치는 외경 홈 근처인 x=20 지점으로 판독됨 (왼쪽 보어 길이 20mm, 오른쪽 보어 길이 40mm)."
+     "외경은 ø40 h6 단일 원통 세그먼트 (길이 60)",
+     "보어는 15mm 지점에서 ø30 H7에서 ø28로 변하는 단붙이 관통 보어"
     ]
    }
   },
@@ -927,7 +964,7 @@
    "L": 95,
    "archetype": "shaft",
    "silhouette": {
-    "ms": 91,
+    "ms": 214,
     "metrics": {
      "valid": true,
      "segment": {
@@ -964,27 +1001,26 @@
      "warnings": [],
      "iou": 0.9943500690043425,
      "dims": null,
-     "confidence": 0.9952192891575207,
-     "verdict": "pass"
+     "confidence": 0.8,
+     "verdict": "review"
     }
    },
    "server": {
-    "ms": 24918,
+    "ms": 25807,
     "provider": "primary",
     "repaired": true,
     "valid": true,
     "verify": {
-     "iou": 0.9941614163183843,
+     "iou": 0.9857565219714916,
      "dims": {
-      "rate": 0.8666666666666667,
+      "rate": 0.9285714285714286,
       "matched": 13,
-      "total": 15,
+      "total": 14,
       "unmatched": [
-       "M16×1.5",
-       "센터구멍 A2.5 (DIN 332)"
+       "M16×1.5"
       ]
      },
-     "confidence": 0.9501221123084447
+     "confidence": 0.9671660870843203
     },
     "metrics": {
      "valid": true,
@@ -999,28 +1035,28 @@
       "f1": 1
      },
      "transition": {
-      "precision": 1,
-      "recall": 1,
-      "f1": 1
+      "precision": 0.6666666666666666,
+      "recall": 0.6666666666666666,
+      "f1": 0.6666666666666666
      },
      "groove": {
       "precision": 1,
       "recall": 1,
       "f1": 1
      },
-     "dim_rate": 0.9375,
+     "dim_rate": 0.875,
      "dims_total": 16,
-     "iou": 1,
-     "iou_abs": 1,
+     "iou": 0.9913305803529459,
+     "iou_abs": 0.9913305803529455,
      "bore_ok": true,
      "length_ok": true,
      "exact": false
     },
     "notes": [
-     "dims_read 목록을 누락 없이 작성하였으며, M16x1.5 나사 피처 및 센터구멍 A2.5 피처를 DSL 및 dims_read에 완전히 동기화했습니다.",
-     "세그먼트 0의 길이는 전체 길이 95 - 테이퍼 40 - 나사 20 = 35mm로 계산되었습니다.",
-     "DIN 76-A 나사 도피홈 깊이는 (16 - 13.8) / 2 = 1.1mm로 적용했습니다.",
-     "수리 라운드: 채택 (신뢰도 0.95 → 0.95)"
+     "dims_read에 M16x1.5 나사 치수 및 키홈 위치/길이에 해당하는 20 치수를 정밀 반영하였습니다.",
+     "첫번째 세그먼트의 길이는 전체 길이(95) - 테이퍼(40) - 나사부(20) = 35mm 입니다.",
+     "키홈은 offset 7mm, 길이 20mm, 폭 8mm, 깊이 4mm (25-21) 입니다.",
+     "수리 라운드: 채택 (신뢰도 0.95 → 0.97)"
     ]
    }
   },
@@ -1030,7 +1066,7 @@
    "L": 205,
    "archetype": "shaft",
    "silhouette": {
-    "ms": 77,
+    "ms": 202,
     "metrics": {
      "valid": true,
      "segment": {
@@ -1067,31 +1103,31 @@
      "warnings": [],
      "iou": 0.9797833898227424,
      "dims": null,
-     "confidence": 0.9828936375423205,
-     "verdict": "pass"
+     "confidence": 0.8,
+     "verdict": "review"
     }
    },
    "server": {
-    "ms": 23754,
+    "ms": 15558,
     "provider": "primary",
     "repaired": false,
     "valid": true,
     "verify": {
-     "iou": 0.9845761341296989,
+     "iou": 0.9793299524130974,
      "dims": {
       "rate": 1,
-      "matched": 19,
-      "total": 19,
+      "matched": 18,
+      "total": 18,
       "unmatched": []
      },
-     "confidence": 0.9915168737713344
+     "confidence": 0.9886314738272035
     },
     "metrics": {
      "valid": true,
      "segment": {
-      "precision": 1,
-      "recall": 1,
-      "f1": 1
+      "precision": 0.6666666666666666,
+      "recall": 0.6666666666666666,
+      "f1": 0.6666666666666666
      },
      "feature": {
       "precision": 1,
@@ -1108,18 +1144,17 @@
       "recall": 0,
       "f1": 0
      },
-     "dim_rate": 0.9655172413793104,
+     "dim_rate": 0.9310344827586207,
      "dims_total": 29,
-     "iou": 0.9995887270510595,
-     "iou_abs": 0.9995887270510597,
+     "iou": 0.992621612024458,
+     "iou_abs": 0.9926216120244578,
      "bore_ok": true,
      "length_ok": true,
      "exact": false
     },
     "notes": [
-     "seg 2의 길이는 전체 길이 205에서 나머지 세그먼트 길이(25+40+40+25+15=145)를 차감하여 60mm로 산출함.",
-     "seg 5의 평면(flat) 깊이는 B-B 단면의 잔여 두께 10.5mm를 기계 가공에 따라 지름 12에서 뺀 1.5mm로 계산함.",
-     "seg 4의 환형 홈 offset은 seg 4 길이 25에서 우측 치수 4mm와 폭 1.1mm를 제외하여 19.9mm로 환산함."
+     "세그먼트 2의 길이는 전체 길이 205에서 나머지 세그먼트 길이(25+40+40+25+12=142)를 차감한 63mm로 도출함.",
+     "B-B 단면의 치수 10.5는 D-t 값이므로 flat depth = 12 - 10.5 = 1.5mm임."
     ]
    }
   },
@@ -1129,7 +1164,7 @@
    "L": 100,
    "archetype": "shaft",
    "silhouette": {
-    "ms": 171,
+    "ms": 331,
     "metrics": {
      "valid": true,
      "segment": {
@@ -1166,28 +1201,26 @@
      "warnings": [],
      "iou": 0.9946197553667352,
      "dims": null,
-     "confidence": 0.9954474853103144,
-     "verdict": "pass"
+     "confidence": 0.8,
+     "verdict": "review"
     }
    },
    "server": {
-    "ms": 36843,
+    "ms": 19041,
     "provider": "primary",
-    "repaired": true,
+    "repaired": false,
     "valid": true,
     "verify": {
-     "iou": 0.9944600412979789,
+     "iou": 0.9856147815505666,
      "dims": {
-      "rate": 0.8636363636363636,
-      "matched": 19,
-      "total": 22,
+      "rate": 0.9523809523809523,
+      "matched": 20,
+      "total": 21,
       "unmatched": [
-       "M20×1.5",
-       "센터구멍 A2.5 (DIN 332)",
-       "센터구멍 A2 (DIN 332)"
+       "M20×1.5"
       ]
      },
-     "confidence": 0.9492257499866157
+     "confidence": 0.975421463186145
     },
     "metrics": {
      "valid": true,
@@ -1202,27 +1235,26 @@
       "f1": 1
      },
      "transition": {
-      "precision": 1,
-      "recall": 1,
-      "f1": 1
+      "precision": 0.8,
+      "recall": 0.8,
+      "f1": 0.8000000000000002
      },
      "groove": {
       "precision": 1,
       "recall": 1,
       "f1": 1
      },
-     "dim_rate": 0.96,
+     "dim_rate": 0.92,
      "dims_total": 25,
-     "iou": 1,
-     "iou_abs": 1,
+     "iou": 0.9908525764443488,
+     "iou_abs": 0.9908525764443482,
      "bore_ok": true,
      "length_ok": true,
      "exact": false
     },
     "notes": [
-     "dims_read 배열 항목을 도면의 모든 명시 치수로 완벽히 작성하여 검증기 불일치를 해소함",
-     "M20x1.5 나사, A2.5 및 A2 센터구멍을 dims_read와 DSL features/segments에 일치하도록 정확히 매핑함",
-     "수리 라운드: 채택 (신뢰도 0.95 → 0.95)"
+     "Seg 1의 길이는 전체 길이 100에서 Seg 0(30), Seg 2(10), Seg 3(20)의 합을 빼서 40mm로 산출함.",
+     "Seg 3 시작 전의 나사 도피홈은 규격 DIN 76-A 4.5x⌀17.8에 따라 폭 4.5, 깊이 (25-17.8)/2 = 3.6mm로 적용함."
     ]
    }
   },
@@ -1232,7 +1264,7 @@
    "L": 119,
    "archetype": "spindle",
    "silhouette": {
-    "ms": 162,
+    "ms": 354,
     "metrics": {
      "valid": true,
      "segment": {
@@ -1269,27 +1301,26 @@
      "warnings": [],
      "iou": 0.9925179824836905,
      "dims": null,
-     "confidence": 0.9936690621015842,
-     "verdict": "pass"
+     "confidence": 0.8,
+     "verdict": "review"
     }
    },
    "server": {
-    "ms": 18379,
+    "ms": 18396,
     "provider": "primary",
     "repaired": false,
     "valid": true,
     "verify": {
-     "iou": 0.9938896068139227,
+     "iou": 0.9944536996433109,
      "dims": {
-      "rate": 0.9090909090909091,
-      "matched": 20,
-      "total": 22,
+      "rate": 0.9583333333333334,
+      "matched": 23,
+      "total": 24,
       "unmatched": [
-       "M12×1",
-       "센터구멍 A2 (DIN 332)"
+       "M12×1"
       ]
      },
-     "confidence": 0.9648211019294756
+     "confidence": 0.9823662014704876
     },
     "metrics": {
      "valid": true,
@@ -1309,21 +1340,521 @@
       "f1": 1
      },
      "groove": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "dim_rate": 1,
+     "dims_total": 28,
+     "iou": 1,
+     "iou_abs": 1,
+     "bore_ok": true,
+     "length_ok": true,
+     "exact": true
+    },
+    "notes": [
+     "중앙 ø18 세그먼트의 길이는 명시되어 있지 않으나 전체 길이 119에서 다른 세그먼트 합(14+8+20+20+12=74)을 빼서 45mm로 산출했습니다.",
+     "키홈 깊이는 단면 A-A의 14.5 치수로부터 반경방향 깊이 18 - 14.5 = 3.5mm로 산출했습니다."
+    ]
+   }
+  },
+  {
+   "id": "hex-bolt-m10",
+   "kind": "golden",
+   "L": 46.4,
+   "archetype": "other",
+   "silhouette": {
+    "ms": 298,
+    "metrics": {
+     "valid": true,
+     "segment": {
       "precision": 0,
       "recall": 0,
       "f1": 0
      },
-     "dim_rate": 0.9642857142857143,
-     "dims_total": 28,
-     "iou": 0.9992131502662647,
-     "iou_abs": 0.9992131502662651,
+     "feature": {
+      "precision": 0,
+      "recall": 0,
+      "f1": 0
+     },
+     "transition": {
+      "precision": 0.6666666666666666,
+      "recall": 0.6666666666666666,
+      "f1": 0.6666666666666666
+     },
+     "groove": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "dim_rate": 0.45454545454545453,
+     "dims_total": 11,
+     "iou": 0.9888489606549031,
+     "iou_abs": 0.9903604804216126,
      "bore_ok": true,
      "length_ok": true,
      "exact": false
     },
+    "self": {
+     "valid": true,
+     "errors": [],
+     "warnings": [],
+     "iou": 0.990992247502444,
+     "dims": null,
+     "confidence": 0.8,
+     "verdict": "review"
+    }
+   },
+   "server": {
+    "ms": 11269,
+    "provider": "primary",
+    "repaired": false,
+    "valid": true,
+    "verify": {
+     "iou": 0.9961496214224266,
+     "dims": {
+      "rate": 0.9,
+      "matched": 9,
+      "total": 10,
+      "unmatched": [
+       "M10"
+      ]
+     },
+     "confidence": 0.9628822917823346
+    },
+    "metrics": {
+     "valid": true,
+     "segment": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "feature": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "transition": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "groove": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "dim_rate": 1,
+     "dims_total": 11,
+     "iou": 1,
+     "iou_abs": 1,
+     "bore_ok": true,
+     "length_ok": true,
+     "exact": true
+    },
+    "notes": []
+   }
+  },
+  {
+   "id": "socket-cap-m8",
+   "kind": "golden",
+   "L": 38,
+   "archetype": "other",
+   "silhouette": {
+    "ms": 355,
+    "metrics": {
+     "valid": true,
+     "segment": {
+      "precision": 0,
+      "recall": 0,
+      "f1": 0
+     },
+     "feature": {
+      "precision": 0,
+      "recall": 0,
+      "f1": 0
+     },
+     "transition": {
+      "precision": 0.6666666666666666,
+      "recall": 0.6666666666666666,
+      "f1": 0.6666666666666666
+     },
+     "groove": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "dim_rate": 0.5,
+     "dims_total": 12,
+     "iou": 0.9767195422286958,
+     "iou_abs": 0.9767195422286965,
+     "bore_ok": true,
+     "length_ok": true,
+     "exact": false
+    },
+    "self": {
+     "valid": true,
+     "errors": [],
+     "warnings": [],
+     "iou": 0.9734456938408482,
+     "dims": null,
+     "confidence": 0.8,
+     "verdict": "review"
+    }
+   },
+   "server": {
+    "ms": 10389,
+    "provider": "primary",
+    "repaired": false,
+    "valid": true,
+    "verify": {
+     "iou": 0.994488332769947,
+     "dims": {
+      "rate": 0.9,
+      "matched": 9,
+      "total": 10,
+      "unmatched": [
+       "M8"
+      ]
+     },
+     "confidence": 0.9619685830234709
+    },
+    "metrics": {
+     "valid": true,
+     "segment": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "feature": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "transition": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "groove": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "dim_rate": 1,
+     "dims_total": 12,
+     "iou": 1,
+     "iou_abs": 1,
+     "bore_ok": true,
+     "length_ok": true,
+     "exact": true
+    },
     "notes": [
-     "중앙 세그먼트(Seg 3, ⌀18)의 길이는 전체 길이 119에서 나머지 세그먼트 길이합(14+8+20+20+12=74)을 뺀 45mm입니다.",
-     "오른쪽 끝 멈춤링 홈 offset = 세그먼트 길이 12 - 오른쪽 끝 기준 거리 3 - 홈 폭 1.1 = 7.9mm입니다."
+     "M8 표준 피치는 1.25mm입니다.",
+     "머리 세그먼트의 길이는 전체 길이 38mm에서 머리 밑 길이 30mm(8+22)를 뺀 8mm로 판독됩니다."
+    ]
+   }
+  },
+  {
+   "id": "set-screw-m6",
+   "kind": "golden",
+   "L": 12,
+   "archetype": "other",
+   "silhouette": {
+    "ms": 288,
+    "metrics": {
+     "valid": true,
+     "segment": {
+      "precision": 0,
+      "recall": 0,
+      "f1": 0
+     },
+     "feature": {
+      "precision": 0,
+      "recall": 0,
+      "f1": 0
+     },
+     "transition": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "groove": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "dim_rate": 0.5714285714285714,
+     "dims_total": 7,
+     "iou": 1,
+     "iou_abs": 1,
+     "bore_ok": true,
+     "length_ok": true,
+     "exact": false
+    },
+    "self": {
+     "valid": true,
+     "errors": [],
+     "warnings": [],
+     "iou": 0.9803805376156449,
+     "dims": null,
+     "confidence": 0.8,
+     "verdict": "review"
+    }
+   },
+   "server": {
+    "ms": 17046,
+    "provider": "primary",
+    "repaired": true,
+    "valid": true,
+    "verify": {
+     "iou": 0.9803805376156449,
+     "dims": {
+      "rate": 0.8,
+      "matched": 4,
+      "total": 5,
+      "unmatched": [
+       "M6"
+      ]
+     },
+     "confidence": 0.9192092956886048
+    },
+    "metrics": {
+     "valid": true,
+     "segment": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "feature": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "transition": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "groove": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "dim_rate": 1,
+     "dims_total": 7,
+     "iou": 1,
+     "iou_abs": 1,
+     "bore_ok": true,
+     "length_ok": true,
+     "exact": true
+    },
+    "notes": [
+     "dims_read에 M6 나사 치수를 수나사 호칭값으로 명확히 표기하고 DSL thread 필드와 연동을 확실히 하였습니다.",
+     "수리 라운드: 채택 (신뢰도 0.92 → 0.92)"
+    ]
+   }
+  },
+  {
+   "id": "countersunk-m6",
+   "kind": "golden",
+   "L": 23.3,
+   "archetype": "other",
+   "silhouette": {
+    "ms": 337,
+    "metrics": {
+     "valid": true,
+     "segment": {
+      "precision": 0,
+      "recall": 0,
+      "f1": 0
+     },
+     "feature": {
+      "precision": 0,
+      "recall": 0,
+      "f1": 0
+     },
+     "transition": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "groove": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "dim_rate": 0.5555555555555556,
+     "dims_total": 9,
+     "iou": 0.9307106077657389,
+     "iou_abs": 0.9307106077657379,
+     "bore_ok": true,
+     "length_ok": true,
+     "exact": false
+    },
+    "self": {
+     "valid": true,
+     "errors": [],
+     "warnings": [],
+     "iou": 0.9309384081280545,
+     "dims": null,
+     "confidence": 0.8,
+     "verdict": "review"
+    }
+   },
+   "server": {
+    "ms": 13839,
+    "provider": "primary",
+    "repaired": true,
+    "valid": true,
+    "verify": {
+     "iou": 0.9873195179598127,
+     "dims": {
+      "rate": 0.8888888888888888,
+      "matched": 8,
+      "total": 9,
+      "unmatched": [
+       "M6"
+      ]
+     },
+     "confidence": 0.9541368459890079
+    },
+    "metrics": {
+     "valid": true,
+     "segment": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "feature": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "transition": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "groove": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "dim_rate": 1,
+     "dims_total": 9,
+     "iou": 1,
+     "iou_abs": 1,
+     "bore_ok": true,
+     "length_ok": true,
+     "exact": true
+    },
+    "notes": [
+     "dims_read에 M6, S4, 깊이 2, C1 등 도면 상 표시된 모든 치수를 명확히 동기화함",
+     "M6 나사의 표준 피치는 1.0mm로 설정함",
+     "수리 라운드: 채택 (신뢰도 0.95 → 0.95)"
+    ]
+   }
+  },
+  {
+   "id": "stud-m12",
+   "kind": "golden",
+   "L": 60,
+   "archetype": "other",
+   "silhouette": {
+    "ms": 346,
+    "metrics": {
+     "valid": true,
+     "segment": {
+      "precision": 0,
+      "recall": 0,
+      "f1": 0
+     },
+     "feature": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "transition": {
+      "precision": 0.5,
+      "recall": 0.5,
+      "f1": 0.5
+     },
+     "groove": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "dim_rate": 0.4444444444444444,
+     "dims_total": 9,
+     "iou": 1,
+     "iou_abs": 1,
+     "bore_ok": true,
+     "length_ok": true,
+     "exact": false
+    },
+    "self": {
+     "valid": true,
+     "errors": [],
+     "warnings": [],
+     "iou": 0.9933753461734193,
+     "dims": null,
+     "confidence": 0.8,
+     "verdict": "review"
+    }
+   },
+   "server": {
+    "ms": 15802,
+    "provider": "primary",
+    "repaired": true,
+    "valid": true,
+    "verify": {
+     "iou": 0.9933753461734193,
+     "dims": {
+      "rate": 0.75,
+      "matched": 6,
+      "total": 8,
+      "unmatched": [
+       "M12",
+       "M12"
+      ]
+     },
+     "confidence": 0.9088564403953806
+    },
+    "metrics": {
+     "valid": true,
+     "segment": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "feature": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "transition": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "groove": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "dim_rate": 1,
+     "dims_total": 9,
+     "iou": 1,
+     "iou_abs": 1,
+     "bore_ok": true,
+     "length_ok": true,
+     "exact": true
+    },
+    "notes": [
+     "dims_read 필드를 추가하여 읽은 모든 치수를 기재하고 DSL과 매핑했습니다.",
+     "중앙 세그먼트 길이는 전체 길이 60에서 15와 22를 차감한 23mm입니다.",
+     "수리 라운드: 채택 (신뢰도 0.90 → 0.91)"
     ]
    }
   }
