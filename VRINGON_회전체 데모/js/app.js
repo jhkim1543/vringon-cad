@@ -38,7 +38,7 @@ const state = {
   raster: null,        /* ImageData 로 판독용 */
   extraction: null,    /* {method, dsl, dims_read, notes, silhouette, verify?, hints, ms} */
   dsl: null, pristine: null, gold: null,
-  built: null, verify: null, mates: null, assembly: null, sim: null, marker: null, simOn: false, forceRead: false,
+  built: null, verify: null, mates: null, assembly: null, sim: null, marker: null, simOn: false, forceRead: false, ratioOnly: false,
   section: false, showingDrawing: false, showingGolden: false,
 };
 /* PIPE[k] 는 k+1 단계. cta/note 는 그 단계를 "실행"하는 버튼의 말 — 다음 단계가 무엇을 하는지 미리 알린다 */
@@ -281,6 +281,9 @@ async function stepExtract() {
       throw new Error("회전체 도면이 아닙니다: " + j.reason);
     }
     ex = { method: "server", dsl: normalizeShaft(j.dsl), dims_read: j.dims_read || [], notes: j.notes || [], serverVerify: j.verify, provider: j.provider, tier: j.tier, repaired: j.repaired, ms: j.elapsed_ms };
+    /* 판독기가 치수 문자를 하나도 읽지 못했다면 그 숫자들은 근거가 없다 */
+    if (!ex.dims_read.length && !L && !state.ratioOnly) { showNeedLength(); throw new Error("실제 치수를 결정할 수 없습니다"); }
+    ex.dsl.meta = { ...(ex.dsl.meta || {}), scale: ex.dims_read.length ? "read" : L ? "input" : "assumed" };
   } else {
     if (!sil.ok) { showUnsuitable("도면에서 부품 외형을 찾지 못했습니다.", sil.notes || []); throw new Error(sil.notes?.join(" ") || "부품 외형을 찾지 못했습니다"); }
     /* 회전체 정면도가 아닌 것이 분명하면 여기서 멈춘다. 억지로 만들면 도면과 무관한 형상이 나온다(캐스터 조립도 사례). */
@@ -289,8 +292,12 @@ async function stepExtract() {
       throw new Error("회전체 정면도가 아닙니다");
     }
     if (sil.plausible === false) showUnsuitable("판독 결과가 회전체 정면도답지 않습니다. 결과는 참고용입니다.", sil.reasons || []);
+    /* 실제 치수의 근거가 없으면 숫자를 지어내지 않는다. 100mm 를 몰래 가정하면 화면의 ⌀58.5 같은 값을
+       도면에서 읽은 값으로 오해하게 된다(캐스터 사례). 비율만 보겠다고 하면 그때만 진행한다. */
+    if (!L && !state.ratioOnly) { showNeedLength(); throw new Error("실제 치수를 결정할 수 없습니다"); }
     ex = { method: "silhouette", dsl: sil.dsl, dims_read: [], notes: sil.notes, ms: performance.now() - t0 };
-    if (!L) ex.notes.unshift("전체 길이를 입력하지 않아 100mm 로 가정했습니다. 왼쪽 '전체 길이'에 값을 넣으면 실제 치수가 맞습니다.");
+    ex.dsl.meta = { ...(ex.dsl.meta || {}), scale: L ? "input" : "assumed" };
+    if (!L) ex.notes.unshift("전체 길이를 넣지 않아 비율만 봅니다. 화면의 치수는 전체 길이를 100mm 로 놓았을 때의 비율이며 도면에서 읽은 값이 아닙니다.");
   }
   ex.silhouette = sil.ok ? sil.silhouette : null;
   ex.draft = sil.ok ? sil.dsl : null;
@@ -318,6 +325,21 @@ function showUnsuitable(title, reasons, hard = false) {
     ${hard ? `<button class="btn btn-ghost btn-sm" id="btnForceRead">그래도 읽어 보기</button>` : ""}</div>`;
   if (hard) $("btnForceRead").onclick = () => { state.forceRead = true; box.style.display = "none"; runStep(2); };
   toast(title);
+}
+/* 실제 치수의 근거(입력한 전체 길이 또는 읽은 치수 문자)가 없을 때 */
+function showNeedLength() {
+  const box = $("unsuitable"); if (!box) return;
+  box.style.display = "block";
+  box.innerHTML = `<b>실제 치수를 결정할 수 없습니다.</b>
+    <div style="margin-top:6px">이 도면에서 문자를 읽지 않으므로 비율만 알 수 있습니다. 왼쪽 <b>전체 길이(mm)</b> 를 넣어 주세요.
+    도면에 치수가 문자 기호(A·B·H 같은)로만 적혀 있다면 규격표의 값을 넣으면 됩니다.</div>
+    <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">
+      <button class="btn btn-primary btn-sm" id="btnFocusLen">전체 길이 넣기</button>
+      <button class="btn btn-ghost btn-sm" id="btnRatioOnly">비율만 보기</button></div>`;
+  $("lenBlock").style.display = "";
+  $("btnFocusLen").onclick = () => { $("overallLen").focus(); $("overallLen").scrollIntoView({ behavior: "smooth", block: "center" }); };
+  $("btnRatioOnly").onclick = () => { state.ratioOnly = true; box.style.display = "none"; runStep(2); };
+  toast("전체 길이를 넣어 주세요. 없으면 비율만 볼 수 있습니다");
 }
 function renderExtractPanel() {
   const ex = state.extraction; if (!ex) return;
@@ -456,8 +478,9 @@ function renderModelInfo() {
   const dsl = state.dsl; if (!dsl) return;
   const v = validateShaft(dsl);
   $("mName").textContent = dsl.name_ko || dsl.name || dsl.id || "회전체";
-  $("mLen").textContent = `${fmt(totalLength(dsl), 2)} mm`;
-  $("mDia").textContent = `⌀${fmt(maxDiameter(dsl), 2)} mm`;
+  const assumed = dsl.meta?.scale === "assumed";
+  $("mLen").textContent = `${fmt(totalLength(dsl), 2)} mm${assumed ? " (비율)" : ""}`;
+  $("mDia").textContent = `⌀${fmt(maxDiameter(dsl), 2)} mm${assumed ? " (비율)" : ""}`;
   $("mMat").textContent = dsl.material || "—";
   if (v.ok) { const m = computeMass(dsl, densityOf(dsl.material)); $("mMass").textContent = `${fmt(m.volume_cm3, 2)} cm³ · ${fmt(m.mass_g, m.mass_g < 10 ? 2 : 1)} g`; }
   else $("mMass").textContent = "—";
@@ -776,12 +799,12 @@ function resetWorkspace(full = true) {
   state.showingGolden = false; $("btnGolden").textContent = "정답 사양 보기"; $("btnGolden").classList.remove("on");
   state.sheetMode = "original"; $("btnRegen").textContent = "재생성 도면"; $("btnRegen").classList.remove("on");
   state.simOn = false; $("btnSim").textContent = "조립 · 시뮬 켜기"; $("btnSim").classList.remove("on");
-  state.forceRead = false;
+  state.forceRead = false; state.ratioOnly = false;
   pipe.done = 0; pipe.running = 0; pipe.active = false;
   showSheet(false); $("stageEmpty").style.display = ""; $("dock").style.display = "none";
   for (const id of ["extractBlock", "segBlock", "featBlock", "jsonBlock", "verifyBlock", "mateBlock", "exportBlock"]) $(id).style.display = "none";
   ["mLen", "mDia", "mMass", "mMat", "mTris"].forEach((id) => ($(id).textContent = "—")); $("mNote").textContent = "";
-  if (full) { $("projName").textContent = "새 프로젝트"; $("mName").textContent = "—"; $("lenBlock").style.display = "none"; }
+  if (full) { $("projName").textContent = "새 프로젝트"; $("mName").textContent = "—"; $("lenBlock").style.display = "none"; $("overallLen").value = ""; }
   renderStepper();
 }
 $("btnNew").onclick = () => { resetWorkspace(true); toast("처음으로 돌아왔습니다"); };
