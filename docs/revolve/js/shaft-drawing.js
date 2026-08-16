@@ -7,9 +7,9 @@
    정면도 = +Z 에서 본 모습. 키홈·평면·횡구멍의 angle 0 은 관찰자를 향한다.
    순수 모듈(브라우저·Node 공용). */
 
-import { totalLength, segmentDiameters, boreDiameterAt } from "./shaft-schema.js?v=14c93c89";
-import { buildTopLine, buildInnerLine, collectEvents } from "./shaft-profile.js?v=14c93c89";
-import { parseThreadSpec, centerHoleDims } from "./shaft-standards.js?v=14c93c89";
+import { totalLength, segmentDiameters, boreDiameterAt } from "./shaft-schema.js?v=695c658e";
+import { buildTopLine, buildInnerLine, collectEvents } from "./shaft-profile.js?v=695c658e";
+import { parseThreadSpec, centerHoleDims } from "./shaft-standards.js?v=695c658e";
 
 const DEG = Math.PI / 180;
 const fmt = (v) => {

@@ -10,19 +10,21 @@ import { GLTFExporter } from "three/addons/exporters/GLTFExporter.js";
 import { STLExporter } from "three/addons/exporters/STLExporter.js";
 import { PLYExporter } from "three/addons/exporters/PLYExporter.js";
 import { USDZExporter } from "three/addons/exporters/USDZExporter.js";
-import { exportFBX } from "./fbx-export.js?v=14c93c89";
-import { drawShaft, toSVG, toDXF } from "./shaft-drawing.js?v=14c93c89";
-import { computeMass, totalLength, maxDiameter } from "./shaft-profile.js?v=14c93c89";
-import { densityOf } from "./shaft-standards.js?v=14c93c89";
+import { exportFBX } from "./fbx-export.js?v=695c658e";
+import { drawShaft, toSVG, toDXF } from "./shaft-drawing.js?v=695c658e";
+import { computeMass, totalLength, maxDiameter } from "./shaft-profile.js?v=695c658e";
+import { densityOf } from "./shaft-standards.js?v=695c658e";
 
 /* 파트 삼각형 수집 (렌더 전용 뒷면/고스트 메시 제외) */
+/* 회전 마커는 화면 표시일 뿐이므로 어떤 형식으로도 내보내지 않는다 */
+export function isMarker(node) { for (let o = node; o; o = o.parent) if (o.userData?.isMarker || String(o.name).startsWith("marker:")) return true; return false; }
 export function collectTriangles(root, filter = null) {
   root.updateWorldMatrix(true, true);
   const out = [];
   const v = new THREE.Vector3();
   root.traverse((node) => {
     if (!node.isMesh || !node.visible || !node.geometry) return;
-    if (node.name.endsWith(":cut") || node.name.startsWith("ghost")) return;
+    if (node.name.endsWith(":cut") || node.name.startsWith("ghost") || isMarker(node)) return;
     if (filter && !filter(node)) return;
     const geo = node.geometry.index ? node.geometry.toNonIndexed() : node.geometry;
     const pos = geo.getAttribute("position");
@@ -134,19 +136,19 @@ export function exportOBJ(root) {
 }
 export function exportSTL(root) {
   const g = new THREE.Group();
-  root.traverse((n) => { if (n.isMesh && !n.name.endsWith(":cut") && !n.name.startsWith("ghost")) { const m = new THREE.Mesh(n.geometry, n.material); m.applyMatrix4(n.matrixWorld); g.add(m); } });
+  root.traverse((n) => { if (n.isMesh && !n.name.endsWith(":cut") && !n.name.startsWith("ghost") && !isMarker(n)) { const m = new THREE.Mesh(n.geometry, n.material); m.applyMatrix4(n.matrixWorld); g.add(m); } });
   return new STLExporter().parse(g, { binary: true });
 }
 export function exportGLB(root) {
   const g = new THREE.Group();
-  root.traverse((n) => { if (n.isMesh && !n.name.endsWith(":cut") && !n.name.startsWith("ghost")) { const m = new THREE.Mesh(n.geometry, n.material); m.name = n.name; m.applyMatrix4(n.matrixWorld); g.add(m); } });
+  root.traverse((n) => { if (n.isMesh && !n.name.endsWith(":cut") && !n.name.startsWith("ghost") && !isMarker(n)) { const m = new THREE.Mesh(n.geometry, n.material); m.name = n.name; m.applyMatrix4(n.matrixWorld); g.add(m); } });
   return new Promise((resolve, reject) => new GLTFExporter().parse(g, resolve, reject, { binary: true }));
 }
 
 /* PLY (바이너리) · USDZ (three.js USDZExporter — usda 를 usdz 컨테이너로) · FBX (ASCII 7.4, fbx-export.js) */
 function cleanGroup(root) {
   const g = new THREE.Group();
-  root.traverse((n) => { if (n.isMesh && !n.name.endsWith(":cut") && !n.name.startsWith("ghost")) { const m = new THREE.Mesh(n.geometry, n.material); m.name = n.name; m.applyMatrix4(n.matrixWorld); g.add(m); } });
+  root.traverse((n) => { if (n.isMesh && !n.name.endsWith(":cut") && !n.name.startsWith("ghost") && !isMarker(n)) { const m = new THREE.Mesh(n.geometry, n.material); m.name = n.name; m.applyMatrix4(n.matrixWorld); g.add(m); } });
   return g;
 }
 export function exportPLY(root) { return new PLYExporter().parse(cleanGroup(root), null, { binary: false }); }

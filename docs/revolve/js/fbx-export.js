@@ -19,6 +19,7 @@ function collectMeshes(root) {
   root.traverse((node) => {
     if (!node.isMesh || !node.visible || !node.geometry) return;
     if (node.name.endsWith(":cut") || node.name.startsWith("ghost")) return;
+    for (let o = node; o; o = o.parent) if (o.userData?.isMarker || String(o.name).startsWith("marker:")) return;   /* 회전 마커 제외 */
     const geo = node.geometry.index ? node.geometry.toNonIndexed() : node.geometry;
     const pos = geo.getAttribute("position"), nor = geo.getAttribute("normal");
     const nm = new THREE.Matrix3().getNormalMatrix(node.matrixWorld);

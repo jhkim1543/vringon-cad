@@ -3,8 +3,8 @@
    같은 시드는 같은 부품. 아키타입별 확률로 피처를 넣되, 항상 validateShaft 를 통과하는 것만 내보낸다.
    순수 모듈. */
 
-import { PREFERRED_DIAMETERS, ISO_COARSE_PITCH, ISO_FINE_PITCHES, threadSpecText, snapRingGroove, keywayFor, centerHoleFor, threadUndercutFor, grindingUndercutFor, SHAFT_TOLERANCE_CLASSES, ROUGHNESS_GRADES } from "./shaft-standards.js?v=14c93c89";
-import { validateShaft, DSL_VERSION } from "./shaft-schema.js?v=14c93c89";
+import { PREFERRED_DIAMETERS, ISO_COARSE_PITCH, ISO_FINE_PITCHES, threadSpecText, snapRingGroove, keywayFor, centerHoleFor, threadUndercutFor, grindingUndercutFor, SHAFT_TOLERANCE_CLASSES, ROUGHNESS_GRADES } from "./shaft-standards.js?v=695c658e";
+import { validateShaft, DSL_VERSION } from "./shaft-schema.js?v=695c658e";
 
 export function mulberry32(seed) {
   let a = (seed >>> 0) || 1;

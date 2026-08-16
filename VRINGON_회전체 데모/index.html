@@ -66,6 +66,12 @@
   .cmp { display: grid; grid-template-columns: 1fr auto auto; gap: 2px 8px; font-size: 11.5px; }
   .cmp .h { color: var(--text-3); font-weight: 650; font-size: 10.5px; }
   .cmp b { font-variant-numeric: tabular-nums; text-align: right; }
+  /* 시뮬 계기: 축대칭 부품은 돌아도 화면이 같아 보이므로 숫자로도 알려 준다 */
+  .simdock { flex-wrap: wrap; max-width: min(760px, calc(100% - 28px)); }
+  .simgauge { display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px; font-weight: 650;
+    color: var(--text-2); background: #0F0F13; border: 1px solid var(--line-2); border-radius: 7px;
+    padding: 4px 9px; font-variant-numeric: tabular-nums; white-space: nowrap; min-width: 132px; }
+  .simgauge.on { color: var(--accent-hi); border-color: rgba(91,107,240,.45); }
 </style>
 <script type="importmap">
 { "imports": { "three": "./vendor/three/three.module.js", "three/addons/": "./vendor/three/addons/" } }
@@ -210,12 +216,13 @@
         <button class="btn btn-ghost btn-sm" id="btnAssemble">조립</button>
         <button class="btn btn-ghost btn-sm" id="btnSimStop">정지</button>
         <span style="display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--text-3);padding:0 4px">
-          분해 <input type="range" id="simExplode" min="0" max="100" value="0" step="1" style="width:82px" />
+          <span style="white-space:nowrap">분해</span> <input type="range" id="simExplode" min="0" max="100" value="0" step="1" style="width:82px" />
         </span>
-        <span style="display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--text-3);padding:0 4px">
+        <span style="display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--text-3);padding:0 4px;white-space:nowrap">
           rpm <input type="range" id="simRpm" min="0" max="1800" value="300" step="30" style="width:70px" />
           <b id="simRpmV" style="color:var(--text-2);font-variant-numeric:tabular-nums">300</b>
         </span>
+        <span class="simgauge" id="simGauge">정지</span>
       </div>
 
       <div class="dock" id="dock" style="display:none">
@@ -291,7 +298,7 @@
           <div id="mateOrder"></div>
           <div class="dl-group" style="margin-top:10px">조립 점검</div>
           <div id="mateChecks"></div>
-          <div class="hint" style="margin-top:7px">우리 부품 형상은 도면(DSL)에서 정확히 나오고, <b>상대 부품은 규격표 근사</b>입니다(반투명·색으로 구분). 방향과 축은 회전체 기하라 정확합니다.</div>
+          <div class="hint" style="margin-top:7px">우리 부품 형상은 도면(DSL)에서 정확히 나오고, <b>상대 부품은 규격표 근사</b>입니다(반투명·색으로 구분). 방향과 축은 회전체 기하라 정확합니다.<br/>회전체는 축대칭이라 돌아도 화면이 같아 보이므로 <b style="color:#FF7A3D">주황색 기준선</b>을 붙였고, 도크의 계기가 회전수·각도를 숫자로 보여 줍니다. 기준선은 표시일 뿐이라 내보내기에는 포함되지 않습니다.</div>
         </div>
 
         <div class="block" id="exportBlock" style="display:none">

@@ -6,19 +6,19 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
-import { validateShaft, normalizeShaft, DSL_VERSION } from "./shaft-schema.js?v=14c93c89";
-import { computeMass, totalLength, maxDiameter, buildTopLine, collectEvents } from "./shaft-profile.js?v=14c93c89";
-import { densityOf } from "./shaft-standards.js?v=14c93c89";
-import { buildShaft3D, makeMaterials, setSectionPlanes } from "./shaft-cad.js?v=14c93c89";
-import { drawShaft, toSVG } from "./shaft-drawing.js?v=14c93c89";
-import { extractHeuristic, extractViaServer } from "./shaft-extract.js?v=14c93c89";
-import { verifyExtraction, goldenMetrics } from "./shaft-verify.js?v=14c93c89";
-import { sampleShaft } from "./shaft-sampler.js?v=14c93c89";
-import { analyzeMates, matesSummary } from "./shaft-mates.js?v=14c93c89";
-import { buildAssembly, createAssemblySim, assemblyChecks, makeMateMaterials } from "./shaft-assembly.js?v=14c93c89";
-import { exportSTEP, exportSTL, exportGLB, exportOBJ, exportUSDA, exportUSDZ, exportFBX, exportPLY, exportDrawingDXF, exportDrawingSVG, exportJSON, downloadBlob } from "./shaft-export.js?v=14c93c89";
+import { validateShaft, normalizeShaft, DSL_VERSION } from "./shaft-schema.js?v=695c658e";
+import { computeMass, totalLength, maxDiameter, buildTopLine, collectEvents } from "./shaft-profile.js?v=695c658e";
+import { densityOf } from "./shaft-standards.js?v=695c658e";
+import { buildShaft3D, makeMaterials, setSectionPlanes } from "./shaft-cad.js?v=695c658e";
+import { drawShaft, toSVG } from "./shaft-drawing.js?v=695c658e";
+import { extractHeuristic, extractViaServer } from "./shaft-extract.js?v=695c658e";
+import { verifyExtraction, goldenMetrics } from "./shaft-verify.js?v=695c658e";
+import { sampleShaft } from "./shaft-sampler.js?v=695c658e";
+import { analyzeMates, matesSummary } from "./shaft-mates.js?v=695c658e";
+import { buildAssembly, createAssemblySim, assemblyChecks, makeMateMaterials, makeSpinMarker } from "./shaft-assembly.js?v=695c658e";
+import { exportSTEP, exportSTL, exportGLB, exportOBJ, exportUSDA, exportUSDZ, exportFBX, exportPLY, exportDrawingDXF, exportDrawingSVG, exportJSON, downloadBlob } from "./shaft-export.js?v=695c658e";
 
-const BUILD = "14c93c89";
+const BUILD = "695c658e";
 const $ = (id) => document.getElementById(id);
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const fmt = (v, d = 1) => (Number.isFinite(v) ? (Math.round(v * 10 ** d) / 10 ** d).toString() : "—");
@@ -36,7 +36,7 @@ const state = {
   raster: null,        /* ImageData 로 판독용 */
   extraction: null,    /* {method, dsl, dims_read, notes, silhouette, verify?, hints, ms} */
   dsl: null, pristine: null, gold: null,
-  built: null, verify: null, mates: null, assembly: null, sim: null,
+  built: null, verify: null, mates: null, assembly: null, sim: null, marker: null,
   section: false, showingDrawing: false, showingGolden: false,
 };
 /* PIPE[k] 는 k+1 단계. cta/note 는 그 단계를 "실행"하는 버튼의 말 — 다음 단계가 무엇을 하는지 미리 알린다 */
@@ -87,7 +87,11 @@ renderer.setAnimationLoop(() => {
   const below = camera.position.y < controls.target.y;
   grid.visible = gridWanted && !below; shadowCatcher.visible = !below;
   const dt = simClock.getDelta();
-  if (state.sim) state.sim.update(dt);
+  if (state.sim) {
+    state.sim.update(dt);
+    const now = performance.now();
+    if (state.sim.state.mode !== "idle" && now - gaugeLast > 200) { gaugeLast = now; renderSimGauge(); }
+  }
   renderer.render(scene, camera);
 });
 let model = null;
@@ -527,6 +531,7 @@ function computeVerify() {
 const mateMaterials = makeMateMaterials();
 function teardownAssembly() {
   if (state.sim) { state.sim.reset(); state.sim = null; }
+  removeSpinMarker();
   if (state.assembly) {
     scene.remove(state.assembly.group);
     state.assembly.group.traverse((o) => { if (o.isMesh) o.geometry?.dispose(); });
@@ -534,6 +539,48 @@ function teardownAssembly() {
   }
   if (model) model.rotation.x = 0;
   $("simDock").classList.remove("show");
+  renderSimGauge();
+}
+/* 부품 + 상대 부품 전체가 들어오도록 카메라를 맞춘다 */
+function fitAssemblyView() {
+  if (!model) return;
+  const bb = new THREE.Box3().setFromObject(model);
+  if (state.assembly) bb.expandByObject(state.assembly.group);
+  const c = bb.getCenter(new THREE.Vector3());
+  const r = Math.max(10, bb.getSize(new THREE.Vector3()).length() / 2);
+  controls.target.copy(c);
+  const vHalf = THREE.MathUtils.degToRad(camera.fov / 2), hHalf = Math.atan(Math.tan(vHalf) * Math.max(0.6, camera.aspect));
+  const dist = (r / Math.sin(Math.min(vHalf, hHalf))) * 1.12;
+  camera.position.copy(c).add(new THREE.Vector3(0.55, 0.42, 0.72).normalize().multiplyScalar(dist));
+  camera.near = Math.max(0.2, r / 80); camera.far = r * 80; camera.updateProjectionMatrix(); controls.update();
+}
+/* 계기: 회전수·각도(자전) 또는 체결 회전수·전진(나사). 축대칭이라 화면만으로는 알 수 없으므로 숫자로 보인다 */
+let gaugeLast = 0;
+function renderSimGauge() {
+  const el = $("simGauge"); if (!el) return;
+  const s = state.sim?.state;
+  if (!s || s.mode === "idle") { el.textContent = state.sim ? "정지" : "—"; el.classList.remove("on"); return; }
+  el.classList.add("on");
+  if (s.mode === "spin") {
+    const turns = s.spinAngle / (2 * Math.PI);
+    el.textContent = `${Math.round(s.rpm)} rpm · ${turns.toFixed(1)} 회전 · ${Math.round((s.spinAngle * 180 / Math.PI) % 360)}°`;
+  } else if (s.mode === "screw") {
+    el.textContent = `체결 ${(s.screwTurns || 0).toFixed(1)} 회전 · ${(s.screwAdvance || 0).toFixed(1)} mm`;
+  }
+}
+function attachSpinMarker() {
+  if (!model || !state.dsl) return;
+  removeSpinMarker();
+  /* 회전체는 축대칭이라 자전해도 화면이 그대로다 -> 기준 표시를 부품에 붙여 회전을 눈으로 보이게 한다.
+     model 의 자식이므로 같은 회전을 따라가고, 내보내기 수집기는 marker: 이름을 걸러낸다. */
+  state.marker = makeSpinMarker(state.dsl, { length: totalLength(state.dsl), radius: maxDiameter(state.dsl) / 2 });
+  model.add(state.marker);
+}
+function removeSpinMarker() {
+  if (!state.marker) return;
+  state.marker.parent?.remove(state.marker);
+  state.marker.traverse((o) => { if (o.isMesh) o.geometry?.dispose(); });
+  state.marker = null;
 }
 function spawnAssembly() {
   if (!state.dsl || !model) return;
@@ -546,7 +593,11 @@ function spawnAssembly() {
   state.assembly = asm;
   state.sim = createAssemblySim({ part: model, assembly: asm, analysis: state.mates });
   state.sim.applyExplode(Number($("simExplode").value) / 100);
+  attachSpinMarker();
   $("simDock").classList.add("show");
+  /* 상대 부품이 부품보다 크게 튀어나오므로(하우징·허브·베어링) 화면을 다시 맞춘다 */
+  fitAssemblyView();
+  renderSimGauge();
   return asm;
 }
 async function stepAssembly() {
@@ -602,12 +653,13 @@ function showAxisLine(on) {
   axisLine.position.copy(model.position);
   scene.add(axisLine);
 }
-$("btnSpin").onclick = () => { if (!state.sim) return; state.sim.spin(Number($("simRpm").value) || 300); $("btnSpin").classList.add("on"); toast(`자전 ${$("simRpm").value} rpm — 축과 함께 도는 부품만 회전합니다(베어링 외륜·공구는 고정)`, true); };
-$("btnScrewSim").onclick = () => { if (!state.sim) return; const has = state.mates?.mates.some((m) => m.motion.type === "screw" && m.part); if (!has) return toast("이 부품에는 나사 체결부가 없습니다"); state.sim.screw(true); $("btnSpin").classList.remove("on"); };
-$("btnAssemble").onclick = () => { if (!state.sim) return; $("simExplode").value = 0; state.sim.applyExplode(0); state.sim.stop(); $("btnSpin").classList.remove("on"); };
-$("btnSimStop").onclick = () => { if (!state.sim) return; state.sim.stop(); $("btnSpin").classList.remove("on"); };
-$("simExplode").oninput = () => { if (!state.sim) return; state.sim.stop(); $("btnSpin").classList.remove("on"); state.sim.applyExplode(Number($("simExplode").value) / 100); };
-$("simRpm").oninput = () => { $("simRpmV").textContent = $("simRpm").value; state.sim?.setRpm(Number($("simRpm").value)); };
+$("btnSpin").onclick = () => { if (!state.sim) return; state.sim.spin(Number($("simRpm").value) || 300); $("btnSpin").classList.add("on"); renderSimGauge();
+  toast(`자전 ${$("simRpm").value} rpm — 주황색 기준선으로 회전이 보입니다. 축과 함께 도는 부품만 회전합니다(베어링 외륜·공구는 고정)`, true); };
+$("btnScrewSim").onclick = () => { if (!state.sim) return; const has = state.mates?.mates.some((m) => m.motion.type === "screw" && m.part); if (!has) return toast("이 부품에는 나사 체결부가 없습니다"); state.sim.screw(true); $("btnSpin").classList.remove("on"); renderSimGauge(); };
+$("btnAssemble").onclick = () => { if (!state.sim) return; $("simExplode").value = 0; state.sim.applyExplode(0); state.sim.stop(); $("btnSpin").classList.remove("on"); renderSimGauge(); };
+$("btnSimStop").onclick = () => { if (!state.sim) return; state.sim.stop(); $("btnSpin").classList.remove("on"); renderSimGauge(); };
+$("simExplode").oninput = () => { if (!state.sim) return; state.sim.stop(); $("btnSpin").classList.remove("on"); state.sim.applyExplode(Number($("simExplode").value) / 100); renderSimGauge(); };
+$("simRpm").oninput = () => { $("simRpmV").textContent = $("simRpm").value; state.sim?.setRpm(Number($("simRpm").value)); renderSimGauge(); };
 
 /* ---- 6단계: 내보내기 */
 async function stepExport() {
@@ -734,7 +786,7 @@ $("btnLibClose").onclick = closeLib;
 window.__vringon = { state, pipe, runStep, extractHeuristic, verifyExtraction, goldenMetrics, drawShaft, toSVG, sampleShaft, buildShaft3D, applyDslChange, analyzeMates, assemblyChecks,
   get model() { return model; }, get scene() { return scene; }, get camera() { return camera; },
   /* QA: 탭이 가려져 rAF 가 멈춰도 한 프레임을 강제로 그리고 저장한다 */
-  forceRender(dt = 0) { if (dt && state.sim) state.sim.update(dt); controls.update(); renderer.render(scene, camera); },
+  forceRender(dt = 0) { if (dt && state.sim) { state.sim.update(dt); renderSimGauge(); } controls.update(); renderer.render(scene, camera); },
   async shot(name = "shot") {
     this.forceRender();
     const dataUrl = renderer.domElement.toDataURL("image/png");

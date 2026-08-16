@@ -9,6 +9,7 @@
 
 import * as THREE from "three";
 import { latheXY } from "./shaft-cad.js";
+import { buildTopLine, totalLength, maxDiameter } from "./shaft-profile.js";
 
 const DEG = Math.PI / 180;
 
@@ -177,6 +178,45 @@ export function buildAssembly(analysis, opts = {}) {
   return { group, items, materials: mats };
 }
 
+/* ------------------------------------------------------------ 회전 마커
+   회전체는 축대칭이라 자전해도 화면이 **똑같다** — 키홈·평면·구멍이 없는 부시·스페이서는
+   시뮬레이션이 도는지 눈으로 알 수 없다. 그래서 부품에 기준 표시를 붙인다:
+   ① 바깥면을 따라 축방향으로 난 좁은 띠(각도 6°) ② 왼쪽 끝면의 반경선 ③ 축 끝의 화살 표시.
+   부품의 자식으로 넣어 같은 회전을 그대로 따라간다. 형상이 아니라 표시이므로 내보내기에서는 제외된다
+   (이름이 marker: 로 시작하고, 내보내기 수집기가 ghost·:cut 과 함께 걸러낸다). */
+export function makeSpinMarker(dsl, opts = {}) {
+  const L = opts.length || totalLength(dsl) || 100;
+  const R = opts.radius || maxDiameter(dsl) / 2 || 10;
+  const mat = new THREE.MeshStandardMaterial({ color: 0xFF7A3D, emissive: 0x923417, emissiveIntensity: 0.6, metalness: 0.2, roughness: 0.5, side: THREE.DoubleSide, name: "spin_marker" });
+  const g = new THREE.Group();
+  g.name = "marker:spin";
+  const eps = Math.max(0.05, R * 0.004);   /* 표면 위로 살짝 띄워 z-fighting 회피 */
+  const halfA = 3.2 * DEG;
+  /* ① 바깥면을 따라가는 좁은 띠: 상수 반경이 아니라 **DSL 외형선**을 그대로 따른다.
+     (상수 R 로 하면 단차가 있는 부품에서 띠가 공중에 뜬다 — 플랜지 부시에서 실제로 그랬다.)
+     latheXY 의 각도 0° 는 +Z 이므로 +Y(화면 위)에 놓으려면 90° 를 중심으로 잡는다. */
+  const prof = buildTopLine(dsl, 8).points
+    .filter((p) => p.r > 1e-6)
+    .map((p) => ({ x: Math.min(L, Math.max(0, p.x)), r: p.r + eps }));
+  if (prof.length >= 2) {
+    const stripe = new THREE.Mesh(latheXY(prof, 2, 90, Math.PI / 2 - halfA, 2 * halfA), mat);
+    g.add(stripe);
+  }
+  /* ② 왼쪽 끝면의 반경선 (끝에서 봐도 각도를 알 수 있게) */
+  const r0 = prof.length ? prof[0].r : R;
+  const face = new THREE.Mesh(new THREE.BoxGeometry(Math.max(0.15, R * 0.012), r0 * 0.78, Math.max(0.6, R * 0.055)), mat);
+  face.position.set(-Math.max(0.08, R * 0.006), r0 * 0.55, 0);
+  /* ③ 오른쪽 끝의 화살 표시 (축을 따라 밖으로) */
+  const rN = prof.length ? prof[prof.length - 1].r : R;
+  const knob = new THREE.Mesh(new THREE.ConeGeometry(Math.max(0.7, R * 0.1), Math.max(1.6, R * 0.22), 14), mat);
+  knob.rotateZ(-90 * DEG);
+  knob.position.set(L + Math.max(0.9, R * 0.12), rN * 0.6, 0);
+  g.add(face, knob);
+  g.userData.isMarker = true;
+  g.traverse((o) => { if (o.isMesh) { o.castShadow = false; o.receiveShadow = false; o.renderOrder = 2; } });
+  return g;
+}
+
 /* ------------------------------------------------------------ 시뮬레이션 */
 export function createAssemblySim({ part, assembly, analysis }) {
   const state = { mode: "idle", t: 0, explode: 0, rpm: 0, spinAngle: 0, screwT: 0, speed: 1 };
@@ -233,6 +273,7 @@ export function createAssemblySim({ part, assembly, analysis }) {
       });
     } else if (state.mode === "screw") {
       state.screwT += dt * 0.35;
+      state.screwTurns = 0;
       const u = (Math.sin(state.screwT * Math.PI - Math.PI / 2) + 1) / 2;   /* 0→1→0 왕복 */
       items.forEach(({ wrap, index }) => {
         const d = wrap.userData;
@@ -240,6 +281,9 @@ export function createAssemblySim({ part, assembly, analysis }) {
         const dist = d.distance * (1 - u);
         wrap.position.copy(d.home).addScaledVector(d.dir, dist);
         wrap.rotation.x = -(dist / (d.screw.pitch || 1)) * Math.PI * 2 * d.screw.dir;
+        /* 계기 두 값은 같은 기준(체결해 들어간 양)이어야 한다 — 한쪽만 남은 거리로 재면 비율이 피치와 안 맞는다 */
+        state.screwAdvance = d.distance - dist;
+        state.screwTurns = state.screwAdvance / (d.screw.pitch || 1);
       });
     }
   }

@@ -214,7 +214,7 @@ export function validateSchema(value, schema = SHAFT_SCHEMA, path = "$", errors 
    스키마가 통과해도 만들 수 없는 형상은 여기서 걸린다. 오류(errors)는 실행기가
    거부하고, 경고(warnings)는 만들되 알려준다. 판독기의 수리 루프는 이 문장을
    그대로 모델에 되돌려 준다. */
-import { parseThreadSpec } from "./shaft-standards.js?v=14c93c89";
+import { parseThreadSpec } from "./shaft-standards.js?v=695c658e";
 
 export function segmentDiameters(seg) {
   if (seg.type === "taper") return [seg.d_start, seg.d_end];
