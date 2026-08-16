@@ -1,0 +1,25 @@
+# 외부 도메인 서비스 한 벌: 앱 + 자동 HTTPS 리버스 프록시
+# 저장소 루트에서:  docker compose -f "VRINGON_회전체 데모/deploy/docker-compose.yml" up -d
+# 준비물: 도메인 A 레코드가 이 서버 공인 IP 를 가리킬 것, deploy/.env 에 키·접근 코드.
+services:
+  app:
+    build:
+      context: ../../..            # 저장소 루트(vringon-cad/)
+      dockerfile: VRINGON_회전체 데모/deploy/Dockerfile
+    restart: unless-stopped
+    env_file: [.env]               # VRINGON_PRIMARY_URL/KEY/TEXT_MODEL, VRINGON_ACCESS_CODE, VRINGON_RATE_PER_HOUR
+    expose: ["8349"]
+
+  caddy:                           # 도메인 인증서를 자동으로 받고 갱신한다
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports: ["80:80", "443:443"]
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on: [app]
+
+volumes:
+  caddy_data:
+  caddy_config:

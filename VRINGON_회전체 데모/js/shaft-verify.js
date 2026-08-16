@@ -12,7 +12,7 @@ import { validateShaft } from "./shaft-schema.js";
 import { parseThreadSpec } from "./shaft-standards.js";
 
 /* ------------------------------------------------------------ 실루엣 IoU
-   a, b: {L, samples: Float64Array|number[]} — r(x) 를 x 등분 표본으로. 길이가 달라도
+   a, b: {L, samples: Float64Array|number[]}. r(x) 를 x 등분 표본으로. 길이가 달라도
    x 를 0..1 로 정규화하고 r 도 각자의 L 로 나눈 뒤 비교한다(비례 형상 비교).
    opts.absolute=true 면 r 을 mm 그대로 비교(치수 정확도까지 포함). */
 export function silhouetteIoU(a, b, opts = {}) {
@@ -42,7 +42,7 @@ export function silhouetteIoU2(inputTopBot, dsl, opts = {}) {
 export function dslSilhouette(dsl, N = 400) { return silhouetteSamples(dsl, N); }
 
 /* ------------------------------------------------------------ 치수 정합
-   dimsRead: [{kind, value, text}] — kind ∈ diameter|length|overall|thread|chamfer|radius|
+   dimsRead: [{kind, value, text}]. kind ∈ diameter|length|overall|thread|chamfer|radius|
    groove_width|groove_diameter|keyway_width|keyway_depth|bore_diameter|position|other */
 export function dimensionConsistency(dsl, dimsRead = [], tol = 0.051) {
   const ev = collectEvents(dsl);

@@ -6,3 +6,4 @@ pipeline/tests/__pycache__/
 tools/_scratch/
 config.local.json
 *.log
+deploy/.env

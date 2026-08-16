@@ -1,7 +1,8 @@
 /* VRINGON 회전체 — 워크스페이스 (index.html 의 두뇌)
-   5단계: 도면 입력 → 판독(DSL) → 3D CAD → 검증 → 내보내기.
-   정적 모드(GitHub Pages)에서는 샘플의 AI 판독 결과를 재생하고 업로드는 브라우저 실루엣 판독으로,
-   라이브 모드(온프렘 서버)에서는 시각 LLM 판독이 실제로 돈다. 그 외 형상·도면·검증·내보내기는 모두 이 브라우저에서 실행된다. */
+   4단계: 도면 입력 → 판독(사양) → 3D CAD → 검증. 내보내기는 상시 패널, 조립·시뮬은 토글.
+   정적 모드에서는 샘플의 판독 결과를 재생하고 업로드는 브라우저 외형 판독으로,
+   라이브 모드에서는 서버 판독이 실제로 돈다. 그 외는 모두 이 브라우저에서 실행된다.
+   사용자에게 보이는 말에는 알고리즘·라이브러리 이름을 쓰지 않는다(외부 공유용). */
 
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
@@ -16,6 +17,7 @@ import { verifyExtraction, goldenMetrics } from "./shaft-verify.js";
 import { sampleShaft } from "./shaft-sampler.js";
 import { analyzeMates, matesSummary } from "./shaft-mates.js";
 import { buildAssembly, createAssemblySim, assemblyChecks, makeMateMaterials, makeSpinMarker } from "./shaft-assembly.js";
+import { initTour } from "./tour.js";
 import { exportSTEP, exportSTL, exportGLB, exportOBJ, exportUSDA, exportUSDZ, exportFBX, exportPLY, exportDrawingDXF, exportDrawingSVG, exportJSON, downloadBlob } from "./shaft-export.js";
 
 const BUILD = "dev";
@@ -42,9 +44,9 @@ const state = {
 /* PIPE[k] 는 k+1 단계. cta/note 는 그 단계를 "실행"하는 버튼의 말 — 다음 단계가 무엇을 하는지 미리 알린다 */
 const PIPE = [
   { n: 1, label: "도면 입력", cta: "도면 불러오기", note: "도면을 시트에 올립니다" },
-  { n: 2, label: "판독 · DSL", cta: "판독 시작", note: "도면을 읽어 파라메트릭 DSL 로 옮깁니다 (실루엣 측정 + AI 판독)" },
-  { n: 3, label: "3D CAD", cta: "3D CAD 만들기", note: "DSL 을 회전(lathe) + 국부 CSG 로 컴파일합니다" },
-  { n: 4, label: "검증", cta: "검증 실행", note: "DSL 을 다시 그려 도면 실루엣과 대조하고, 읽은 치수 문자를 DSL 과 대조합니다" },
+  { n: 2, label: "판독 · 사양", cta: "판독 시작", note: "도면을 읽어 치수 사양으로 옮깁니다" },
+  { n: 3, label: "3D CAD", cta: "3D CAD 만들기", note: "사양대로 3D 형상을 만듭니다" },
+  { n: 4, label: "검증", cta: "검증 실행", note: "사양으로 다시 그린 외형을 도면과 대조합니다" },
 ];
 /* 조립·시뮬과 내보내기는 단계가 아니다: 내보내기는 3D 가 만들어지면 오른쪽 패널에 늘 있고,
    조립·시뮬은 뷰포트 토글이라 언제든 켜고 끌 수 있다(끄면 부품만 남는다). */
@@ -130,7 +132,7 @@ function refreshSheet() {
   if (!state.source) return;
   if (state.sheetMode === "regen" && state.dsl && validateShaft(state.dsl).ok) {
     const svg = toSVG(drawShaft(state.dsl, { scale: "auto", seed: 1 }));
-    setSheetImage(svgToDataUrl(svg), `재생성 도면 · 지금 DSL 에서 렌더러가 다시 그림 (원본이 아님)`);
+    setSheetImage(svgToDataUrl(svg), `재생성 도면 · 지금 사양으로 다시 그림 (원본 아님)`);
     $("overlay").innerHTML = "";
   } else {
     setSheetImage(state.source.svg ? svgToDataUrl(state.source.svg) : state.source.image, state.source.kind === "sample" ? `샘플 도면 · ${state.source.name}` : state.source.kind === "synthetic" ? `합성 도면 · ${state.source.name}` : `업로드 · ${state.source.name}`);
@@ -180,7 +182,7 @@ function renderStepper() {
   $("runBlock").style.display = pipe.active ? "" : "none";
   $("runSteps").innerHTML = PIPE.map((s) => {
     const st = s.n <= pipe.done ? "done" : s.n === pipe.running ? "run" : "";
-    const where = s.n === 2 ? (state.mode === "live" ? "온프렘 AI + 브라우저 실루엣" : state.source?.kind === "sample" && state.sample?.files?.extracted ? "서버에서 미리 판독" : "이 브라우저에서 실행") : "이 브라우저에서 실행";
+    const where = s.n === 2 ? (state.mode === "live" ? "서버 AI 판독" : state.source?.kind === "sample" && state.sample?.files?.extracted ? "미리 판독한 결과" : "이 브라우저에서 실행") : "이 브라우저에서 실행";
     return `<div class="gen-step ${st}"><span class="dot"></span>${s.n}. ${s.label}<span style="color:var(--text-3);font-size:11px;margin-left:6px">${where}</span></div>`;
   }).join("");
   $("btnGolden").classList.toggle("show", !!state.gold && pipe.done >= 2);
@@ -224,7 +226,7 @@ async function loadSource(src) {
   state.raster = r.imageData;
   state.gold = src.gold || null;
   state.sample = src.sample || null;
-  setSheetImage(dataUrl, src.kind === "sample" ? `샘플 도면 · ${src.name}` : src.kind === "synthetic" ? `합성 도면 · ${src.name}` : `업로드 · ${src.name}`);
+  setSheetImage(dataUrl, src.kind === "sample" ? `샘플 도면 · ${src.name}` : src.kind === "synthetic" ? `만든 도면 · ${src.name}` : `업로드 · ${src.name}`);
 }
 
 /* ================================================================ 파이프라인 */
@@ -257,7 +259,7 @@ function chosenMethod() {
 async function stepExtract() {
   const method = chosenMethod();
   const L = Number($("overallLen").value) || (state.gold ? totalLength(state.gold) : null);
-  const steps = [{ text: "외형선만 남겨 실루엣 r(x) 측정", state: "run" }, { text: method === "server" ? "온프렘 시각 LLM 판독 (스키마 제약 + few-shot + 실루엣 힌트)" : method === "replay" ? "서버에서 미리 판독한 결과 불러오기" : "RDP 세그먼트화 → DSL" }, { text: "스키마·기하 검증 (수리 루프)" }];
+  const steps = [{ text: "도면에서 부품 외형 측정", state: "run" }, { text: method === "server" ? "AI 판독" : method === "replay" ? "미리 판독한 결과 불러오기" : "외형에서 치수 사양 만들기" }, { text: "형상 검증" }];
   showGen(true, "2단계 · 판독", "", steps);
   const t0 = performance.now();
   /* ① 실루엣 (항상 — 힌트이자 정적 판독기) */
@@ -268,22 +270,22 @@ async function stepExtract() {
   if (method === "replay") {
     const j = await fetch(`./samples/${state.sample.id}/${state.sample.files.extracted}?v=${BUILD}`).then((r) => r.json());
     ex = { method: "replay", dsl: normalizeShaft(j.dsl), dims_read: j.dims_read || [], notes: [...(j.notes || [])], serverVerify: j.verify, provider: j.provider, tier: j.tier, repaired: j.repaired, ms: j.elapsed_ms, evaluated: j.evaluated };
-    ex.notes.unshift(`온프렘 서버가 미리 판독해 저장한 결과입니다 (${j.tier === "plan" ? "설계 티어" : "텍스트 티어"} 시각 LLM${j.repaired ? ", 수리 1회" : ""}, ${((j.elapsed_ms || 0) / 1000).toFixed(1)}초).`);
+    ex.notes.unshift(`서버가 미리 판독해 저장한 결과입니다 (${((j.elapsed_ms || 0) / 1000).toFixed(1)}초${j.repaired ? ", 자동 수정 1회" : ""}).`);
   } else if (method === "server") {
-    if (!sil.ok) toast("실루엣을 재지 못해 힌트 없이 판독합니다");
+    if (!sil.ok) toast("외형을 재지 못해 힌트 없이 판독합니다");
     const hints = sil.ok ? { draft: sil.dsl, silhouette: { L: sil.silhouette.L, top: Array.from(sil.silhouette.top), bottom: Array.from(sil.silhouette.bottom) }, sectioned: !!sil.dsl.bore } : null;
     const tier = $("tierPlan").checked ? "plan" : "text";
     const j = await extractViaServer(state.source.image, { hints, overallLength: Number($("overallLen").value) || null, tier });
     if (j.not_revolve) {
-      showUnsuitable(`AI 판독기가 회전체 정면도로 보지 않았습니다 — ${j.reason}`, (j.notes || []).filter((n) => n !== j.reason));
+      showUnsuitable(`회전체 정면도로 보이지 않습니다. ${j.reason}`, (j.notes || []).filter((n) => n !== j.reason));
       throw new Error("회전체 도면이 아닙니다: " + j.reason);
     }
     ex = { method: "server", dsl: normalizeShaft(j.dsl), dims_read: j.dims_read || [], notes: j.notes || [], serverVerify: j.verify, provider: j.provider, tier: j.tier, repaired: j.repaired, ms: j.elapsed_ms };
   } else {
-    if (!sil.ok) { showUnsuitable("도면에서 부품 외형을 찾지 못했습니다.", sil.notes || []); throw new Error(sil.notes?.join(" ") || "실루엣을 찾지 못했습니다"); }
-    if (sil.plausible === false) showUnsuitable("실루엣 판독 결과가 회전체 정면도답지 않습니다 — 결과는 참고용입니다.", sil.reasons || []);
+    if (!sil.ok) { showUnsuitable("도면에서 부품 외형을 찾지 못했습니다.", sil.notes || []); throw new Error(sil.notes?.join(" ") || "부품 외형을 찾지 못했습니다"); }
+    if (sil.plausible === false) showUnsuitable("판독 결과가 회전체 정면도답지 않습니다. 결과는 참고용입니다.", sil.reasons || []);
     ex = { method: "silhouette", dsl: sil.dsl, dims_read: [], notes: sil.notes, ms: performance.now() - t0 };
-    if (!L) ex.notes.unshift("전체 길이를 입력하지 않아 100mm 로 가정했습니다. 왼쪽 '전체 길이'에 값을 넣고 다시 판독하면 절대 치수가 맞습니다.");
+    if (!L) ex.notes.unshift("전체 길이를 입력하지 않아 100mm 로 가정했습니다. 왼쪽 '전체 길이'에 값을 넣으면 실제 치수가 맞습니다.");
   }
   ex.silhouette = sil.ok ? sil.silhouette : null;
   ex.draft = sil.ok ? sil.dsl : null;
@@ -293,13 +295,13 @@ async function stepExtract() {
   if (ex.draft) { ex.draft.id = ex.dsl.id; ex.draft.name_ko = ex.dsl.name_ko; }
   steps[1].state = "done"; steps[2].state = "run"; showGen(true, "2단계 · 판독", "", steps);
   const v = validateShaft(ex.dsl);
-  if (!v.ok && ex.draft) { ex.notes.push(`판독 결과가 실행기 검증에 걸려(${v.errors[0]}) 실루엣 초안으로 대체했습니다.`); ex.dsl = ex.draft; }
+  if (!v.ok && ex.draft) { ex.notes.push(`판독 결과가 형상 검증에 걸려(${v.errors[0]}) 외형 판독 결과로 대체했습니다.`); ex.dsl = ex.draft; }
   state.extraction = ex;
   setDsl(ex.dsl, { pristine: true });
   steps[2].state = "done"; showGen(true, "2단계 · 판독", "", steps);
   renderExtractPanel();
   drawOverlay();
-  toast(`판독 완료 — 세그먼트 ${ex.dsl.segments.length}개${ex.dims_read?.length ? `, 치수 문자 ${ex.dims_read.length}개` : ""}`, true);
+  toast(`판독 완료 · 세그먼트 ${ex.dsl.segments.length}개${ex.dims_read?.length ? `, 읽은 치수 ${ex.dims_read.length}개` : ""}`, true);
   $("jsonBlock").scrollIntoView({ behavior: "smooth", block: "start" });
 }
 /* 적합하지 않은 입력: 억지로 3D 를 만들기보다 왜 안 되는지와 안내를 보여준다 */
@@ -307,18 +309,18 @@ function showUnsuitable(title, reasons) {
   const box = $("unsuitable"); if (!box) return;
   box.style.display = "block";
   box.innerHTML = `<b>${escapeHtml(title)}</b>${reasons?.length ? `<ul style="margin:6px 0 0 16px">${reasons.slice(0, 5).map((r) => `<li>${escapeHtml(r)}</li>`).join("")}</ul>` : ""}
-    <div style="margin-top:8px"><a href="./guide.html" target="_blank" class="btn btn-ghost btn-sm">어떤 도면을 올려야 하나요 →</a></div>`;
+    <div style="margin-top:8px"><a href="./guide.html" target="_blank" class="btn btn-ghost btn-sm">어떤 도면을 올려야 하나요</a></div>`;
   toast(title);
 }
 function renderExtractPanel() {
   const ex = state.extraction; if (!ex) return;
   $("extractBlock").style.display = "";
-  const label = ex.method === "server" ? `온프렘 AI${ex.tier === "plan" ? " · 정밀" : ""}${ex.repaired ? " · 수리" : ""}` : ex.method === "replay" ? "서버 판독 재생" : "브라우저 실루엣";
+  const label = ex.method === "server" ? `AI 판독${ex.tier === "plan" ? " · 정밀" : ""}${ex.repaired ? " · 자동 수정" : ""}` : ex.method === "replay" ? "미리 판독한 결과" : "외형 판독";
   $("exMethod").textContent = label;
   const conf = ex.serverVerify?.confidence ?? (ex.method === "silhouette" ? 0.6 : null);
   $("exConf").textContent = conf == null ? "—" : `${Math.round(conf * 100)}%`;
   $("exConfBar").style.width = conf == null ? "0" : `${Math.round(conf * 100)}%`;
-  $("exDims").textContent = ex.dims_read?.length ? `${ex.dims_read.length}개` : "실루엣만 (문자 미판독)";
+  $("exDims").textContent = ex.dims_read?.length ? `${ex.dims_read.length}개` : "외형만 (문자 안 읽음)";
   $("exMs").textContent = ex.ms ? `${(ex.ms / 1000).toFixed(1)}초` : "—";
   $("exNotes").innerHTML = (ex.notes || []).slice(0, 6).map((n) => `<div>· ${escapeHtml(n)}</div>`).join("");
 }
@@ -333,7 +335,7 @@ function setDsl(dsl, { pristine = false } = {}) {
   const v = validateShaft(dsl);
   $("jsonMeta").textContent = `${dsl.name_ko || dsl.id || "회전체"} · 세그먼트 ${dsl.segments.length}`;
   const msg = $("jsonMsg"); msg.classList.toggle("bad", !v.ok);
-  msg.textContent = v.ok ? (v.warnings.length ? `주의: ${v.warnings.join(" / ")}` : "실행기 검증 통과. 값을 고치면 3D·도면·검증이 다시 계산됩니다.") : `실행기 오류: ${v.errors.join(" / ")}`;
+  msg.textContent = v.ok ? (v.warnings.length ? `주의: ${v.warnings.join(" / ")}` : "형상 검증 통과. 값을 고치면 3D, 도면, 검증이 다시 계산됩니다.") : `형상 오류: ${v.errors.join(" / ")}`;
   renderSegTable(); renderFeatList(); renderModelInfo();
 }
 function applyDslChange(next, why = "") {
@@ -350,16 +352,16 @@ function applyDslChange(next, why = "") {
 $("btnBuild").onclick = () => {
   let d; try { d = JSON.parse($("jsonText").value); } catch (e) { $("jsonText").classList.add("bad"); $("jsonMsg").classList.add("bad"); $("jsonMsg").textContent = `JSON 문법 오류: ${e.message}`; return; }
   d = normalizeShaft(d);
-  if (applyDslChange(d)) toast("DSL 을 적용했습니다", true);
+  if (applyDslChange(d)) toast("사양을 적용했습니다", true);
 };
 $("btnRevert").onclick = () => { if (!state.pristine) return; applyDslChange(JSON.parse(state.pristine)); toast("판독 결과로 되돌렸습니다"); };
 $("btnGolden").onclick = () => {
   if (!state.gold) return;
   state.showingGolden = !state.showingGolden;
   $("btnGolden").classList.toggle("on", state.showingGolden);
-  $("btnGolden").textContent = state.showingGolden ? "판독 DSL 로" : "정답 DSL 보기";
+  $("btnGolden").textContent = state.showingGolden ? "판독 결과로" : "정답 사양 보기";
   applyDslChange(JSON.parse(JSON.stringify(state.showingGolden ? state.gold : (state.pristine ? JSON.parse(state.pristine) : state.dsl))));
-  toast(state.showingGolden ? "정답 DSL 을 불러왔습니다 (도면을 만든 원본)" : "판독 결과로 돌아왔습니다", true);
+  toast(state.showingGolden ? "정답 사양을 불러왔습니다 (도면을 만든 원본)" : "판독 결과로 돌아왔습니다", true);
 };
 
 /* ---- 세그먼트 표 */
@@ -456,7 +458,7 @@ function renderModelInfo() {
 
 /* ---- 3단계: 3D */
 async function stepBuild() {
-  const steps = [{ text: "반단면 프로파일 → 회전(lathe) 밴드", state: "run" }, { text: "키홈·평면·육각·횡구멍: 국부 CSG" }, { text: "나사·널링 재질 · 절단면 재질" }];
+  const steps = [{ text: "단면 프로파일에서 회전 형상", state: "run" }, { text: "키홈, 평면, 육각, 횡구멍 가공" }, { text: "재질 적용" }];
   showGen(true, "3단계 · 3D CAD", "", steps);
   await sleep(120);
   rebuild3D();
@@ -464,7 +466,7 @@ async function stepBuild() {
   showSheet(false); $("dock").style.display = "";
   fitView();
   showExportPanel();
-  toast(`3D 완료 — 삼각형 ${state.built.stats.tris.toLocaleString()}개, ${state.built.stats.ms}ms${state.built.stats.csg ? ` (CSG ${state.built.stats.csg}회)` : ""}. 오른쪽 패널에서 내려받고, 조립·시뮬은 위 토글로 켭니다`, true);
+  toast(`3D 완료 · 삼각형 ${state.built.stats.tris.toLocaleString()}개, ${state.built.stats.ms}ms. 오른쪽 패널에서 내려받고, 조립·시뮬은 위 버튼으로 켭니다`, true);
 }
 function rebuild3D() {
   const dsl = state.dsl; const v = validateShaft(dsl); if (!v.ok) return;
@@ -480,7 +482,7 @@ function rebuild3D() {
   $("stageEmpty").style.display = "none";
   $("mTris").textContent = `${built.stats.tris.toLocaleString()} · ${built.stats.ms}ms`;
   if (hadAssembly) spawnAssembly();
-  $("mNote").textContent = built.notes.length ? built.notes.join(" · ") : `밴드 ${built.stats.bands}개, CSG ${built.stats.csg}회. 나사·널링은 관례대로 장식 표현(호출·STEP 은 규격을 싣습니다).`;
+  $("mNote").textContent = built.notes.length ? built.notes.join(" · ") : "나사와 널링은 도면 관례대로 표현하고, 내려받는 파일에는 규격 값을 싣습니다.";
   return built;
 }
 
@@ -490,7 +492,7 @@ async function stepVerify() {
   computeVerify();
   showSheet(true); drawOverlay();
   $("verifyBlock").style.display = ""; $("verifyBlock").scrollIntoView({ behavior: "smooth", block: "start" });
-  toast(`검증 완료 — ${state.verify.verdict === "pass" ? "통과" : state.verify.verdict === "review" ? "확인 필요" : "불일치"}`, state.verify.verdict === "pass");
+  toast(`검증 완료 · ${state.verify.verdict === "pass" ? "통과" : state.verify.verdict === "review" ? "확인 필요" : "불일치"}`, state.verify.verdict === "pass");
 }
 function computeVerify() {
   const ex = state.extraction; if (!ex || !state.dsl) return;
@@ -498,15 +500,15 @@ function computeVerify() {
   state.verify = rep;
   $("verifyBlock").style.display = "";
   const vd = $("verdict"); vd.className = `verdict ${rep.verdict}`; vd.textContent = { pass: "통과", review: "확인 필요", fail: "불일치", invalid: "유효하지 않음" }[rep.verdict];
-  $("vIou").textContent = rep.iou == null ? "측정 없음" : rep.iou.toFixed(3);
+  $("vIou").textContent = rep.iou == null ? "측정 없음" : `${(rep.iou * 100).toFixed(1)}%`;
   $("vIouBar").style.width = rep.iou == null ? "0" : `${Math.round(rep.iou * 100)}%`;
-  $("vDims").textContent = rep.dims ? `${rep.dims.matched}/${rep.dims.total} (${Math.round(rep.dims.rate * 100)}%)` : ex.method === "silhouette" ? "문자 미판독" : "—";
+  $("vDims").textContent = rep.dims ? `${rep.dims.matched}/${rep.dims.total} (${Math.round(rep.dims.rate * 100)}%)` : ex.method === "silhouette" ? "문자 안 읽음" : "—";
   $("vValid").textContent = rep.valid ? (rep.warnings.length ? `통과 (주의 ${rep.warnings.length})` : "통과") : `오류 ${rep.errors.length}`;
   $("vConf").textContent = `${Math.round(rep.confidence * 100)}%`;
   const msgs = [];
-  if (rep.dims?.unmatched?.length) msgs.push(`DSL 에 반영되지 않은 치수 문자: ${rep.dims.unmatched.map((u) => u.text || u.value).join(", ")}`);
+  if (rep.dims?.unmatched?.length) msgs.push(`사양에 반영되지 않은 치수: ${rep.dims.unmatched.map((u) => u.text || u.value).join(", ")}`);
   if (!rep.valid) msgs.push(rep.errors.join(" / "));
-  if (rep.iou != null && rep.iou < 0.9) msgs.push("실루엣이 도면과 어긋납니다. 왼쪽 표에서 세그먼트 길이·지름을 고쳐 보세요 — IoU 가 즉시 다시 계산됩니다.");
+  if (rep.iou != null && rep.iou < 0.9) msgs.push("외형이 도면과 어긋납니다. 오른쪽 표에서 세그먼트 길이와 지름을 고치면 바로 다시 계산됩니다.");
   $("vMsg").innerHTML = msgs.map((m) => `<div>· ${escapeHtml(m)}</div>`).join("");
   $("vMsg").className = `msg ${rep.verdict === "pass" ? "" : rep.verdict === "review" ? "warn" : "bad"}`;
   /* 정답이 있으면(샘플·합성) 정답 대비 지표 */
@@ -514,20 +516,20 @@ function computeVerify() {
   if (state.gold) {
     const m = goldenMetrics(state.dsl, state.gold);
     const pct = (x) => `${Math.round(x * 100)}%`;
-    gc.innerHTML = `<div class="hint" style="margin-bottom:5px">정답 DSL 대비 (이 도면은 정답에서 그렸습니다)</div>
-      <div class="cmp"><span class="h">지표</span><span class="h">값</span><span class="h"></span>
-      <span>세그먼트 F1</span><b>${pct(m.segment.f1)}</b><span></span>
-      <span>피처 F1</span><b>${pct(m.feature.f1)}</b><span></span>
-      <span>전이 F1</span><b>${pct(m.transition.f1)}</b><span></span>
-      <span>치수 일치율</span><b>${pct(m.dim_rate)}</b><span style="color:var(--text-3)">${m.dims_total}개</span>
-      <span>실루엣 IoU</span><b>${m.iou.toFixed(3)}</b><span></span>
+    gc.innerHTML = `<div class="hint" style="margin-bottom:5px">정답 사양 대비 (이 도면은 정답에서 그렸습니다)</div>
+      <div class="cmp"><span class="h">항목</span><span class="h">일치</span><span class="h"></span>
+      <span>세그먼트</span><b>${pct(m.segment.f1)}</b><span></span>
+      <span>피처</span><b>${pct(m.feature.f1)}</b><span></span>
+      <span>전이</span><b>${pct(m.transition.f1)}</b><span></span>
+      <span>치수</span><b>${pct(m.dim_rate)}</b><span style="color:var(--text-3)">${m.dims_total}개</span>
+      <span>외형</span><b>${(m.iou * 100).toFixed(1)}%</b><span></span>
       <span>완전 일치</span><b>${m.exact ? "예" : "아니오"}</b><span></span></div>`;
   } else gc.innerHTML = "";
 }
 
-/* ---- 5단계: 조립 · 시뮬레이션
-   도면(DSL)의 규격 표기에서 상대 부품과 운동을 결정론 규칙으로 읽는다(shaft-mates.js).
-   우리 부품 형상은 정확하고 상대 부품은 규격표 근사 — UI 가 그렇게 말한다. */
+/* ---- 조립 · 시뮬레이션 (단계가 아니라 토글)
+   도면의 규격 표기에서 상대 부품과 운동을 규칙으로 읽는다(shaft-mates.js).
+   부품 형상은 정확하고 상대 부품은 규격표 근사이며, UI 가 그렇게 말한다. */
 const mateMaterials = makeMateMaterials();
 function teardownAssembly() {
   if (state.sim) { state.sim.reset(); state.sim = null; }
@@ -604,7 +606,7 @@ function spawnAssembly() {
 async function setSimMode(on) {
   if (!model || !state.dsl) return;
   if (on) {
-    const steps = [{ text: "도면 규격 표기에서 결합부 판정 (멈춤링·키·나사·공차·횡구멍)", state: "run" }, { text: "상대 부품 생성 (규격표 근사)" }, { text: "분해 순서·조립 점검" }];
+    const steps = [{ text: "도면에서 결합부 찾기 (멈춤링, 키, 나사, 공차)", state: "run" }, { text: "상대 부품 만들기 (규격표 근사)" }, { text: "분해 순서와 조립 점검" }];
     showGen(true, "조립 · 시뮬레이션", "", steps);
     await sleep(100);
     teardownAssembly();
@@ -616,7 +618,7 @@ async function setSimMode(on) {
     $("mateBlock").scrollIntoView({ behavior: "smooth", block: "start" });
     showGen(false);
     const n = state.mates.mates.filter((m) => m.part).length;
-    toast(n ? `결합부 ${n}개 인식 — 분해 슬라이더·회전으로 확인하세요` : "상대 부품이 없는 단품입니다 — 회전만 보여 줍니다", true);
+    toast(n ? `결합부 ${n}개 인식. 분해 막대와 회전으로 확인하세요` : "상대 부품이 없는 단품이라 회전만 보여 줍니다", true);
   } else {
     teardownAssembly();          /* 상대 부품·기준 표시·시뮬 상태를 모두 걷어낸다 */
     $("mateBlock").style.display = "none";
@@ -672,7 +674,7 @@ function showAxisLine(on) {
   scene.add(axisLine);
 }
 $("btnSpin").onclick = () => { if (!state.sim) return; state.sim.spin(Number($("simRpm").value) || 300); $("btnSpin").classList.add("on"); renderSimGauge();
-  toast(`자전 ${$("simRpm").value} rpm — 주황색 기준선으로 회전이 보입니다. 축과 함께 도는 부품만 회전합니다(베어링 외륜·공구는 고정)`, true); };
+  toast(`회전 ${$("simRpm").value} rpm. 주황색 기준선으로 회전이 보입니다. 축과 함께 도는 부품만 돕니다`, true); };
 $("btnScrewSim").onclick = () => { if (!state.sim) return; const has = state.mates?.mates.some((m) => m.motion.type === "screw" && m.part); if (!has) return toast("이 부품에는 나사 체결부가 없습니다"); state.sim.screw(true); $("btnSpin").classList.remove("on"); renderSimGauge(); };
 $("btnAssemble").onclick = () => { if (!state.sim) return; $("simExplode").value = 0; state.sim.applyExplode(0); state.sim.stop(); $("btnSpin").classList.remove("on"); renderSimGauge(); };
 $("btnSimStop").onclick = () => { if (!state.sim) return; state.sim.stop(); $("btnSpin").classList.remove("on"); renderSimGauge(); };
@@ -705,29 +707,29 @@ function renderExportPanel() {
   /* 해석적 STEP 은 한 줄만: 라이브 서버가 있으면 지금 DSL 로 만들고, 없으면 정답 DSL 로 미리 만든 파일을 준다.
      (셋 다 내보내면 목록에 STEP 이 세 번 나와 무엇을 받는지 알 수 없다.) */
   const liveStep = state.mode === "live" && state.serverStep;
-  if (stepPre && !liveStep) l3.appendChild(row("STEP", "해석적 B-rep · 파이썬 실행기(CadQuery)가 정답 DSL 로 미리 생성", async () => { const b = await fetch(`./samples/${state.sample.id}/${state.sample.files.step}?v=${BUILD}`).then((r) => r.blob()); downloadBlob(b, `${id}.step`); }));
-  if (liveStep) l3.appendChild(row("STEP", "해석적 B-rep · 온프렘 실행기(CadQuery)가 지금 이 DSL 로 생성", async () => {
-    toast("서버 실행기가 STEP 을 만드는 중…");
+  if (stepPre && !liveStep) l3.appendChild(row("STEP", "정밀 곡면 · 기계 CAD 용", async () => { const b = await fetch(`./samples/${state.sample.id}/${state.sample.files.step}?v=${BUILD}`).then((r) => r.blob()); downloadBlob(b, `${id}.step`); }));
+  if (liveStep) l3.appendChild(row("STEP", "정밀 곡면 · 지금 사양으로 생성", async () => {
+    toast("STEP 을 만드는 중…");
     const r = await fetch("./api/step", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ dsl, formats: "step", download: "step" }) });
     if (!r.ok) { const j = await r.json().catch(() => ({})); return toast(`STEP 실패: ${j.error || r.status}`); }
-    downloadBlob(await r.blob(), `${id}.step`); toast("STEP (해석적 B-rep) 내려받음", true);
+    downloadBlob(await r.blob(), `${id}.step`); toast("STEP 내려받음", true);
   }));
-  l3.appendChild(row("STEP·면분할", "삼각형 면 B-rep · 이 브라우저 메시에서 (AP214)", () => downloadBlob(exportSTEP(exportRoot(), id), `${id}_faceted.step`, "application/step")));
-  l3.appendChild(row("STL", "바이너리 · 3D 프린팅", () => downloadBlob(exportSTL(exportRoot()), `${id}.stl`, "model/stl")));
-  l3.appendChild(row("GLB", "재질 포함 · 웹/뷰어", async () => downloadBlob(await exportGLB(exportRoot()), `${id}.glb`, "model/gltf-binary")));
+  l3.appendChild(row("STEP·면", "삼각형 면 · 편집한 사양도 바로", () => downloadBlob(exportSTEP(exportRoot(), id), `${id}_faceted.step`, "application/step")));
+  l3.appendChild(row("STL", "3D 프린팅", () => downloadBlob(exportSTL(exportRoot()), `${id}.stl`, "model/stl")));
+  l3.appendChild(row("GLB", "재질 포함 · 웹 뷰어", async () => downloadBlob(await exportGLB(exportRoot()), `${id}.glb`, "model/gltf-binary")));
   l3.appendChild(row("OBJ", "메시 (mm)", () => downloadBlob(exportOBJ(exportRoot()), `${id}.obj`, "text/plain")));
-  l3.appendChild(row("FBX", "ASCII 7.4 · Maya/3ds Max/Unity/Unreal/Omniverse (Blender 는 GLB 권장)", () => downloadBlob(exportFBX(exportRoot()), `${id}.fbx`, "application/octet-stream")));
-  l3.appendChild(row("USD", "usda · 메시 + DSL 파라미터를 custom 속성으로 (Omniverse/Isaac)", () => downloadBlob(exportUSDA(exportRoot(), dsl), `${id}.usda`, "text/plain")));
-  l3.appendChild(row("USDZ", "OpenUSD 패키지 · three.js r185 USDZExporter (AR Quick Look/Omniverse)", async () => downloadBlob(await exportUSDZ(exportRoot()), `${id}.usdz`, "model/vnd.usdz+zip")));
-  l3.appendChild(row("PLY", "ASCII 정점/면 (점군·해석 도구)", () => downloadBlob(exportPLY(exportRoot()), `${id}.ply`, "text/plain")));
-  l2.appendChild(row("DXF", "이 DSL 로 다시 그린 제작 도면 (R12, 레이어·치수)", () => downloadBlob(exportDrawingDXF(dsl), `${id}_drawing.dxf`, "application/dxf")));
-  l2.appendChild(row("SVG", "이 DSL 로 다시 그린 제작 도면", () => downloadBlob(exportDrawingSVG(dsl), `${id}_drawing.svg`, "image/svg+xml")));
-  l2.appendChild(row("JSON", "DSL 사양 (스키마: schema/shaft_dsl.schema.json)", () => downloadBlob(exportJSON(dsl), `${id}.dsl.json`, "application/json")));
+  l3.appendChild(row("FBX", "Maya, 3ds Max, Unity, Unreal", () => downloadBlob(exportFBX(exportRoot()), `${id}.fbx`, "application/octet-stream")));
+  l3.appendChild(row("USD", "메시와 치수 사양을 함께", () => downloadBlob(exportUSDA(exportRoot(), dsl), `${id}.usda`, "text/plain")));
+  l3.appendChild(row("USDZ", "AR 미리보기 패키지", async () => downloadBlob(await exportUSDZ(exportRoot()), `${id}.usdz`, "model/vnd.usdz+zip")));
+  l3.appendChild(row("PLY", "정점과 면 (해석 도구)", () => downloadBlob(exportPLY(exportRoot()), `${id}.ply`, "text/plain")));
+  l2.appendChild(row("DXF", "다시 그린 제작 도면", () => downloadBlob(exportDrawingDXF(dsl), `${id}_drawing.dxf`, "application/dxf")));
+  l2.appendChild(row("SVG", "다시 그린 제작 도면", () => downloadBlob(exportDrawingSVG(dsl), `${id}_drawing.svg`, "image/svg+xml")));
+  l2.appendChild(row("JSON", "치수 사양", () => downloadBlob(exportJSON(dsl), `${id}.dsl.json`, "application/json")));
   const hasGoldenStep = state.source?.kind === "sample" && state.sample?.files?.step;
-  $("exportNote").textContent = stepPre ? "STEP(해석적)은 정답 DSL 과 같을 때 미리 만든 파일을, 편집한 DSL 은 면분할 STEP 또는 온프렘 실행기를 씁니다."
-    : state.mode === "live" && state.serverStep ? "STEP(해석적)은 온프렘 파이썬 실행기가 지금 DSL 로 만듭니다."
-    : hasGoldenStep ? "해석적 B-rep STEP 은 온프렘 서버(파이썬 실행기)에서 만듭니다. 이 샘플은 정답 DSL 로 미리 만든 STEP 이 있어, 위의 '정답 DSL 보기'로 되돌리면 그 파일을 받을 수 있습니다. 지금 DSL 은 면분할 STEP 으로 받습니다."
-    : "해석적 B-rep STEP 은 온프렘 서버(파이썬 실행기)에서 제공됩니다. 여기서는 면분할 STEP 을 받습니다.";
+  $("exportNote").textContent = stepPre || (state.mode === "live" && state.serverStep)
+    ? "정밀 곡면 STEP 은 사양이 정답과 같을 때 받을 수 있고, 편집한 사양은 면 STEP 으로 받습니다."
+    : hasGoldenStep ? "정밀 곡면 STEP 은 '정답 사양 보기'로 되돌리면 받을 수 있습니다. 지금 사양은 면 STEP 으로 받습니다."
+    : "여기서는 면 STEP 을 받습니다. 정밀 곡면 STEP 은 서버 모드에서 제공됩니다.";
 }
 
 /* ================================================================ 입력: 샘플·업로드·합성 */
@@ -764,7 +766,7 @@ function resetWorkspace(full = true) {
   state.mates = null; $("simExplode").value = 0;
   if ($("unsuitable")) { $("unsuitable").style.display = "none"; $("unsuitable").innerHTML = ""; }
   state.source = null; state.raster = null; state.extraction = null; state.dsl = null; state.pristine = null; state.gold = null; state.built = null; state.verify = null; state.sample = null;
-  state.showingGolden = false; $("btnGolden").textContent = "정답 DSL 보기"; $("btnGolden").classList.remove("on");
+  state.showingGolden = false; $("btnGolden").textContent = "정답 사양 보기"; $("btnGolden").classList.remove("on");
   state.sheetMode = "original"; $("btnRegen").textContent = "재생성 도면"; $("btnRegen").classList.remove("on");
   state.simOn = false; $("btnSim").textContent = "조립 · 시뮬 켜기"; $("btnSim").classList.remove("on");
   pipe.done = 0; pipe.running = 0; pipe.active = false;
@@ -803,7 +805,9 @@ function closeLib() { $("lib").style.display = "none"; $("wsBody").style.display
 $("btnLib").onclick = () => ($("lib").style.display === "none" ? openLib() : closeLib());
 $("btnLibClose").onclick = closeLib;
 
-/* QA 훅: 콘솔에서 상태를 들여다보고 판독기를 직접 돌릴 수 있다 */
+/* QA 훅: 콘솔에서 상태를 들여다보고 판독기를 직접 돌릴 수 있다.
+   배포 빌드에서는 아래 표식 사이가 통째로 잘려 나간다(tools/deploy-docs.mjs). */
+/* qa:start */
 window.__vringon = { state, pipe, runStep, extractHeuristic, verifyExtraction, goldenMetrics, drawShaft, toSVG, sampleShaft, buildShaft3D, applyDslChange, analyzeMates, assemblyChecks,
   get model() { return model; }, get scene() { return scene; }, get camera() { return camera; },
   /* QA: 탭이 가려져 rAF 가 멈춰도 한 프레임을 강제로 그리고 저장한다 */
@@ -814,6 +818,7 @@ window.__vringon = { state, pipe, runStep, extractHeuristic, verifyExtraction, g
     const r = await fetch("/__save", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name, dataUrl }) });
     return r.json();
   } };
+/* qa:end */
 
 /* ================================================================ 부팅 */
 (async () => {
@@ -822,15 +827,16 @@ window.__vringon = { state, pipe, runStep, extractHeuristic, verifyExtraction, g
     if (st?.ok && st.mode === "live") { state.mode = "live"; state.serverStep = !!st.step; }
   } catch {}
   const tag = $("modeTag");
-  if (state.mode === "live") { tag.textContent = "온프렘 라이브 · AI 판독"; tag.classList.add("live"); }
-  else { tag.textContent = "정적 데모 · 판독 결과 재생"; $("mServer").disabled = true; $("mServer").title = "온프렘 서버에서만"; $("tierPlan").disabled = true; }
+  if (state.mode === "live") { tag.textContent = "AI 판독 사용"; tag.classList.add("live"); }
+  else { tag.textContent = "체험 모드"; $("mServer").disabled = true; $("mServer").title = "서버 모드에서만"; $("tierPlan").disabled = true; }
   $("aboutHint").innerHTML = state.mode === "live"
-    ? "온프렘 서버에 연결됐습니다. 도면을 올리면 <b>시각 LLM 이 실제로 판독</b>하고, 브라우저 실루엣 측정을 힌트로 받으며, 검증에 걸리면 한 번 스스로 고칩니다. 3D·검증·내보내기는 이 브라우저가 실행합니다."
-    : "정적 데모입니다. 샘플은 <b>온프렘 서버가 미리 판독한 결과</b>를 재생하고, 업로드·합성 도면은 이 브라우저의 <b>실루엣 판독</b>(결정론)으로 DSL 을 만듭니다. AI 판독은 온프렘 서버에서만 돕니다.";
+    ? "도면을 올리면 <b>AI 가 치수까지 읽어</b> 사양으로 옮깁니다. 3D, 검증, 내려받기는 이 브라우저에서 바로 실행됩니다."
+    : "샘플은 <b>미리 판독한 결과</b>를 보여 주고, 올린 도면은 이 브라우저가 <b>외형을 재서</b> 사양을 만듭니다. 치수 문자까지 읽는 AI 판독은 서버 모드에서 동작합니다.";
   try {
     const idx = await fetch(`./samples/index.json?v=${BUILD}`).then((r) => r.json());
     state.samples = idx.samples || [];
   } catch (e) { $("chips").innerHTML = `<span class="hint">샘플 목록을 불러오지 못했습니다: ${e.message}</span>`; return; }
   $("chips").innerHTML = state.samples.map((s) => `<button class="sample" data-id="${s.id}" title="${s.name}"><img class="thumb" src="./samples/${s.id}/${s.files.thumb || s.files.svg}?v=${BUILD}" alt="" loading="lazy" /><span class="lb">${s.name_ko}</span></button>`).join("");
   renderStepper();
+  initTour();   /* 처음 열었을 때 사용 순서대로 한 번 안내 (위쪽 "사용법" 으로 다시 보기) */
 })();

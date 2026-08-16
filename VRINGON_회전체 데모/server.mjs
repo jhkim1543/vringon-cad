@@ -26,10 +26,34 @@ let cfg = {};
 for (const p of ["./config.local.json", "../config.local.json"]) {
   try { cfg = JSON.parse(await readFile(new URL(p, import.meta.url), "utf8")); console.log(`[cfg] ${p}`); break; } catch {}
 }
+/* 외부 호스팅(컨테이너·PaaS)에서는 파일 대신 환경변수로 준다. 역할명만 쓰고 공급사 이름은 코드에 넣지 않는다. */
+const env = process.env;
+const fromEnv = (role) => ({
+  baseUrl: env[`VRINGON_${role}_URL`] || "", apiKey: env[`VRINGON_${role}_KEY`] || "",
+  spareApiKey: env[`VRINGON_${role}_KEY2`] || "", textModel: env[`VRINGON_${role}_TEXT_MODEL`] || "", planModel: env[`VRINGON_${role}_PLAN_MODEL`] || "",
+});
+for (const [k, role] of [["primary", "PRIMARY"], ["fallback", "FALLBACK"]]) {
+  const e = fromEnv(role);
+  if (e.baseUrl && e.apiKey) { cfg[k] = { ...(cfg[k] || {}), ...Object.fromEntries(Object.entries(e).filter(([, v]) => v)) }; console.log(`[cfg] ${k} ← 환경변수`); }
+}
 const PRIMARY = { url: cfg.primary?.baseUrl || "", keys: [cfg.primary?.apiKey].filter(Boolean), text: cfg.primary?.textModel || "", plan: cfg.primary?.planModel || "" };
 const FALLBACK = { url: cfg.fallback?.baseUrl || "", keys: [cfg.fallback?.apiKey, cfg.fallback?.spareApiKey].filter(Boolean), text: cfg.fallback?.textModel || "", plan: cfg.fallback?.planModel || "" };
 const HAS_PRIMARY = !!(PRIMARY.url && PRIMARY.keys.length && PRIMARY.text);
 const HAS_FALLBACK = !!(FALLBACK.url && FALLBACK.keys.length && FALLBACK.text);
+/* 외부에 공개할 때는 보호 빌드(../docs/revolve)를 서빙한다: VRINGON_STATIC=../docs/revolve */
+const STATIC = env.VRINGON_STATIC ? join(normalize(join(rootDir, env.VRINGON_STATIC)), "/") : rootDir;
+/* 링크를 아는 사람만 쓰게 하려면 VRINGON_ACCESS_CODE 를 준다(빈 값이면 공개). */
+const ACCESS = env.VRINGON_ACCESS_CODE || "";
+const ACCESS_HASH = ACCESS ? createHash("sha256").update(`vringon:${ACCESS}`).digest("hex").slice(0, 32) : "";
+/* AI 판독은 호출당 비용이 든다: 주소당 시간 제한 (0 이면 무제한) */
+const RATE = Number(env.VRINGON_RATE_PER_HOUR ?? 30);
+const hits = new Map();
+function rateOk(ip) {
+  if (!RATE) return true;
+  const now = Date.now(), h = (hits.get(ip) || []).filter((t) => now - t < 3600e3);
+  if (h.length >= RATE) { hits.set(ip, h); return false; }
+  h.push(now); hits.set(ip, h); return true;
+}
 const PY = ["pipeline/.venv/Scripts/python.exe", "pipeline/.venv/bin/python", "pipeline/venv/bin/python"].map((p) => join(rootDir, p)).find((p) => existsSync(p)) || null;
 const HAS_STEP = !!PY && existsSync(join(rootDir, "pipeline/executor.py"));
 console.log(`[status] extract: ${HAS_PRIMARY ? "1차 LLM" : HAS_FALLBACK ? "폴백 LLM" : "없음"} · step: ${HAS_STEP ? "python 실행기" : "없음"}`);
@@ -229,9 +253,28 @@ const server = createServer(async (req, res) => {
   const url = new URL(req.url, `http://${req.headers.host}`);
   const path = decodeURIComponent(url.pathname);
   try {
+    /* 접근 코드: 맞으면 쿠키를 주고, 없으면 입력 화면만 보여 준다 */
+    if (ACCESS) {
+      const ok = (req.headers.cookie || "").includes(`vr_access=${ACCESS_HASH}`);
+      if (req.method === "POST" && path === "/api/access") {
+        const body = await readBody(req);
+        if (String(body.code || "") !== ACCESS) return json(res, 401, { error: "코드가 맞지 않습니다" });
+        res.writeHead(200, { "Content-Type": "application/json; charset=utf-8", "Set-Cookie": `vr_access=${ACCESS_HASH}; Path=/; Max-Age=604800; HttpOnly; SameSite=Lax`, "Cache-Control": "no-store" });
+        return res.end(JSON.stringify({ ok: true }));
+      }
+      if (!ok) {
+        if (path.startsWith("/api/")) return json(res, 401, { error: "접근 코드가 필요합니다" });
+        res.writeHead(401, { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store" });
+        return res.end(GATE_HTML);
+      }
+    }
     if (path === "/api/status") return json(res, 200, { ok: true, mode: "live", extract: HAS_PRIMARY || HAS_FALLBACK, extract_provider: HAS_PRIMARY ? "primary" : HAS_FALLBACK ? "fallback" : null, step: HAS_STEP, fewshot: fewShot.length, version: "1.0" });
     if (path === "/api/schema") return json(res, 200, SHAFT_SCHEMA);
-    if (req.method === "POST" && path === "/api/extract") return json(res, 200, await handleExtract(await readBody(req)));
+    if (req.method === "POST" && path === "/api/extract") {
+      const ip = req.headers["x-forwarded-for"]?.split(",")[0].trim() || req.socket.remoteAddress || "?";
+      if (!rateOk(ip)) return json(res, 429, { error: `판독 요청이 시간당 ${RATE}회를 넘었습니다. 잠시 후 다시 시도해 주세요.` });
+      return json(res, 200, await handleExtract(await readBody(req)));
+    }
     if (req.method === "POST" && path === "/api/step") {
       const body = await readBody(req);
       const { dir, id, summary } = await handleStep(body);
@@ -258,8 +301,8 @@ const server = createServer(async (req, res) => {
     if (path.startsWith("/api/")) return json(res, 404, { error: "no such api" });
     if (path.startsWith("/data/") || path.includes("config.local") || path.includes("/.")) return json(res, 403, { error: "forbidden" });
     /* 정적 */
-    let file = normalize(join(rootDir, path === "/" ? "index.html" : path));
-    if (!file.startsWith(rootDir)) return json(res, 403, { error: "forbidden" });
+    let file = normalize(join(STATIC, path === "/" ? "index.html" : path));
+    if (!file.startsWith(STATIC)) return json(res, 403, { error: "forbidden" });
     let st = null;
     try { st = await stat(file); } catch {}
     if (st?.isDirectory()) { file = join(file, "index.html"); try { st = await stat(file); } catch { st = null; } }
@@ -274,5 +317,15 @@ const server = createServer(async (req, res) => {
     return json(res, e.status || 500, { error: e.message });
   }
 });
+/* 접근 코드 입력 화면 (외부 공유용, 코드가 설정된 경우에만 뜬다) */
+const GATE_HTML = `<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>VRINGON CAD</title><style>body{margin:0;height:100vh;display:grid;place-items:center;background:#0C0C10;color:#E8E8ED;font-family:Pretendard,system-ui,sans-serif}
+form{width:300px;text-align:center}b{font-size:15px}p{color:#9A9AA6;font-size:13px;margin:8px 0 16px}
+input{width:100%;padding:10px 12px;border-radius:8px;border:1px solid #2A2A33;background:#141419;color:#E8E8ED;font-size:14px;box-sizing:border-box}
+button{width:100%;margin-top:9px;padding:10px;border:0;border-radius:8px;background:#5B6BF0;color:#fff;font-size:14px;font-weight:600;cursor:pointer}
+.m{color:#F0716B;font-size:12.5px;height:16px;margin-top:8px}</style></head><body>
+<form onsubmit="event.preventDefault();fetch('/api/access',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code:this.code.value})}).then(r=>r.ok?location.reload():document.querySelector('.m').textContent='코드가 맞지 않습니다')">
+<b>VRINGON CAD</b><p>접근 코드를 입력하세요</p><input name="code" type="password" autofocus /><button>들어가기</button><div class="m"></div></form></body></html>`;
+
 server.requestTimeout = 15 * 60 * 1000;
-server.listen(port, () => console.log(`VRINGON 회전체 데모 — http://localhost:${port}  (${HAS_PRIMARY || HAS_FALLBACK ? "라이브 판독" : "정적 모드"}${HAS_STEP ? " · STEP 실행기" : ""})`));
+server.listen(port, env.HOST || undefined, () => console.log(`VRINGON 회전체 데모 — http://localhost:${port}  (${HAS_PRIMARY || HAS_FALLBACK ? "라이브 판독" : "정적 모드"}${HAS_STEP ? " · STEP 실행기" : ""}${ACCESS ? " · 접근 코드" : ""}${STATIC !== rootDir ? ` · 정적: ${STATIC}` : ""})`));

@@ -3,7 +3,7 @@
    분해·조립(축/반경 방향), 자전(rpm), 나사 체결(회전+전진) 을 애니메이션한다.
 
    원칙: 우리 부품의 형상은 DSL 이 정확히 정하고, 상대 부품은 규격표 근사다(색과 라벨로 구분, userData.approx=true).
-   운동 방향은 회전체 기하에서 정확하다 — 자전축 = X, 축방향 조립 = ±X, 링·키·핀 = 반경 방향.
+   운동 방향은 회전체 기하에서 정확하다. 자전축 = X, 축방향 조립 = ±X, 링·키·핀 = 반경 방향.
 
    좌표: 부품 로컬 원점은 왼쪽 끝면 x=0, 축 = +X (shaft-cad.js 와 동일). 호출자가 group 을 옮겨도 무방하다. */
 
@@ -179,7 +179,7 @@ export function buildAssembly(analysis, opts = {}) {
 }
 
 /* ------------------------------------------------------------ 회전 마커
-   회전체는 축대칭이라 자전해도 화면이 **똑같다** — 키홈·평면·구멍이 없는 부시·스페이서는
+   회전체는 축대칭이라 자전해도 화면이 **똑같다**. 키홈·평면·구멍이 없는 부시·스페이서는
    시뮬레이션이 도는지 눈으로 알 수 없다. 그래서 부품에 기준 표시를 붙인다:
    ① 바깥면을 따라 축방향으로 난 좁은 띠(각도 6°) ② 왼쪽 끝면의 반경선 ③ 축 끝의 화살 표시.
    부품의 자식으로 넣어 같은 회전을 그대로 따라간다. 형상이 아니라 표시이므로 내보내기에서는 제외된다
@@ -193,7 +193,7 @@ export function makeSpinMarker(dsl, opts = {}) {
   const eps = Math.max(0.05, R * 0.004);   /* 표면 위로 살짝 띄워 z-fighting 회피 */
   const halfA = 3.2 * DEG;
   /* ① 바깥면을 따라가는 좁은 띠: 상수 반경이 아니라 **DSL 외형선**을 그대로 따른다.
-     (상수 R 로 하면 단차가 있는 부품에서 띠가 공중에 뜬다 — 플랜지 부시에서 실제로 그랬다.)
+     (상수 R 로 하면 단차가 있는 부품에서 띠가 공중에 뜬다. 플랜지 부시에서 실제로 그랬다.)
      latheXY 의 각도 0° 는 +Z 이므로 +Y(화면 위)에 놓으려면 90° 를 중심으로 잡는다. */
   const prof = buildTopLine(dsl, 8).points
     .filter((p) => p.r > 1e-6)
@@ -307,7 +307,7 @@ export function assemblyChecks(analysis, dsl) {
     } else if (m.kind === "bearing") {
       out.push({ label: "베어링 자리 길이", value: `${m.params.seat_length.toFixed(1)} / 폭 ${m.params.width}`, ok: m.params.seat_length >= m.params.width - 0.01, note: "자리 길이가 베어링 폭보다 짧으면 내륜이 단차에 닿지 않습니다(근사 계열)." });
     } else if (m.kind === "pin") {
-      out.push({ label: "핀 여유", value: `⌀${m.params.diameter}`, ok: true, note: m.params.through ? "관통핀 — 반대편으로 빠집니다." : `막힌 구멍 깊이 ${m.params.depth}` });
+      out.push({ label: "핀 여유", value: `⌀${m.params.diameter}`, ok: true, note: m.params.through ? "관통핀. 반대편으로 빠집니다." : `막힌 구멍 깊이 ${m.params.depth}` });
     }
   }
   return out;

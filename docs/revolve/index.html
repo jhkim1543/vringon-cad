@@ -3,79 +3,12 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>VRINGON CAD | 회전체 도면 → 파라메트릭 3D CAD</title>
-<meta name="description" content="축·부시·핀 같은 회전체 부품의 2D 제작 도면을 읽어 파라메트릭 DSL 로 옮기고, 그 DSL 에서 3D CAD·검증·STEP/USD 내보내기까지. 판독은 시각 AI, 형상은 결정론 실행기." />
+<title>VRINGON CAD | 회전체 도면에서 3D CAD</title>
+<meta name="description" content="축·부시·핀 같은 회전체 부품의 2D 도면을 읽어 3D CAD 로 만들고, 검증하고, 표준 형식으로 내려받습니다." />
 <link rel="icon" href="assets/favicon.svg" />
 <link rel="stylesheet" href="css/vringon.css" />
-<style>
-  /* 회전체 데모 전용 — 본체 디자인 시스템(vringon.css) 위에 얹는 최소 추가 */
-  .lib { flex: 1; min-height: 0; overflow-y: auto; }
-  .lib-main { padding: 22px 30px 60px; }
-  .lib-head { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
-  .lib-head h1 { font-size: 19px; }
-  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 14px; }
-  .item { border: 1px solid var(--line); border-radius: 10px; overflow: hidden; background: var(--panel); cursor: pointer; transition: border-color .15s, transform .15s; text-align: left; padding: 0; width: 100%; }
-  .item:hover { border-color: #3A3A45; transform: translateY(-2px); }
-  .item .thumb { width: 100%; aspect-ratio: 1.42; display: block; background: #fff; object-fit: cover; }
-  .item .meta { padding: 10px 12px; }
-  .item .t { font-size: 13px; font-weight: 650; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .item .d { font-size: 11.5px; color: var(--text-3); margin-top: 3px; }
-  .samples.drawings .sample .thumb { aspect-ratio: 1.42; background: #fff; object-fit: cover; }
-  .samples.drawings .sample .lb { font-size: 11.5px; padding: 6px 8px 8px; }
-
-  /* 도면 시트: 뷰포트 위에 종이처럼 */
-  .sheet { position: absolute; inset: 64px 14px 96px 14px; z-index: 8; display: none; align-items: center; justify-content: center; }
-  .sheet.show { display: flex; }
-  .sheet-paper { position: relative; max-width: 100%; max-height: 100%; background: #fff; border-radius: 6px; box-shadow: 0 20px 60px rgba(0,0,0,.55); overflow: hidden; }
-  .sheet-paper img { display: block; max-width: 100%; max-height: calc(100vh - 220px); width: auto; height: auto; }
-  .sheet-paper svg.overlay { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
-  .sheet-cap { position: absolute; left: 10px; bottom: 8px; font-size: 11px; color: #555; background: rgba(255,255,255,.85); border-radius: 5px; padding: 2px 7px; }
-  .drop.compact { padding: 16px 14px; margin-bottom: 12px; }
-  .drop.compact svg { width: 18px; height: 18px; margin-bottom: 6px; }
-
-  /* 세그먼트 표 */
-  .segt { width: 100%; border-collapse: collapse; font-size: 11.5px; }
-  .segt th { text-align: left; color: var(--text-3); font-weight: 650; padding: 3px 4px; border-bottom: 1px solid var(--line); font-size: 10.5px; }
-  .segt td { padding: 2px 3px; border-bottom: 1px solid rgba(255,255,255,.04); }
-  .segt input, .segt select { width: 100%; background: #0F0F13; border: 1px solid var(--line-2); border-radius: 5px; color: var(--text); font-size: 11.5px; padding: 3px 5px; font-variant-numeric: tabular-nums; }
-  .segt input:focus, .segt select:focus { border-color: var(--accent); outline: none; }
-  .segt tr.on td { background: rgba(91,107,240,.10); }
-  .segt td.n { color: var(--text-3); width: 18px; }
-  .feat { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: 7px; font-size: 12px; cursor: default; }
-  .feat:hover { background: #1A1A20; }
-  .feat .k { font-weight: 650; min-width: 62px; }
-  .feat .v { color: var(--text-2); flex: 1; font-variant-numeric: tabular-nums; }
-  .feat .x { width: 20px; height: 20px; border-radius: 5px; color: var(--text-3); font-size: 13px; }
-  .feat .x:hover { background: #26262E; color: var(--danger); }
-  .msg { font-size: 11.5px; line-height: 1.55; margin-top: 6px; }
-  .msg.bad { color: var(--danger); }
-  .msg.warn { color: var(--warn); }
-  .verdict { display: inline-flex; align-items: center; gap: 6px; padding: 3px 9px; border-radius: 6px; font-size: 12px; font-weight: 700; }
-  .verdict.pass { background: rgba(61,214,160,.12); color: var(--ok); }
-  .verdict.review { background: rgba(232,184,75,.13); color: var(--warn); }
-  .verdict.fail, .verdict.invalid { background: rgba(240,113,107,.13); color: var(--danger); }
-  .meter { height: 4px; background: #1E1E26; border-radius: 3px; overflow: hidden; margin-top: 4px; }
-  .meter b { display: block; height: 100%; background: #7E838C; }
-  .exp .f { width: 58px; font-size: 12px; }
-  .mode-tag { font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 6px; border: 1px solid var(--line-2); color: var(--text-2); }
-  .mode-tag.live { color: var(--ok); border-color: rgba(61,214,160,.35); background: rgba(61,214,160,.08); }
-  .kf label.inline { display: flex; align-items: center; gap: 7px; font-size: 11.5px; color: var(--text-2); }
-  .stage-actions { top: 122px; }
-  .stepper-note { max-width: min(460px, calc(100% - 28px)); }
-  .kf label.inline input[type=checkbox] { accent-color: var(--accent); }
-  .cmp { display: grid; grid-template-columns: 1fr auto auto; gap: 2px 8px; font-size: 11.5px; }
-  .cmp .h { color: var(--text-3); font-weight: 650; font-size: 10.5px; }
-  .cmp b { font-variant-numeric: tabular-nums; text-align: right; }
-  /* 시뮬 계기: 축대칭 부품은 돌아도 화면이 같아 보이므로 숫자로도 알려 준다 */
-  .simdock { flex-wrap: wrap; max-width: min(760px, calc(100% - 28px)); }
-  .simgauge { display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px; font-weight: 650;
-    color: var(--text-2); background: #0F0F13; border: 1px solid var(--line-2); border-radius: 7px;
-    padding: 4px 9px; font-variant-numeric: tabular-nums; white-space: nowrap; min-width: 132px; }
-  .simgauge.on { color: var(--accent-hi); border-color: rgba(91,107,240,.45); }
+<style>.lib{flex:1;min-height:0;overflow-y:auto}.lib-main{padding:22px 30px 60px}.lib-head{display:flex;align-items:center;gap:12px;margin-bottom:14px}.lib-head h1{font-size:19px}.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px}.item{border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--panel);cursor:pointer;transition:border-color .15s,transform .15s;text-align:left;padding:0;width:100%}.item:hover{border-color:#3a3a45;transform:translateY(-2px)}.item .thumb{width:100%;aspect-ratio:1.42;display:block;background:#fff;object-fit:cover}.item .meta{padding:10px 12px}.item .t{font-size:13px;font-weight:650;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.item .d{font-size:11.5px;color:var(--text-3);margin-top:3px}.samples.drawings .sample .thumb{aspect-ratio:1.42;background:#fff;object-fit:cover}.samples.drawings .sample .lb{font-size:11.5px;padding:6px 8px 8px}.sheet{position:absolute;inset:64px 14px 96px;z-index:8;display:none;align-items:center;justify-content:center}.sheet.show{display:flex}.sheet-paper{position:relative;max-width:100%;max-height:100%;background:#fff;border-radius:6px;box-shadow:0 20px 60px #0000008c;overflow:hidden}.sheet-paper img{display:block;max-width:100%;max-height:calc(100vh - 220px);width:auto;height:auto}.sheet-paper svg.overlay{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}.sheet-cap{position:absolute;left:10px;bottom:8px;font-size:11px;color:#555;background:#ffffffd9;border-radius:5px;padding:2px 7px}.drop.compact{padding:16px 14px;margin-bottom:12px}.drop.compact svg{width:18px;height:18px;margin-bottom:6px}.segt{width:100%;border-collapse:collapse;font-size:11.5px}.segt th{text-align:left;color:var(--text-3);font-weight:650;padding:3px 4px;border-bottom:1px solid var(--line);font-size:10.5px}.segt td{padding:2px 3px;border-bottom:1px solid rgba(255,255,255,.04)}.segt input,.segt select{width:100%;background:#0f0f13;border:1px solid var(--line-2);border-radius:5px;color:var(--text);font-size:11.5px;padding:3px 5px;font-variant-numeric:tabular-nums}.segt input:focus,.segt select:focus{border-color:var(--accent);outline:none}.segt tr.on td{background:#5b6bf01a}.segt td.n{color:var(--text-3);width:18px}.feat{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:7px;font-size:12px;cursor:default}.feat:hover{background:#1a1a20}.feat .k{font-weight:650;min-width:62px}.feat .v{color:var(--text-2);flex:1;font-variant-numeric:tabular-nums}.feat .x{width:20px;height:20px;border-radius:5px;color:var(--text-3);font-size:13px}.feat .x:hover{background:#26262e;color:var(--danger)}.msg{font-size:11.5px;line-height:1.55;margin-top:6px}.msg.bad{color:var(--danger)}.msg.warn{color:var(--warn)}.verdict{display:inline-flex;align-items:center;gap:6px;padding:3px 9px;border-radius:6px;font-size:12px;font-weight:700}.verdict.pass{background:#3dd6a01f;color:var(--ok)}.verdict.review{background:#e8b84b21;color:var(--warn)}.verdict.fail,.verdict.invalid{background:#f0716b21;color:var(--danger)}.meter{height:4px;background:#1e1e26;border-radius:3px;overflow:hidden;margin-top:4px}.meter b{display:block;height:100%;background:#7e838c}.exp .f{width:58px;font-size:12px}.mode-tag{font-size:11px;font-weight:700;padding:3px 8px;border-radius:6px;border:1px solid var(--line-2);color:var(--text-2)}.mode-tag.live{color:var(--ok);border-color:#3dd6a059;background:#3dd6a014}.kf label.inline{display:flex;align-items:center;gap:7px;font-size:11.5px;color:var(--text-2)}.stage-actions{top:122px}.stepper-note{max-width:min(460px,calc(100% - 28px))}.kf label.inline input[type=checkbox]{accent-color:var(--accent)}.cmp{display:grid;grid-template-columns:1fr auto auto;gap:2px 8px;font-size:11.5px}.cmp .h{color:var(--text-3);font-weight:650;font-size:10.5px}.cmp b{font-variant-numeric:tabular-nums;text-align:right}.simdock{flex-wrap:wrap;max-width:min(760px,calc(100% - 28px))}.simgauge{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:650;color:var(--text-2);background:#0f0f13;border:1px solid var(--line-2);border-radius:7px;padding:4px 9px;font-variant-numeric:tabular-nums;white-space:nowrap;min-width:132px}.simgauge.on{color:var(--accent-hi);border-color:#5b6bf073}.tour{position:fixed;inset:0;z-index:60}.tour-hole{position:fixed;border-radius:12px;border:1.5px solid var(--accent-hi);box-shadow:0 0 0 9999px #06060aa8,0 0 22px #5b6bf080;pointer-events:none;transition:left .22s cubic-bezier(.4,0,.2,1),top .22s cubic-bezier(.4,0,.2,1),width .22s,height .22s}.tour.center .tour-card{left:50%!important;top:50%!important;transform:translate(-50%,-50%)}.tour.center:before{content:"";position:fixed;inset:0;background:#06060aa8}.tour-card{position:fixed;width:320px;background:var(--panel);border:1px solid var(--line-2);border-radius:12px;padding:14px 15px 12px;box-shadow:0 18px 50px #0009;z-index:2;transition:left .22s cubic-bezier(.4,0,.2,1),top .22s cubic-bezier(.4,0,.2,1)}.tour-n{font-size:11px;font-weight:700;color:var(--accent-hi);letter-spacing:.04em}.tour-t{display:block;font-size:14.5px;margin:5px 0 6px}.tour-b{font-size:12.5px;line-height:1.65;color:var(--text-2)}.tour-link{display:inline-block;margin-top:7px;font-size:12px;color:var(--accent-hi)}.tour-row{display:flex;align-items:center;gap:7px;margin-top:12px}.tour-row button{font-size:12px;padding:6px 12px;border-radius:7px;border:1px solid var(--line-2);background:transparent;color:var(--text-2)}.tour-row button:hover{border-color:#3a3a45;color:var(--text)}.tour-row .tour-next{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:650}.tour-row .tour-skip{border:none;color:var(--text-3);padding-left:0}@media(max-width:760px){.tour-card{width:calc(100vw - 32px)}}
 </style>
-<script type="importmap">
-{ "imports": { "three": "./vendor/three/three.module.js", "three/addons/": "./vendor/three/addons/" } }
-</script>
 </head>
 <body>
 
@@ -86,15 +19,16 @@
       VRINGON CAD
     </a>
     <span style="color:var(--line-2)">/</span>
-    <span style="font-size:13.5px;color:var(--text-2)">회전체 · 도면 → 3D CAD</span>
+    <span style="font-size:13.5px;color:var(--text-2)">회전체 · 도면에서 3D CAD</span>
     <span style="color:var(--line-2)">/</span>
     <span style="font-size:13.5px;color:var(--text-2)" id="projName">새 프로젝트</span>
     <span class="sp"></span>
     <span class="mode-tag" id="modeTag">확인 중…</span>
+    <button class="btn btn-ghost btn-sm" id="btnTour" title="사용법 다시 보기">사용법</button>
     <button class="btn btn-ghost btn-sm" id="btnLib">라이브러리</button>
   </div>
 
-  <!-- ================= library ================= -->
+  
   <div class="lib" id="lib" style="display:none">
     <main class="lib-main">
       <div class="lib-head">
@@ -104,16 +38,15 @@
         <button class="btn btn-ghost btn-sm" id="btnLibClose">닫기</button>
       </div>
       <div class="hint" style="margin-bottom:18px;max-width:680px">
-        정답 DSL 12종을 손으로 쓰고, 같은 DSL 에서 도면(KS/ISO 관례)·3D·STEP 을 만들었습니다. 카드를 누르면 그 도면으로
-        워크스페이스가 열리고, 판독 → 3D → 검증 → 내보내기가 차례로 진행됩니다. 도면 이미지는 이 저장소의 렌더러가
-        DSL 에서 그린 것이라 정답이 있고, 그래서 판독 정확도를 숫자로 보여줄 수 있습니다.
+        정답 사양을 먼저 쓰고 같은 사양에서 도면을 그렸습니다. 정답이 있으므로 판독 정확도를 숫자로 보여 줄 수 있습니다.
+        카드를 누르면 그 도면으로 워크스페이스가 열립니다.
       </div>
       <div class="grid" id="libGrid"></div>
     </main>
   </div>
 
   <div class="ws-body" id="wsBody">
-    <!-- ================= left ================= -->
+    
     <aside class="side left">
       <div class="side-head">
         입력
@@ -124,26 +57,26 @@
         <div class="drop compact" id="drop">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M6 10l6-6 6 6M4 20h16"/></svg>
           <b>도면 이미지 올리기</b>
-          PNG · JPG · SVG — 회전체 정면도 한 장 · <a href="./guide.html" target="_blank" style="color:var(--accent-hi)" onclick="event.stopPropagation()">올리기 전에 읽기 →</a>
+          PNG · JPG · SVG · 회전체 정면도 한 장<br/><a href="./guide.html" target="_blank" style="color:var(--accent-hi)" onclick="event.stopPropagation()">올리기 전에 읽어 보기</a>
           <input type="file" id="file" accept="image/png,image/jpeg,image/svg+xml,.svg,.png,.jpg,.jpeg" style="display:none" />
         </div>
         <div class="kf" id="lenBlock" style="display:none">
-          <label>전체 길이 (mm) — 실루엣 판독의 축척</label>
+          <label>전체 길이 (mm)</label>
           <input class="input" id="overallLen" type="number" min="1" step="0.5" placeholder="예: 100" style="padding:6px 9px" />
-          <div class="hint" style="margin-top:4px">치수 문자를 읽는 AI 판독은 온프렘 서버에서만 돕니다. 정적 데모의 업로드는 실루엣 비율 + 이 값으로 절대 치수를 정합니다.</div>
+          <div class="hint" style="margin-top:4px">올린 도면은 외형 비율과 이 값으로 실제 치수를 정합니다.</div>
         </div>
         <div class="kf">
           <label style="font-size:11.5px;color:var(--text-3);margin-bottom:5px">판독 방식</label>
           <div class="seg" id="methodSeg">
             <button data-m="auto" class="on">자동</button>
-            <button data-m="silhouette">실루엣</button>
+            <button data-m="silhouette">외형</button>
             <button data-m="server" id="mServer">AI 판독</button>
           </div>
-          <label class="inline" style="margin-top:7px"><input type="checkbox" id="tierPlan" /> 정밀 판독 (설계 티어 · 느림)</label>
+          <label class="inline" style="margin-top:7px"><input type="checkbox" id="tierPlan" /> 정밀 판독 (느림)</label>
         </div>
 
         <div class="block" style="margin-top:14px">
-          <h3>샘플 도면 <span class="sp"></span><button class="chip" id="btnRandom" title="샘플러가 새 부품을 만들어 도면을 그립니다">무작위 합성 도면</button></h3>
+          <h3>샘플 도면 <span class="sp"></span><button class="chip" id="btnRandom" title="새 부품을 만들어 도면을 그립니다">무작위 도면 만들기</button></h3>
           <div class="samples drawings" id="chips" style="grid-template-columns:repeat(2,1fr)"></div>
         </div>
 
@@ -155,18 +88,17 @@
         <div class="block">
           <h3>이 페이지에 대해</h3>
           <div class="hint" id="aboutHint">
-            도면 → <b>DSL(파라메트릭 사양)</b> → 3D CAD → 검증 → STEP/USD. 판독만 AI 가 하고, 형상·도면·검증은 전부
-            결정론 코드가 이 브라우저에서 실행합니다. 같은 DSL 을 파이썬 실행기(CadQuery)가 해석적 B-rep STEP 으로 만듭니다.
+            도면을 읽어 치수 사양으로 옮기고, 그 사양에서 3D 와 도면을 다시 만들어 서로 대조합니다.
           </div>
         </div>
       </div>
     </aside>
 
-    <!-- ================= stage ================= -->
+    
     <div class="stage" id="stage">
       <div class="stage-empty" id="stageEmpty">
         <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.1" opacity=".5"><rect x="3" y="9" width="18" height="6" rx="1"/><path d="M8 9V6h8v3M8 15v3h8v-3M1 12h2M21 12h2"/></svg>
-        <div>왼쪽에서 샘플 도면을 고르거나 도면 이미지를 올리세요<br/>도면 → DSL → 3D CAD → 검증 → STEP/USD 순으로 진행됩니다</div>
+        <div>왼쪽에서 샘플 도면을 고르거나 도면 이미지를 올리세요<br/>도면 입력, 판독, 3D CAD, 검증 순으로 진행됩니다</div>
       </div>
 
       <div class="sheet" id="sheet">
@@ -189,7 +121,7 @@
       <div class="stepper" id="stepper">
         <button class="st" data-step="1" disabled><span class="n">1</span><span class="lb">도면 입력</span></button>
         <span class="arw">›</span>
-        <button class="st" data-step="2" disabled><span class="n">2</span><span class="lb">판독 · DSL</span></button>
+        <button class="st" data-step="2" disabled><span class="n">2</span><span class="lb">판독 · 사양</span></button>
         <span class="arw">›</span>
         <button class="st" data-step="3" disabled><span class="n">3</span><span class="lb">3D CAD</span></button>
         <span class="arw">›</span>
@@ -202,14 +134,14 @@
       <div class="stage-actions" id="stageActions">
         <button class="stage-btn" id="btnSection">단면 보기</button>
         <button class="stage-btn" id="btnDrawing">도면 보기</button>
-        <button class="stage-btn" id="btnRegen" title="지금 DSL 로 다시 그린 도면 ↔ 올린 원본 도면">재생성 도면</button>
-        <button class="stage-btn" id="btnGolden">정답 DSL 보기</button>
-        <button class="stage-btn" id="btnSim" title="도면에서 읽은 결합부로 상대 부품을 만들어 분해·회전을 보여 줍니다. 끄면 부품만 남습니다">조립 · 시뮬 켜기</button>
+        <button class="stage-btn" id="btnRegen" title="지금 사양으로 다시 그린 도면과 원본 도면을 번갈아 봅니다">재생성 도면</button>
+        <button class="stage-btn" id="btnGolden">정답 사양 보기</button>
+        <button class="stage-btn" id="btnSim" title="상대 부품을 만들어 분해와 회전을 보여 줍니다. 끄면 부품만 남습니다">조립 · 시뮬 켜기</button>
       </div>
 
       <div class="simdock" id="simDock">
         <button class="btn btn-primary btn-sm" id="btnSpin">회전</button>
-        <button class="btn btn-ghost btn-sm" id="btnScrewSim" title="나사 체결 — 1회전당 피치만큼 전진">나사 체결</button>
+        <button class="btn btn-ghost btn-sm" id="btnScrewSim" title="1회전에 피치만큼 전진합니다">나사 체결</button>
         <button class="btn btn-ghost btn-sm" id="btnAssemble">조립</button>
         <button class="btn btn-ghost btn-sm" id="btnSimStop">정지</button>
         <span style="display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--text-3);padding:0 4px">
@@ -229,8 +161,8 @@
       </div>
     </div>
 
-    <!-- ================= right ================= -->
-    <aside class="side right">
+    
+    <aside class="side right" id="sideRight">
       <div class="side-head">속성</div>
       <div class="side-scroll">
         <div class="block">
@@ -240,7 +172,7 @@
           <div class="kv"><span>최대 지름</span><b id="mDia">—</b></div>
           <div class="kv"><span>부피 · 질량</span><b id="mMass">—</b></div>
           <div class="kv"><span>재질</span><b id="mMat">—</b></div>
-          <div class="kv"><span>삼각형 · 컴파일</span><b id="mTris">—</b></div>
+          <div class="kv"><span>삼각형 · 생성 시간</span><b id="mTris">—</b></div>
           <div class="hint" id="mNote" style="margin-top:8px"></div>
         </div>
 
@@ -256,8 +188,8 @@
 
         <div class="block" id="segBlock" style="display:none">
           <h3>세그먼트 <span class="sp"></span><button class="chip" id="btnAddSeg" title="끝에 원통 추가">+ 추가</button></h3>
-          <table class="segt"><thead><tr><th></th><th>형식</th><th>길이</th><th>지름 / 시작→끝 · 호칭</th><th></th></tr></thead><tbody id="segRows"></tbody></table>
-          <div class="hint" style="margin-top:6px">값을 고치면 3D·도면·검증이 같이 다시 계산됩니다.</div>
+          <table class="segt"><thead><tr><th></th><th>형식</th><th>길이</th><th>지름 · 호칭</th><th></th></tr></thead><tbody id="segRows"></tbody></table>
+          <div class="hint" style="margin-top:6px">값을 고치면 3D, 도면, 검증이 같이 다시 계산됩니다.</div>
         </div>
 
         <div class="block" id="featBlock" style="display:none">
@@ -266,7 +198,7 @@
         </div>
 
         <div class="block" id="jsonBlock" style="display:none">
-          <h3>DSL (JSON) <span class="tag tag-accent" id="jsonMeta" style="margin-left:6px"></span></h3>
+          <h3>사양 (JSON) <span class="tag tag-accent" id="jsonMeta" style="margin-left:6px"></span></h3>
           <div class="jsonwrap show">
             <textarea id="jsonText" spellcheck="false" style="min-height:240px"></textarea>
             <div class="jsonrow">
@@ -279,10 +211,10 @@
 
         <div class="block" id="verifyBlock" style="display:none">
           <h3>검증 <span id="verdict" class="verdict" style="margin-left:6px"></span></h3>
-          <div class="kv"><span>실루엣 IoU (도면 대비)</span><b id="vIou">—</b></div>
+          <div class="kv"><span>도면 외형 일치</span><b id="vIou">—</b></div>
           <div class="meter"><b id="vIouBar" style="width:0"></b></div>
-          <div class="kv" style="margin-top:6px"><span>치수 정합 (읽은 문자 ↔ DSL)</span><b id="vDims">—</b></div>
-          <div class="kv"><span>실행기 유효성</span><b id="vValid">—</b></div>
+          <div class="kv" style="margin-top:6px"><span>치수 일치</span><b id="vDims">—</b></div>
+          <div class="kv"><span>형상 유효성</span><b id="vValid">—</b></div>
           <div class="kv"><span>종합 신뢰도</span><b id="vConf">—</b></div>
           <div class="msg" id="vMsg"></div>
           <div id="goldenCmp" style="margin-top:8px"></div>
@@ -295,7 +227,8 @@
           <div id="mateOrder"></div>
           <div class="dl-group" style="margin-top:10px">조립 점검</div>
           <div id="mateChecks"></div>
-          <div class="hint" style="margin-top:7px">우리 부품 형상은 도면(DSL)에서 정확히 나오고, <b>상대 부품은 규격표 근사</b>입니다(반투명·색으로 구분). 방향과 축은 회전체 기하라 정확합니다.<br/>회전체는 축대칭이라 돌아도 화면이 같아 보이므로 <b style="color:#FF7A3D">주황색 기준선</b>을 붙였고, 도크의 계기가 회전수·각도를 숫자로 보여 줍니다. 기준선은 표시일 뿐이라 내보내기에는 포함되지 않습니다.</div>
+          <div class="hint" style="margin-top:7px">부품 형상은 도면 그대로이고, <b>상대 부품은 규격표 근사</b>입니다(반투명으로 구분).
+          축대칭이라 돌아도 화면이 같아 보이므로 <b style="color:#FF7A3D">주황색 기준선</b>과 계기를 붙였습니다. 기준선은 내려받는 파일에 포함되지 않습니다.</div>
         </div>
 
         <div class="block" id="exportBlock" style="display:none">
@@ -322,6 +255,6 @@
 
 <div class="toasts" id="toasts"></div>
 
-<script type="module" src="./js/app.js?v=26efc7b8"></script>
+<script type="module" src="./js/app.js?v=e95cb8b0"></script>
 </body>
 </html>

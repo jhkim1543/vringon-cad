@@ -1,0 +1,27 @@
+# 도메인만 바꾸면 인증서(Let's Encrypt)는 자동으로 발급·갱신된다.
+cad.rebuilder.ai {
+	encode zstd gzip
+
+	# 판독은 이미지 한 장을 통째로 올린다 (본문 크기·시간 여유)
+	request_body {
+		max_size 20MB
+	}
+
+	reverse_proxy app:8349 {
+		transport http {
+			read_timeout 300s
+		}
+	}
+
+	header {
+		# 데모 링크가 검색에 잡히지 않게 (공개 홍보를 원하면 이 줄을 지운다)
+		X-Robots-Tag "noindex, nofollow"
+		Referrer-Policy "no-referrer"
+		X-Content-Type-Options "nosniff"
+		-Server
+	}
+
+	log {
+		output file /data/access.log
+	}
+}

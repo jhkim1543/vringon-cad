@@ -6,34 +6,7 @@
 <title>VRINGON CAD | 회전체 도면 올리기 안내</title>
 <link rel="icon" href="assets/favicon.svg" />
 <link rel="stylesheet" href="css/vringon.css" />
-<style>
-  .g-wrap { max-width: 1040px; margin: 0 auto; padding: 36px 40px 80px; }
-  .g-wrap h1 { font-size: 30px; margin-bottom: 10px; }
-  .g-wrap h2 { font-size: 21px; margin: 44px 0 12px; }
-  .g-wrap p, .g-wrap li { color: var(--text-2); font-size: 14.5px; }
-  .g-wrap li { margin: 4px 0; }
-  .g-wrap ul, .g-wrap ol { padding-left: 20px; }
-  .lead { font-size: 16px; color: var(--text-2); max-width: 720px; }
-  .ex { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 16px; }
-  .ex figure { border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: var(--panel); }
-  .ex img { width: 100%; aspect-ratio: 1.5; object-fit: cover; display: block; background: #fff; }
-  .ex figcaption { padding: 10px 12px 12px; font-size: 13px; }
-  .ex figcaption b { display: block; font-size: 13.5px; margin-bottom: 3px; }
-  .ex.bad figcaption b { color: var(--danger); }
-  .ex.good figcaption b { color: var(--ok); }
-  .dim { border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: #fff; margin-top: 16px; }
-  .dim img { width: 100%; display: block; }
-  .legend { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 22px; margin-top: 14px; }
-  .legend div { display: flex; gap: 9px; align-items: flex-start; font-size: 13.5px; color: var(--text-2); }
-  .legend i { flex: none; width: 21px; height: 21px; border-radius: 50%; background: var(--accent); color: #fff; font-style: normal; font-weight: 700; font-size: 12px; display: grid; place-items: center; }
-  table.t { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 13.5px; }
-  table.t th, table.t td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
-  table.t th { color: var(--text-3); font-size: 12px; font-weight: 700; }
-  table.t td { color: var(--text-2); }
-  table.t td b { color: var(--text); }
-  .note { border: 1px solid rgba(240,173,78,.38); background: rgba(240,173,78,.08); border-radius: 10px; padding: 12px 14px; font-size: 13.5px; color: #E8BE56; margin-top: 14px; line-height: 1.6; }
-  code { background: #0F0F13; border: 1px solid var(--line); border-radius: 4px; padding: 1px 5px; font-size: 12.5px; }
-  @media (max-width: 760px) { .ex { grid-template-columns: 1fr; } .legend { grid-template-columns: 1fr; } .g-wrap { padding: 24px 18px 60px; } }
+<style>.g-wrap{max-width:1040px;margin:0 auto;padding:36px 40px 80px}.g-wrap h1{font-size:30px;margin-bottom:10px}.g-wrap h2{font-size:21px;margin:44px 0 12px}.g-wrap p,.g-wrap li{color:var(--text-2);font-size:14.5px}.g-wrap li{margin:4px 0}.g-wrap ul,.g-wrap ol{padding-left:20px}.lead{font-size:16px;color:var(--text-2);max-width:720px}.ex{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:16px}.ex figure{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--panel)}.ex img{width:100%;aspect-ratio:1.5;object-fit:cover;display:block;background:#fff}.ex figcaption{padding:10px 12px 12px;font-size:13px}.ex figcaption b{display:block;font-size:13.5px;margin-bottom:3px}.ex.bad figcaption b{color:var(--danger)}.ex.good figcaption b{color:var(--ok)}.dim{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#fff;margin-top:16px}.dim img{width:100%;display:block}.legend{display:grid;grid-template-columns:1fr 1fr;gap:6px 22px;margin-top:14px}.legend div{display:flex;gap:9px;align-items:flex-start;font-size:13.5px;color:var(--text-2)}.legend i{flex:none;width:21px;height:21px;border-radius:50%;background:var(--accent);color:#fff;font-style:normal;font-weight:700;font-size:12px;display:grid;place-items:center}table.t{width:100%;border-collapse:collapse;margin-top:12px;font-size:13.5px}table.t th,table.t td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}table.t th{color:var(--text-3);font-size:12px;font-weight:700}table.t td{color:var(--text-2)}table.t td b{color:var(--text)}.note{border:1px solid rgba(240,173,78,.38);background:#f0ad4e14;border-radius:10px;padding:12px 14px;font-size:13.5px;color:#e8be56;margin-top:14px;line-height:1.6}code{background:#0f0f13;border:1px solid var(--line);border-radius:4px;padding:1px 5px;font-size:12.5px}@media(max-width:760px){.ex,.legend{grid-template-columns:1fr}.g-wrap{padding:24px 18px 60px}}
 </style>
 </head>
 <body>
@@ -49,7 +22,7 @@
   <div class="eyebrow">업로드 전에 읽어 주세요</div>
   <h1>어떤 도면을 어떻게 올리나요</h1>
   <p class="lead">이 데모는 <b>선반에서 깎는 회전체 한 부품</b>(축·부시·핀·롤러·스페이서·플랜지·슬리브·볼트/나사류)의
-  <b>정면도 한 장</b>을 읽어 파라메트릭 DSL 로 옮깁니다. 조립체·판금·하우징이나 여러 부품이 한 장에 있는 도면은 읽지 못합니다.</p>
+  <b>정면도 한 장</b>을 읽어 치수 사양으로 옮깁니다. 조립체·판금·하우징이나 여러 부품이 한 장에 있는 도면은 읽지 못합니다.</p>
 
   <h2>1. 되는 도면 · 안 되는 도면</h2>
   <p>아래 삽화는 종류를 보여 주기 위해 이미지 모델이 그린 것이라 숫자·기호는 실제 도면과 다를 수 있습니다. 치수 기준은 2절의 실제 도면을 보세요.</p>
@@ -59,37 +32,37 @@
     <figure><img src="assets/guide/good-bolt.webp" alt="" /><figcaption><b>✓ 볼트·나사류</b>육각 머리(단면 A-A 의 대변), 캡 스크루의 육각 소켓, 접시머리(테이퍼), 세트 스크루, 스터드까지 읽습니다.</figcaption></figure>
   </div>
   <div class="ex bad" style="margin-top:14px">
-    <figure><img src="assets/guide/bad-assembly.webp" alt="" /><figcaption><b>✗ 조립체 · 다중 투상도</b>캐스터·베어링 유닛·밸브처럼 여러 부품이 세 방향으로 그려진 도면. 판독기는 "회전체 아님" 으로 답하거나(온프렘 AI) 실루엣을 잘못 잡습니다.</figcaption></figure>
-    <figure><img src="assets/guide/bad-iso.webp" alt="" /><figcaption><b>✗ 등각투상·렌더링 · 볼트 원 구멍</b>3D 그림에는 치수가 없고, 플랜지의 볼트 원 위 구멍·슬롯은 이 DSL 이 아직 표현하지 않는 피처입니다.</figcaption></figure>
+    <figure><img src="assets/guide/bad-assembly.webp" alt="" /><figcaption><b>✗ 조립체 · 다중 투상도</b>캐스터·베어링 유닛·밸브처럼 여러 부품이 세 방향으로 그려진 도면. "회전체 아님" 으로 답하거나 외형을 잘못 잡습니다.</figcaption></figure>
+    <figure><img src="assets/guide/bad-iso.webp" alt="" /><figcaption><b>✗ 등각투상·렌더링 · 볼트 원 구멍</b>3D 그림에는 치수가 없고, 플랜지의 볼트 원 위 구멍·슬롯은 아직 표현하지 않는 형상입니다.</figcaption></figure>
     <figure><img src="assets/guide/bad-photo.webp" alt="" /><figcaption><b>✗ 부품 사진 · 비뚤어진 저해상 스캔</b>사진에는 치수가 없고, 450px 짜리 JPEG 은 외형선과 치수선이 붙어 읽힙니다. 스캔은 1,500px 이상, 반듯하게.</figcaption></figure>
   </div>
 
   <h2>2. 치수는 어디를 기준으로 읽나</h2>
-  <p>아래는 이 저장소의 렌더러가 정답 DSL 에서 그린 실제 도면(단붙이 축)입니다. 번호가 판독기가 읽는 항목이며, 올리는 도면도 같은 관례를 따르면 정확도가 가장 높습니다.</p>
+  <p>아래는 정답 사양에서 그린 실제 도면(단붙이 축)입니다. 번호가 읽어 들이는 항목이며, 올리는 도면도 같은 관례를 따르면 정확도가 가장 높습니다.</p>
   <div class="dim"><img src="assets/guide/dim-guide.webp" alt="치수 기준 안내" /></div>
   <div class="legend" id="legend"></div>
   <div class="note">
     가장 중요한 하나: <b>전체 길이(①)</b> 와 <b>연쇄 길이(②)</b>. 부품 아래 두 줄로 놓고, 연쇄에서 하나를 생략했다면 나머지 합과 전체 길이로 유추합니다.
     지름은 반드시 <b>⌀</b> 를 붙이고(수직 치수선), 나사는 <b>M호칭×피치</b> 호출로, 홈은 <b>폭 + ⌀홈지름</b> 로 적어 주세요.
-    정적 데모(서버 없음)의 업로드는 문자를 읽지 않으므로 왼쪽 "전체 길이" 칸에 값을 넣어야 절대 치수가 맞습니다.
+    체험 모드의 업로드는 문자를 읽지 않으므로 왼쪽 "전체 길이" 칸에 값을 넣어야 실제 치수가 맞습니다.
   </div>
 
   <h2>3. 파일 · 해상도 체크리스트</h2>
   <ul>
     <li><b>한 장에 한 부품</b>, 정면도(축이 가로로 긴 뷰). 키홈 단면 A-A·육각 단면은 옆에 있어도 됩니다.</li>
     <li>PNG 또는 SVG 를 우선하고, JPEG 은 화질 90 이상. <b>부품 가로 폭 1,000px 이상</b>(권장 1,500px+). 흐리거나 기울어진 사진은 반듯하게 잘라서.</li>
-    <li>외형선은 굵게(0.5mm), 치수선·보조선·중심선은 가늘게(0.18~0.25mm) — 이 굵기 차이로 실루엣을 분리합니다.</li>
-    <li>단위 mm. 인치 도면(.19 같은 표기)은 온프렘 AI 판독이 ×25.4 로 환산합니다.</li>
+    <li>외형선은 굵게(0.5mm), 치수선·보조선·중심선은 가늘게(0.18~0.25mm). 이 굵기 차이로 부품 외형을 가려냅니다.</li>
+    <li>단위 mm. 인치 도면(.19 같은 표기)은 AI 판독이 ×25.4 로 환산합니다.</li>
     <li>표제란의 품명·재질·도번은 그대로 옮겨집니다(있으면).</li>
   </ul>
 
   <h2>4. 판독은 어떻게 이루어지나 (OCR 에 대해)</h2>
   <table class="t">
     <tr><th>모드</th><th>형상(비율)</th><th>치수 문자</th><th>결과</th></tr>
-    <tr><td><b>정적 데모</b> (GitHub Pages)</td><td>브라우저가 외형선만 남겨 실루엣 r(x) 를 재고 세그먼트로 나눕니다(결정론).</td><td>읽지 않음 — 별도 OCR 엔진이 없습니다.</td><td>비율은 정확, 절대 치수는 "전체 길이" 입력 하나로 정합니다.</td></tr>
-    <tr><td><b>온프렘 서버</b></td><td>같은 실루엣 측정을 힌트로 보냅니다.</td><td><b>시각 LLM 이 치수 문자를 전부 읽어</b> <code>dims_read</code> 에 근거로 남기고, DSL 과 대조해 안 맞으면 스스로 한 번 고칩니다.</td><td>골든 17종 기준 세그먼트 F1 100%, 치수 일치 98%.</td></tr>
+    <tr><td><b>체험 모드</b></td><td>브라우저가 외형선만 남겨 부품 외형을 재고 구간으로 나눕니다.</td><td>읽지 않습니다.</td><td>비율은 정확하고, 실제 치수는 "전체 길이" 입력 하나로 정합니다.</td></tr>
+    <tr><td><b>서버 모드</b></td><td>같은 외형 측정을 힌트로 보냅니다.</td><td><b>AI 가 치수 문자를 읽어</b> 근거로 남기고, 사양과 대조해 안 맞으면 스스로 한 번 고칩니다.</td><td>정답 17종 기준 구간 일치 100%, 치수 일치 98%.</td></tr>
   </table>
-  <p style="margin-top:10px">즉 온프렘에서는 문자 인식(OCR)에 해당하는 일을 시각 LLM 이 의미 해석과 함께 수행합니다. 정적 데모에 브라우저 OCR(Tesseract 류)을 붙이면 전체 길이 입력 없이도 절대 치수를 얻을 수 있으며, HANDOFF 의 다음 할 일에 적어 두었습니다.</p>
+  <p style="margin-top:10px">문자 인식(OCR)에 해당하는 일은 서버 모드에서 의미 해석과 함께 이루어집니다. 체험 모드에 브라우저 문자 인식을 붙이면 전체 길이 입력 없이도 실제 치수를 얻을 수 있습니다.</p>
 
   <h2>5. 표현할 수 있는 형상</h2>
   <table class="t">
@@ -102,16 +75,17 @@
   <h2>6. 내려받기 형식</h2>
   <table class="t">
     <tr><th>형식</th><th>어디서</th><th>내용</th></tr>
-    <tr><td><b>STEP</b></td><td>온프렘 실행기(CadQuery/OCP 7.9) · 샘플은 미리 생성 · 브라우저는 면분할</td><td>해석적 B-rep(원통·원추·평면). 브라우저 STEP 은 삼각형 면 B-rep(AP214).</td></tr>
-    <tr><td><b>OpenUSD</b></td><td>브라우저 usda·usdz(three.js r185 USDZExporter) · 실행기 usdc(usd-core 26.x)</td><td>메시 + DSL 파라미터를 <code>vringon:*</code> custom 속성으로, metersPerUnit 0.001</td></tr>
-    <tr><td><b>GLB · OBJ · STL · PLY</b></td><td>브라우저 (three.js r185 exporters)</td><td>mm 단위 메시. STL 은 프린팅용 바이너리.</td></tr>
-    <tr><td><b>FBX</b></td><td>브라우저 (ASCII 7.4 작성기)</td><td>Maya·3ds Max·Unity·Unreal·Omniverse 에서 열림. Blender 는 ASCII FBX 를 읽지 않으니 GLB 를 쓰세요.</td></tr>
-    <tr><td><b>DXF · SVG</b></td><td>브라우저</td><td>DSL 로 다시 그린 제작 도면(레이어·치수 포함, R12).</td></tr>
-    <tr><td><b>JSON</b></td><td>브라우저</td><td>DSL 자체 (<code>schema/shaft_dsl.schema.json</code>).</td></tr>
+    <tr><td><b>STEP</b></td><td>정밀 곡면 · 샘플은 미리 생성</td><td>원통·원추·평면으로 이루어진 곡면 모델. 기계 CAD 에서 그대로 편집됩니다.</td></tr>
+    <tr><td><b>STEP · 면</b></td><td>이 브라우저</td><td>삼각형 면으로 만든 STEP. 편집한 사양도 바로 받을 수 있습니다.</td></tr>
+    <tr><td><b>OpenUSD</b></td><td>usda · usdz</td><td>메시와 치수 사양 값을 함께 담습니다(단위 m 환산 포함).</td></tr>
+    <tr><td><b>GLB · OBJ · STL · PLY</b></td><td>이 브라우저</td><td>mm 단위 메시. STL 은 프린팅용 바이너리.</td></tr>
+    <tr><td><b>FBX</b></td><td>이 브라우저</td><td>Maya·3ds Max·Unity·Unreal 에서 열립니다. Blender 에서는 GLB 를 쓰세요.</td></tr>
+    <tr><td><b>DXF · SVG</b></td><td>이 브라우저</td><td>사양으로 다시 그린 제작 도면(레이어·치수 포함).</td></tr>
+    <tr><td><b>JSON</b></td><td>이 브라우저</td><td>치수 사양 자체.</td></tr>
   </table>
 
   <h2>7. 조립 · 시뮬레이션은 무엇을 읽나</h2>
-  <p>도면의 규격 표기가 곧 결합부입니다. 5단계에서 아래를 <b>AI 없이 규칙으로</b> 읽어 상대 부품을 만들고 분해·조립·회전을 보여 줍니다.</p>
+  <p>도면의 규격 표기가 곧 결합부입니다. 화면 위 <b>조립 · 시뮬</b> 버튼을 켜면 아래를 <b>AI 없이 규칙으로</b> 읽어 상대 부품을 만들고 분해·조립·회전을 보여 줍니다. 끄면 부품만 남습니다.</p>
   <table class="t">
     <tr><th>도면 표기</th><th>읽는 것</th><th>운동</th></tr>
     <tr><td>공차 h6/j6/k6 + "베어링 자리"</td><td>구름 베어링 내륜</td><td>축방향으로 뽑음 · 내륜만 축과 함께 회전</td></tr>
@@ -125,13 +99,10 @@
   <div class="note">우리 부품의 형상과 <b>운동 방향·회전축은 정확</b>합니다(회전체 기하). 상대 부품의 절대 치수(너트 대변, 베어링 외경 등)는 도면에 없어 <b>규격표 근사</b>이며 반투명·"규격 근사" 태그로 구분합니다. 물리 시뮬레이션이 아니라 기구학 애니메이션입니다.</div>
 
   <h2>8. 판독 결과를 고치면</h2>
-  <p>오른쪽 세그먼트 표·JSON 에서 값을 고치면 <b>3D 와 다시 그린 도면과 검증이 동시에</b> 다시 계산됩니다(DSL 이 원본). 올린 도면 이미지 자체는 바뀌지 않고, 그 위에 판독 외형선이 겹쳐 보이며 "도면 보기 › 재생성" 으로 DSL 에서 다시 그린 도면을 볼 수 있습니다.
-  반대 방향(이미지 → DSL)은 판독 단계에서만 일어나고, 그 정밀도가 검증 패널의 IoU·치수 정합으로 표시됩니다.</p>
+  <p>오른쪽 세그먼트 표와 JSON 에서 값을 고치면 <b>3D 와 다시 그린 도면과 검증이 동시에</b> 다시 계산됩니다. 올린 도면 이미지 자체는 바뀌지 않고, 그 위에 판독 외형선이 겹쳐 보이며 "재생성 도면" 으로 지금 사양에서 다시 그린 도면을 볼 수 있습니다.
+  반대 방향(이미지에서 사양)은 판독 단계에서만 일어나고, 그 정밀도가 검증 패널의 외형 일치와 치수 일치로 표시됩니다.</p>
 </main>
-<script>
-fetch("assets/guide/dim-guide.json").then((r) => r.json()).then((j) => {
-  document.getElementById("legend").innerHTML = j.legend.map((l) => `<div><i>${l.n}</i><span>${l.text}</span></div>`).join("");
-}).catch(() => {});
+<script>fetch("assets/guide/dim-guide.json").then(e=>e.json()).then(e=>{document.getElementById("legend").innerHTML=e.legend.map(n=>`<div><i>${n.n}</i><span>${n.text}</span></div>`).join("")}).catch(()=>{});
 </script>
 </body>
 </html>

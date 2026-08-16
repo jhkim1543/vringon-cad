@@ -35,18 +35,18 @@ export function analyzeMates(dsl) {
   const spinEvidence = [];
   let spinConf = 0.55;
   const centers = ev.centerHoles || [];
-  if (centers.length >= 2) { spinEvidence.push(`양 끝 센터구멍(DIN 332) — 센터 사이에서 선삭·연삭되는 회전 부품`); spinConf = 0.95; }
-  else if (centers.length === 1) { spinEvidence.push(`센터구멍 1개 — 선삭 기준(회전 가공)`); spinConf = 0.8; }
+  if (centers.length >= 2) { spinEvidence.push(`양 끝 센터구멍(DIN 332). 센터 사이에서 선삭·연삭되는 회전 부품`); spinConf = 0.95; }
+  else if (centers.length === 1) { spinEvidence.push(`센터구멍 1개. 선삭 기준(회전 가공)`); spinConf = 0.8; }
   const hollow = (s) => boreDiameterAt(dsl, (s.x0 + s.x1) / 2) > 0;   /* 그 구간에 보어가 지나가는가 */
   const sleeveLike = ["bushing", "sleeve", "spacer", "flange"].includes(dsl.part_class);
   const labeledBearing = (s) => /베어링|bearing/i.test(s.label || "");
   const bearingSeats = ev.segments.filter((s) => labeledBearing(s) || (s.tolerance && BEARING_TOL.test(s.tolerance) && !hollow(s) && !sleeveLike));
   /* 속이 빈 부품(부시·슬리브)의 외경 공차 = 하우징 압입 */
   const housingSeats = ev.segments.filter((s) => s.tolerance && BEARING_TOL.test(s.tolerance) && (hollow(s) || sleeveLike) && !labeledBearing(s));
-  if (bearingSeats.length) { spinEvidence.push(`베어링 자리 ${bearingSeats.length}곳(${bearingSeats.map((s) => s.tolerance || s.label).join(", ")}) — 회전 지지`); spinConf = Math.max(spinConf, 0.9); }
-  if ((dsl.features || []).some((f) => f.type === "keyway")) { spinEvidence.push("키홈 — 토크 전달(회전)"); spinConf = Math.max(spinConf, 0.85); }
-  if (sleeveLike && dsl.bore) { spinEvidence.push("속이 빈 부시·슬리브 — 부품 자체보다 안에 든 상대 축이 이 축선에서 회전한다"); spinConf = Math.max(spinConf, 0.7); }
-  if (!spinEvidence.length) spinEvidence.push("회전체 형상 자체(축 대칭) — 자전축은 축선과 일치");
+  if (bearingSeats.length) { spinEvidence.push(`베어링 자리 ${bearingSeats.length}곳(${bearingSeats.map((s) => s.tolerance || s.label).join(", ")}). 회전 지지`); spinConf = Math.max(spinConf, 0.9); }
+  if ((dsl.features || []).some((f) => f.type === "keyway")) { spinEvidence.push("키홈. 토크 전달(회전)"); spinConf = Math.max(spinConf, 0.85); }
+  if (sleeveLike && dsl.bore) { spinEvidence.push("속이 빈 부시·슬리브. 부품 자체보다 안에 든 상대 축이 이 축선에서 회전한다"); spinConf = Math.max(spinConf, 0.7); }
+  if (!spinEvidence.length) spinEvidence.push("회전체 형상 자체(축 대칭). 자전축은 축선과 일치");
   push({ kind: "spin", x: 0, x1: L, part: null, dir: [1, 0, 0], motion: { type: "spin", dir: [1, 0, 0] },
     params: { length: L, max_diameter: Dmax },
     evidence: spinEvidence, confidence: spinConf, approx: false });
@@ -60,7 +60,7 @@ export function analyzeMates(dsl) {
     push({ kind: "bearing", x: s.x0, x1: s.x1, part: "bearing",
       params: { bore: d, outer: fit ? D : +(d * 2.1).toFixed(1), width: Math.min(fit ? B : Math.max(6, d * 0.55), s.x1 - s.x0), seat_length: s.x1 - s.x0 },
       motion: { type: "axial", dir: [s.x0 < L / 2 ? -1 : 1, 0, 0], distance: Math.max(s.x1 - s.x0, 12) + 6 },
-      evidence: [`세그먼트 ⌀${d}${s.tolerance ? ` ${s.tolerance}` : ""}${s.label ? ` "${s.label}"` : ""} — 구름 베어링 내륜 끼워맞춤`, fit ? `d=${key} 계열(6000/6200) 근사: 외경 ⌀${D} 폭 ${B}` : "표준 계열에 없는 축경 — 외경·폭은 비례 근사"],
+      evidence: [`세그먼트 ⌀${d}${s.tolerance ? ` ${s.tolerance}` : ""}${s.label ? ` "${s.label}"` : ""}. 구름 베어링 내륜 끼워맞춤`, fit ? `d=${key} 계열(6000/6200) 근사: 외경 ⌀${D} 폭 ${B}` : "표준 계열에 없는 축경. 외경·폭은 비례 근사"],
       confidence: s.tolerance && /베어링|bearing/i.test(s.label || "") ? 0.9 : s.tolerance ? 0.75 : 0.6, approx: true });
   }
 
@@ -70,7 +70,7 @@ export function analyzeMates(dsl) {
     push({ kind: "fit", x: s.x0, x1: s.x1, part: "housing",
       params: { outer: d, tolerance: s.tolerance, seat_length: s.x1 - s.x0, housing_outer: +(d * 1.7).toFixed(1) },
       motion: { type: "axial", dir: [s.x0 < L / 2 ? -1 : 1, 0, 0], distance: (s.x1 - s.x0) + 14 },
-      evidence: [`외경 ⌀${d} ${s.tolerance} — 하우징 구멍(H7)에 압입되는 끼워맞춤`, /^(m|n|k)/i.test(s.tolerance) ? "중간~억지 끼움: 압입 후 회전하지 않는다(상대 축이 안에서 돈다)" : "헐거운 끼움: 손으로 밀어 넣을 수 있다"],
+      evidence: [`외경 ⌀${d} ${s.tolerance}. 하우징 구멍(H7)에 압입되는 끼워맞춤`, /^(m|n|k)/i.test(s.tolerance) ? "중간~억지 끼움: 압입 후 회전하지 않는다(상대 축이 안에서 돈다)" : "헐거운 끼움: 손으로 밀어 넣을 수 있다"],
       confidence: 0.8, approx: true });
   }
 
@@ -83,7 +83,7 @@ export function analyzeMates(dsl) {
     push({ kind: "snap", x: g.x0, x1: g.x1, part: "retaining_ring",
       params: { shaft_d: shaftD, groove_d: grooveD, width: g.width, ring_thickness: Math.min(g.width * 0.85, g.width - 0.05), ring_outer: +(shaftD + (shaftD < 20 ? 4 : shaftD < 50 ? 6 : 9)).toFixed(1) },
       motion: { type: "radial", dir: [0, 1, 0], distance: shaftD * 0.9, snap: true },
-      evidence: [`홈 ⌀${grooveD}×${g.width}${g.standard ? ` (${g.standard})` : ""} — 축용 멈춤링(스냅링) 자리`, `축경 ⌀${shaftD} 표준 홈: ⌀${std.groove_d}×${std.width}${std.approx ? " (표 밖·근사)" : ""}`, "링을 벌려 반경 방향으로 끼우고, 축방향 위치를 고정한다"],
+      evidence: [`홈 ⌀${grooveD}×${g.width}${g.standard ? ` (${g.standard})` : ""}. 축용 멈춤링(스냅링) 자리`, `축경 ⌀${shaftD} 표준 홈: ⌀${std.groove_d}×${std.width}${std.approx ? " (표 밖·근사)" : ""}`, "링을 벌려 반경 방향으로 끼우고, 축방향 위치를 고정한다"],
       confidence: isSnap ? 0.92 : 0.6, approx: true });
   });
 
@@ -94,7 +94,7 @@ export function analyzeMates(dsl) {
     push({ kind: "key", x: f.x0, x1: f.x1, part: "key",
       params: { width: f.width, depth: f.depth, length: f.length, shaft_d: D, key_height: std ? std.key_h : +(f.width * 0.9).toFixed(1), hub_bore: D, hub_outer: +(D * 1.9).toFixed(1), hub_width: Math.min(f.length + 4, seg.x1 - seg.x0) },
       motion: { type: "radial", dir: [0, 1, 0], distance: (std ? std.key_h : f.width) * 1.6, follow_axial: { dir: [f.x1 > L / 2 ? 1 : -1, 0, 0], distance: Math.max(f.length + 10, D) } },
-      evidence: [`키홈 ${f.width}×${f.depth} L${f.length}${f.standard ? ` (${f.standard})` : ""} — 평행키로 토크 전달`, std ? `DIN 6885: 키 ${std.width}×${std.key_h}, 축 홈 깊이 t1=${std.depth}` : "표 밖 축경 — 키 높이는 폭에서 근사", "허브(기어·풀리·커플링)가 축방향으로 끼워지고 키가 회전을 구속한다"],
+      evidence: [`키홈 ${f.width}×${f.depth} L${f.length}${f.standard ? ` (${f.standard})` : ""}. 평행키로 토크 전달`, std ? `DIN 6885: 키 ${std.width}×${std.key_h}, 축 홈 깊이 t1=${std.depth}` : "표 밖 축경. 키 높이는 폭에서 근사", "허브(기어·풀리·커플링)가 축방향으로 끼워지고 키가 회전을 구속한다"],
       confidence: 0.9, approx: true });
   });
 
@@ -108,7 +108,7 @@ export function analyzeMates(dsl) {
     push({ kind: "screw", x: t.x0, x1: t.x1, part: free ? "nut" : null,
       params: { spec: t.spec, nominal: ps.nominal, pitch: t.pitch || ps.pitch || 1, thread_length: t.x1 - t.x0, nut_across_flats: s, nut_height: m, hand: "right" },
       motion: { type: "screw", dir: [t.x0 < L / 2 ? -1 : 1, 0, 0], pitch: t.pitch || ps.pitch || 1, distance: Math.min(t.x1 - t.x0, m * 2 + 4) },
-      evidence: [`나사 ${t.spec} — 상대 암나사(너트·탭 구멍)와 체결`, `ISO 4032 너트 근사: 대변 ${s}, 높이 ${m}`, `1회전당 ${(t.pitch || ps.pitch || 1)}mm 전진(오른나사)`],
+      evidence: [`나사 ${t.spec}. 상대 암나사(너트·탭 구멍)와 체결`, `ISO 4032 너트 근사: 대변 ${s}, 높이 ${m}`, `1회전당 ${(t.pitch || ps.pitch || 1)}mm 전진(오른나사)`],
       confidence: 0.95, approx: true });
   });
 
@@ -118,7 +118,7 @@ export function analyzeMates(dsl) {
     push({ kind: "pin", x: f.x0, x1: f.x1, part: "pin",
       params: { diameter: f.diameter, position: f.position, through: f.through !== false, depth: f.through === false ? f.depth : D, angle: f.angle || 0, pin_length: (f.through !== false ? D : (f.depth || D)) + (f.through !== false ? 8 : 4) },
       motion: { type: "radial", dir: [0, Math.sin(((f.angle || 0) * Math.PI) / 180), Math.cos(((f.angle || 0) * Math.PI) / 180)], distance: D * 1.2 },
-      evidence: [`⌀${f.diameter} ${f.through !== false ? "관통" : `깊이 ${f.depth}`} 횡구멍 (x=${f.position}) — 분할핀·스프링핀·평행핀 자리`, f.through !== false ? "관통핀: 반경 방향으로 넣고 반대편으로 빠진다" : "막힌 구멍: 세트 스크루·위치 결정 핀"],
+      evidence: [`⌀${f.diameter} ${f.through !== false ? "관통" : `깊이 ${f.depth}`} 횡구멍 (x=${f.position}). 분할핀·스프링핀·평행핀 자리`, f.through !== false ? "관통핀: 반경 방향으로 넣고 반대편으로 빠진다" : "막힌 구멍: 세트 스크루·위치 결정 핀"],
       confidence: 0.85, approx: true });
   });
 
@@ -128,7 +128,7 @@ export function analyzeMates(dsl) {
       push({ kind: "wrench", x: f.x0, x1: f.x1, part: "hex_key",
         params: { across_flats: f.across_flats, depth: f.depth, end: f.end },
         motion: { type: "screw", dir: [f.end === "left" ? -1 : 1, 0, 0], pitch: (ev.threads[0]?.pitch) || 1, distance: f.depth + 8 },
-        evidence: [`끝면 육각 소켓 S${f.across_flats} 깊이 ${f.depth} — 육각 렌치로 조인다`, "렌치를 축방향으로 넣고 돌리면 나사부가 상대 암나사에 체결된다"],
+        evidence: [`끝면 육각 소켓 S${f.across_flats} 깊이 ${f.depth}. 육각 렌치로 조인다`, "렌치를 축방향으로 넣고 돌리면 나사부가 상대 암나사에 체결된다"],
         confidence: 0.9, approx: true });
       return;
     }
@@ -136,8 +136,8 @@ export function analyzeMates(dsl) {
     push({ kind: "wrench", x: f.x0, x1: f.x1, part: isHex ? "wrench" : null,
       params: isHex ? { across_flats: f.across_flats } : { depth: f.depth, length: f.length, count: f.count || 1, shaft_d: f.D },
       motion: { type: "radial", dir: [0, 1, 0], distance: (isHex ? f.across_flats : f.D) * 1.4 },
-      evidence: isHex ? [`육각 대변 ${f.across_flats} — 스패너로 잡아 돌리는 면`, "조립 시 회전을 막거나 조이는 데 쓴다"]
-        : [`평면(D컷) 깊이 ${f.depth}${(f.count || 1) === 2 ? " ×2" : ""} — 세트 스크루가 눌러 회전을 구속하거나 스패너 자리`],
+      evidence: isHex ? [`육각 대변 ${f.across_flats}. 스패너로 잡아 돌리는 면`, "조립 시 회전을 막거나 조이는 데 쓴다"]
+        : [`평면(D컷) 깊이 ${f.depth}${(f.count || 1) === 2 ? " ×2" : ""}. 세트 스크루가 눌러 회전을 구속하거나 스패너 자리`],
       confidence: isHex ? 0.9 : 0.7, approx: !isHex ? false : true });
   });
 
@@ -148,7 +148,7 @@ export function analyzeMates(dsl) {
     push({ kind: "fit", x: ev.bore.segments[0].x0, x1: ev.bore.segments[ev.bore.segments.length - 1].x1, part: "mating_shaft",
       params: { bore: b.diameter, tolerance: tol || null, through: ev.bore.through, length: ev.bore.segments.reduce((a, s) => a + (s.x1 - s.x0), 0) },
       motion: { type: "axial", dir: [-1, 0, 0], distance: L + 10 },
-      evidence: [`보어 ⌀${b.diameter}${tol ? ` ${tol}` : ""}${ev.bore.through ? " 관통" : " 막힘"} — 상대 축이 들어가는 끼워맞춤`, tol && /^H[6-8]$/i.test(tol) ? `${tol} 헐거운/중간 끼워맞춤 — 축방향으로 밀어 넣고 뺄 수 있다` : "공차 표기 없음 — 끼워맞춤 등급 미상"],
+      evidence: [`보어 ⌀${b.diameter}${tol ? ` ${tol}` : ""}${ev.bore.through ? " 관통" : " 막힘"}. 상대 축이 들어가는 끼워맞춤`, tol && /^H[6-8]$/i.test(tol) ? `${tol} 헐거운/중간 끼워맞춤. 축방향으로 밀어 넣고 뺄 수 있다` : "공차 표기 없음. 끼워맞춤 등급 미상"],
       confidence: tol ? 0.85 : 0.7, approx: true });
   }
 
@@ -159,7 +159,7 @@ export function analyzeMates(dsl) {
     push({ kind: "fit", x: s.x0, x1: s.x1, part: "taper_hub",
       params: { d_start: s.ds, d_end: s.de, length: s.x1 - s.x0, taper_ratio: +((Math.abs(s.ds - s.de) / (s.x1 - s.x0)).toFixed(3)), hub_outer: +(Math.max(s.ds, s.de) * 1.8).toFixed(1) },
       motion: { type: "axial", dir: [s.de < s.ds ? 1 : -1, 0, 0], distance: (s.x1 - s.x0) + 12 },
-      evidence: [`테이퍼 ⌀${s.ds}→⌀${s.de} (기울기 1:${(1 / (Math.abs(s.ds - s.de) / (s.x1 - s.x0))).toFixed(1)}) — 테이퍼 허브 압입/억지 끼움`, "작은 쪽에서 끼워 축방향으로 조이면 마찰로 토크를 전달한다"],
+      evidence: [`테이퍼 ⌀${s.ds}→⌀${s.de} (기울기 1:${(1 / (Math.abs(s.ds - s.de) / (s.x1 - s.x0))).toFixed(1)}). 테이퍼 허브 압입/억지 끼움`, "작은 쪽에서 끼워 축방향으로 조이면 마찰로 토크를 전달한다"],
       confidence: 0.75, approx: true });
   });
 
@@ -173,7 +173,7 @@ export function analyzeMates(dsl) {
     .map(({ i, m }, k) => ({ step: k + 1, mate: i, kind: m.kind, part: m.part, text: disassemblyText(m, L) }));
 
   const rotating = mates.some((m) => m.kind === "bearing") || spinConf >= 0.85;
-  if (!mates.some((m) => m.part)) notes.push("도면에서 상대 부품과 결합하는 표기(멈춤링 홈·키홈·나사·보어·횡구멍)를 찾지 못했습니다 — 단품 회전만 보여 줍니다.");
+  if (!mates.some((m) => m.part)) notes.push("도면에서 상대 부품과 결합하는 표기(멈춤링 홈·키홈·나사·보어·횡구멍)를 찾지 못했습니다. 단품 회전만 보여 줍니다.");
   return { axis: [1, 0, 0], length: L, rotating, spin_confidence: spinConf, mates, order, notes };
 }
 

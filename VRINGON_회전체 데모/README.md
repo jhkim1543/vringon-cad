@@ -7,7 +7,7 @@
 
 | | 주소 | 비고 |
 |---|---|---|
-| 공개 데모 (정적, 로그인 없음) | https://jhkim1543.github.io/vringon-cad/revolve/ | 샘플의 AI 판독 결과를 재생 · 업로드/합성 도면은 브라우저 실루엣 판독 |
+| 공개 데모 (정적, 로그인 없음) | https://jhkim1543.github.io/vringon-cad/revolve/ | 샘플은 미리 판독한 결과를 재생 · 올린 도면은 브라우저 외형 판독 · **보호 빌드**(한 파일로 묶고 주석·QA 훅 제거) |
 | 온프렘 전체 기능 (실제 AI 판독 + 해석적 STEP) | `node server.mjs 8349` → http://<서버>:8349 | 키·모델은 `../config.local.json` 의 역할명(primary/fallback)만 참조 |
 | 소스 | 이 폴더 (`VRINGON_회전체 데모/`) | 정적 사본은 `../docs/revolve/` (자동 생성, 손대지 않음) |
 
@@ -16,6 +16,9 @@
 2. **판독 · DSL** — ① 브라우저 실루엣 측정(외형선만 남겨 r(x) → RDP 세그먼트) → ② 온프렘 시각 LLM 판독(스키마 제약 + 합성 few-shot 3장 + 실루엣 힌트) → ③ 스키마·기하 검증에 걸리거나 실루엣/치수 정합이 나쁘면 오류·측정치를 넣어 **1회 자기 수리**
 3. **3D CAD** — DSL → 반단면 프로파일 → 회전(lathe) 밴드 + 키홈·평면·육각·횡구멍 국부 CSG (브라우저, 수십 ms) · 단면 보기 · 세그먼트 표/JSON 편집 즉시 반영
 4. **검증** — DSL 을 다시 그린 외형과 도면 실루엣의 IoU, 읽은 치수 문자 ↔ DSL 정합, 실행기 유효성 → 신뢰도·판정. 정답이 있는 도면(샘플·합성)은 정답 대비 F1 까지 표시
+
+처음 열면 **사용 순서대로 안내 툴팁**이 한 번 뜨고(위쪽 "사용법" 으로 다시 볼 수 있습니다), 화면 문구에는
+알고리즘·라이브러리 이름을 쓰지 않습니다(외부 공유용).
 
 그리고 단계가 아니라 **언제든 쓰는 두 가지**:
 - **내보내기** — 3D 가 만들어지면 오른쪽 패널에 상시: STEP(해석적 B-rep: 파이썬 CadQuery 실행기 / 면분할: 브라우저) · STL · GLB · OBJ · **FBX(ASCII 7.4)** · **OpenUSD(usda + DSL 파라미터 custom 속성 · usdz · 실행기 usdc)** · PLY · DXF/SVG(다시 그린 제작 도면) · JSON(DSL)
@@ -34,6 +37,8 @@ js/shaft-verify.js           검증기: 실루엣 IoU · 치수 정합 · 신뢰
 js/shaft-mates.js            도면 → 결합부·자전축·분해 순서 판정 (결정론, 근거·신뢰도 포함)
 js/shaft-assembly.js         상대 부품 3D 생성 + 분해·조립·자전·나사 체결 시뮬레이션
 js/shaft-export.js, fbx-export.js  STEP(면분할)·STL·GLB·OBJ·FBX·USDA/USDZ·PLY·DXF·SVG·JSON
+js/tour.js                   첫 방문 사용법 안내 (사용 순서대로 짚는 툴팁)
+deploy/, DEPLOY.md           외부 도메인 배포 한 벌 (컨테이너·자동 HTTPS·접근 코드) 와 안내
 guide.html, assets/guide/    업로드 안내 (되는/안 되는 도면 삽화 + 치수 기준 그림)
 js/shaft-standards.js        규격표 (재질 밀도 포함)
 server.mjs                   온프렘 서버: /api/status /api/extract /api/step (의존성 없음)
@@ -56,8 +61,8 @@ npm start                                   # node server.mjs 8349  (config 없�
 node tools/build-samples.mjs                # 골든을 고쳤을 때
 node tools/eval-extract.mjs --method both --tier text --save     # 서버가 떠 있어야 함. --save 는 재생용 결과 저장
 node tools/gen-dataset.mjs --n 5000 --out dataset --augment 0.3 --omit 0.15
-node tools/deploy-docs.mjs                  # ../docs/revolve/ 갱신 → 커밋
+node tools/deploy-docs.mjs                  # ../docs/revolve/ 보호 빌드 갱신 → 커밋 (--raw 는 디버깅용 원본 복사)
 node tools/test-assembly.mjs && node tools/test-exports.mjs      # 조립·시뮬 / 내보내기 회귀
 cd pipeline && PYTHONIOENCODING=utf-8 .venv/Scripts/python.exe tests/test_golden.py
 ```
-방법론·마일스톤 상태·수치·데이터 소스·다음 할 일은 [HANDOFF.md](HANDOFF.md) 에 있습니다.
+방법론·마일스톤 상태·수치·데이터 소스·다음 할 일은 [HANDOFF.md](HANDOFF.md), 외부 공유·도메인 배포·코드 보호는 [DEPLOY.md](DEPLOY.md) 에 있습니다.

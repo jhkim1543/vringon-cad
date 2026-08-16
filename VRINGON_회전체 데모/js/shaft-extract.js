@@ -5,7 +5,7 @@
                     비율은 정확하고, 절대 치수는 전체 길이 하나(사용자 입력 또는 AI 판독값)로 정한다.
                     센터구멍·공차·재질처럼 실루엣에 없는 것은 읽지 못한다고 명시한다.
      ② replay     : 샘플에 미리 저장된 AI 판독 결과(samples/<id>/extracted.json)를 재생. 서버 없이 도는 공개 데모용.
-     ③ server     : /api/extract — 온프렘 시각 LLM(스키마 제약 + 골든 few-shot + 수리 루프). ①의 실루엣을 힌트로 같이 보낸다.
+     ③ server     : /api/extract. 온프렘 시각 LLM(스키마 제약 + 골든 few-shot + 수리 루프). ①의 실루엣을 힌트로 같이 보낸다.
    이 파일은 ①과 클라이언트 측 ②③ 호출을 담는다. 픽셀 접근은 ImageData 모양({width,height,data})만 받으므로
    Node 에서도 돌릴 수 있다(래스터화만 호출자가). */
 
@@ -78,7 +78,7 @@ export function measureSilhouette(img, opts = {}) {
   let thick = mask;
   for (let k = 0; k < iters; k++) thick = erode(thick, w, h);
   const big = iters > 0;
-  notes.push(`선폭 추정 ${strokePx}px${big ? ` → 침식 ${iters}회` : ""}`);
+  notes.push(`선 굵기 ${strokePx}px${big ? ", 가는 선 정리 " + iters + "회" : ""}`);
   let { label, comps } = components(thick, w, h, 8);
   if (!comps.length) return { ok: false, notes: ["잉크를 찾지 못했습니다(빈 이미지?)"] };
   /* 도면 틀(테두리)은 이미지의 대부분을 덮는다 → 제외 */
@@ -108,7 +108,7 @@ export function measureSilhouette(img, opts = {}) {
   const upper = partner ? (partner.y0 < main.y0 ? partner : main) : null, lower = partner ? (upper === main ? partner : main) : null;
   const ux0 = partner ? Math.min(main.x0, partner.x0) : main.x0, ux1 = partner ? Math.max(main.x1, partner.x1) : main.x1;
   const uy0 = partner ? Math.min(main.y0, partner.y0) : main.y0, uy1 = partner ? Math.max(main.y1, partner.y1) : main.y1;
-  if (partner) notes.push("위·아래 거울상 두 성분 → 전단면도로 보고 보어를 함께 읽었습니다");
+  if (partner) notes.push("위아래가 거울상이라 전단면도로 보고 보어를 함께 읽었습니다");
   /* 성분 픽셀만으로 열(또는 행) 별 상·하 외곽 */
   const along = vertical ? main.h : (ux1 - ux0 + 1);   /* 축 방향 길이(px) */
   const topArr = new Float64Array(along), botArr = new Float64Array(along), has = new Uint8Array(along);
@@ -188,12 +188,12 @@ export function measureSilhouette(img, opts = {}) {
   /* 입력 적합성 신호: 큰 성분이 여럿(다중 투상도·조립체), 저해상, 짝 없이 위아래로 큰 성분이 더 있음 */
   const bigOnes = cands.filter((c) => c.w >= w * 0.22 || c.n >= main.n * 0.35).filter((c) => c.id !== main.id && c.id !== partner?.id);
   const flags = [];
-  if (bigOnes.length >= 1) flags.push({ kind: "multiview", n: bigOnes.length + 1 + (partner ? 1 : 0), text: `큰 성분이 ${bigOnes.length + 1}개 — 여러 투상도나 조립체로 보입니다. 이 데모는 회전체 정면도 한 장을 읽습니다(단면도·키홈 단면은 옆에 있어도 됩니다).` });
+  if (bigOnes.length >= 1) flags.push({ kind: "multiview", n: bigOnes.length + 1 + (partner ? 1 : 0), text: `큰 성분이 ${bigOnes.length + 1}개. 여러 투상도나 조립체로 보입니다. 이 데모는 회전체 정면도 한 장을 읽습니다(단면도·키홈 단면은 옆에 있어도 됩니다).` });
   if (along < 500) flags.push({ kind: "lowres", px: along, text: `부품이 가로 ${along}px 로 작습니다(권장 1,000px 이상). 저해상 JPEG 은 외형선과 치수선이 붙어 판독이 어긋납니다.` });
   if (partner) {
     /* 짝을 잡았어도 보어가 외경에 비해 너무 크면 거울상 반쪽이 아니라 별개 뷰다 */
     let badBore = 0; for (let i = 0; i < N; i++) if (bore[i] > 0.92 * Math.min(top[i], bottom[i])) badBore++;
-    if (badBore > N * 0.2) flags.push({ kind: "not_section", text: "위·아래 두 성분을 전단면 반쪽으로 보기엔 안쪽 띠가 너무 넓습니다 — 서로 다른 투상도일 가능성이 큽니다." });
+    if (badBore > N * 0.2) flags.push({ kind: "not_section", text: "위·아래 두 성분을 전단면 반쪽으로 보기엔 안쪽 띠가 너무 넓습니다. 서로 다른 투상도일 가능성이 큽니다." });
   }
   for (const f of flags) notes.push(f.text);
   return { ok: true, L_px: along, top, bottom, bore, sectioned: !!partner, axis, bbox: { x0: main.x0, y0: main.y0, x1: main.x1, y1: main.y1 }, vertical, hints, notes, flags, pxPerLen: along, imageSize: { w, h } };
@@ -437,7 +437,7 @@ export function profileToDSL(sil, opts = {}) {
       if (std && Math.abs(width - std.width) <= Math.max(1, std.width * 0.3)) width = std.width;
       const depth = std ? std.depth : round(width * 0.55, 0.5);
       dsl.features.push({ type: "keyway", segment: seg, offset: round(x0 - spansX[seg], 0.5), length: round(x1 - x0, 0.5), width, depth, kind: "parallel" });
-      notes.push(`키홈은 정면도 홈 윤곽에서 폭·길이를 재고 깊이는 DIN 6885 표준값(t1=${depth})을 넣었습니다(단면도 미판독).`);
+      notes.push(`키홈은 정면도 윤곽에서 폭과 길이를 재고, 깊이는 DIN 6885 표준값(t1=${depth})을 넣었습니다.`);
     } else if (h.type === "cross_hole") {
       const pos = round(h.relX * L, 0.5), d = round(h.dia_px / pxPerMm, 0.5);
       if (d >= 1) dsl.features.push({ type: "cross_hole", position: pos, diameter: d, through: true, angle: 0 });
@@ -448,11 +448,11 @@ export function profileToDSL(sil, opts = {}) {
         const s = dsl.segments[seg];
         const nominal = [6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 27, 30, 36].reduce((a, b) => (Math.abs(b - s.diameter) < Math.abs(a - s.diameter) ? b : a));
         s.type = "thread"; s.diameter = nominal; s.spec = threadSpecText(nominal, ISO_COARSE_PITCH[nominal]); s.pitch = ISO_COARSE_PITCH[nominal];
-        notes.push(`나사부는 골지름 가는선 쌍으로 찾았고 피치는 보통나사(${s.spec})로 가정했습니다(호출문 미판독).`);
+        notes.push(`나사부는 골지름 선으로 찾았고, 피치는 보통나사(${s.spec})로 가정했습니다.`);
       }
     }
   }
-  notes.push("실루엣 판독은 비율만 정확합니다. 절대 치수는 전체 길이(" + L + "mm) 하나로 정했고, 센터구멍·공차·재질·필렛 R 은 읽지 않았습니다.");
+  notes.push("외형 판독은 비율만 정확합니다. 실제 치수는 전체 길이(" + L + "mm) 하나로 정했고, 센터구멍·공차·재질·필렛 R 은 읽지 않았습니다.");
   const norm = normalizeShaft(dsl);
   const v = validateShaft(norm);
   if (!v.ok) {
@@ -476,7 +476,7 @@ export function extractHeuristic(img, opts = {}) {
   const reasons = [];
   if ((out.dsl.segments || []).length > 14) reasons.push(`세그먼트가 ${out.dsl.segments.length}개로 너무 많습니다(잡음이 외형선에 섞였을 때의 전형).`);
   const tiny = (out.dsl.segments || []).filter((sg) => sg.length < (opts.overallLength || 100) * 0.015).length;
-  if (tiny >= 3) reasons.push(`아주 짧은 세그먼트가 ${tiny}개 — 치수선·지시선이 외형선에 붙어 읽혔을 가능성.`);
+  if (tiny >= 3) reasons.push(`아주 짧은 세그먼트가 ${tiny}개. 치수선·지시선이 외형선에 붙어 읽혔을 가능성.`);
   for (const f of sil.flags || []) reasons.push(f.text);
   const plausible = reasons.length === 0 || (reasons.length === 1 && (sil.flags || []).some((f) => f.kind === "lowres"));
   return { ok: true, method: "silhouette", plausible, reasons, dsl: out.dsl, notes: [...sil.notes, ...out.notes], silhouette: { L: sil.L_px, top: sil.top, bottom: sil.bottom, bbox: sil.bbox, axis: sil.axis, imageSize: sil.imageSize }, hints: sil.hints, flags: sil.flags || [], dims_read: [], pieces: out.pieces };
