@@ -16,7 +16,8 @@
 2. **판독 · DSL** — ① 브라우저 실루엣 측정(외형선만 남겨 r(x) → RDP 세그먼트) → ② 온프렘 시각 LLM 판독(스키마 제약 + 합성 few-shot 3장 + 실루엣 힌트) → ③ 스키마·기하 검증에 걸리거나 실루엣/치수 정합이 나쁘면 오류·측정치를 넣어 **1회 자기 수리**
 3. **3D CAD** — DSL → 반단면 프로파일 → 회전(lathe) 밴드 + 키홈·평면·육각·횡구멍 국부 CSG (브라우저, 수십 ms) · 단면 보기 · 세그먼트 표/JSON 편집 즉시 반영
 4. **검증** — DSL 을 다시 그린 외형과 도면 실루엣의 IoU, 읽은 치수 문자 ↔ DSL 정합, 실행기 유효성 → 신뢰도·판정. 정답이 있는 도면(샘플·합성)은 정답 대비 F1 까지 표시
-5. **내보내기** — STEP(해석적 B-rep: 파이썬 CadQuery 실행기 / 면분할: 브라우저) · STL · GLB · OBJ · **FBX(ASCII 7.4)** · **OpenUSD(usda + DSL 파라미터 custom 속성 · usdz · 실행기 usdc)** · PLY · DXF/SVG(다시 그린 제작 도면) · JSON(DSL)
+5. **조립 · 시뮬레이션** — 도면의 규격 표기(멈춤링 홈·키홈·나사·공차·횡구멍·육각)에서 **상대 부품과 운동을 결정론 규칙으로** 읽어 분해/조립·자전(rpm)·나사 체결을 보여 줍니다. 근거·신뢰도와 분해 순서, 조립 점검 표시
+6. **내보내기** — STEP(해석적 B-rep: 파이썬 CadQuery 실행기 / 면분할: 브라우저) · STL · GLB · OBJ · **FBX(ASCII 7.4)** · **OpenUSD(usda + DSL 파라미터 custom 속성 · usdz · 실행기 usdc)** · PLY · DXF/SVG(다시 그린 제작 도면) · JSON(DSL)
 
 ## 폴더
 ```
@@ -28,6 +29,8 @@ js/shaft-drawing.js          DSL → 제작 도면 (그리기 목록 → SVG / D
 js/shaft-sampler.js          표준 규격(DIN 471/6885/332/76, ISO 261) 기반 시드 샘플러 (10 아키타입)
 js/shaft-extract.js          판독기: 실루엣(결정론) / 재생 / 서버 호출
 js/shaft-verify.js           검증기: 실루엣 IoU · 치수 정합 · 신뢰도 · 정답 지표(F1)
+js/shaft-mates.js            도면 → 결합부·자전축·분해 순서 판정 (결정론, 근거·신뢰도 포함)
+js/shaft-assembly.js         상대 부품 3D 생성 + 분해·조립·자전·나사 체결 시뮬레이션
 js/shaft-export.js, fbx-export.js  STEP(면분할)·STL·GLB·OBJ·FBX·USDA/USDZ·PLY·DXF·SVG·JSON
 guide.html, assets/guide/    업로드 안내 (되는/안 되는 도면 삽화 + 치수 기준 그림)
 js/shaft-standards.js        규격표 (재질 밀도 포함)
@@ -52,6 +55,7 @@ node tools/build-samples.mjs                # 골든을 고쳤을 때
 node tools/eval-extract.mjs --method both --tier text --save     # 서버가 떠 있어야 함. --save 는 재생용 결과 저장
 node tools/gen-dataset.mjs --n 5000 --out dataset --augment 0.3 --omit 0.15
 node tools/deploy-docs.mjs                  # ../docs/revolve/ 갱신 → 커밋
+node tools/test-assembly.mjs && node tools/test-exports.mjs      # 조립·시뮬 / 내보내기 회귀
 cd pipeline && PYTHONIOENCODING=utf-8 .venv/Scripts/python.exe tests/test_golden.py
 ```
 방법론·마일스톤 상태·수치·데이터 소스·다음 할 일은 [HANDOFF.md](HANDOFF.md) 에 있습니다.

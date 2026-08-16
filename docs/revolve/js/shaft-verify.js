@@ -7,9 +7,9 @@
    ④ 정답 지표(합성 평가): 세그먼트 F1·피처 F1·치수 일치율·실루엣 IoU·완전 일치.
    순수 모듈. */
 
-import { silhouetteSamples, totalLength, segmentDiameters, collectEvents } from "./shaft-profile.js?v=2ebcdab1";
-import { validateShaft } from "./shaft-schema.js?v=2ebcdab1";
-import { parseThreadSpec } from "./shaft-standards.js?v=2ebcdab1";
+import { silhouetteSamples, totalLength, segmentDiameters, collectEvents } from "./shaft-profile.js?v=14c93c89";
+import { validateShaft } from "./shaft-schema.js?v=14c93c89";
+import { parseThreadSpec } from "./shaft-standards.js?v=14c93c89";
 
 /* ------------------------------------------------------------ 실루엣 IoU
    a, b: {L, samples: Float64Array|number[]} — r(x) 를 x 등분 표본으로. 길이가 달라도

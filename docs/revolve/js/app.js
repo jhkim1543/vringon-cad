@@ -6,17 +6,19 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
-import { validateShaft, normalizeShaft, DSL_VERSION } from "./shaft-schema.js?v=2ebcdab1";
-import { computeMass, totalLength, maxDiameter, buildTopLine, collectEvents } from "./shaft-profile.js?v=2ebcdab1";
-import { densityOf } from "./shaft-standards.js?v=2ebcdab1";
-import { buildShaft3D, makeMaterials, setSectionPlanes } from "./shaft-cad.js?v=2ebcdab1";
-import { drawShaft, toSVG } from "./shaft-drawing.js?v=2ebcdab1";
-import { extractHeuristic, extractViaServer } from "./shaft-extract.js?v=2ebcdab1";
-import { verifyExtraction, goldenMetrics } from "./shaft-verify.js?v=2ebcdab1";
-import { sampleShaft } from "./shaft-sampler.js?v=2ebcdab1";
-import { exportSTEP, exportSTL, exportGLB, exportOBJ, exportUSDA, exportUSDZ, exportFBX, exportPLY, exportDrawingDXF, exportDrawingSVG, exportJSON, downloadBlob } from "./shaft-export.js?v=2ebcdab1";
+import { validateShaft, normalizeShaft, DSL_VERSION } from "./shaft-schema.js?v=14c93c89";
+import { computeMass, totalLength, maxDiameter, buildTopLine, collectEvents } from "./shaft-profile.js?v=14c93c89";
+import { densityOf } from "./shaft-standards.js?v=14c93c89";
+import { buildShaft3D, makeMaterials, setSectionPlanes } from "./shaft-cad.js?v=14c93c89";
+import { drawShaft, toSVG } from "./shaft-drawing.js?v=14c93c89";
+import { extractHeuristic, extractViaServer } from "./shaft-extract.js?v=14c93c89";
+import { verifyExtraction, goldenMetrics } from "./shaft-verify.js?v=14c93c89";
+import { sampleShaft } from "./shaft-sampler.js?v=14c93c89";
+import { analyzeMates, matesSummary } from "./shaft-mates.js?v=14c93c89";
+import { buildAssembly, createAssemblySim, assemblyChecks, makeMateMaterials } from "./shaft-assembly.js?v=14c93c89";
+import { exportSTEP, exportSTL, exportGLB, exportOBJ, exportUSDA, exportUSDZ, exportFBX, exportPLY, exportDrawingDXF, exportDrawingSVG, exportJSON, downloadBlob } from "./shaft-export.js?v=14c93c89";
 
-const BUILD = "2ebcdab1";
+const BUILD = "14c93c89";
 const $ = (id) => document.getElementById(id);
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const fmt = (v, d = 1) => (Number.isFinite(v) ? (Math.round(v * 10 ** d) / 10 ** d).toString() : "—");
@@ -34,7 +36,7 @@ const state = {
   raster: null,        /* ImageData 로 판독용 */
   extraction: null,    /* {method, dsl, dims_read, notes, silhouette, verify?, hints, ms} */
   dsl: null, pristine: null, gold: null,
-  built: null, verify: null,
+  built: null, verify: null, mates: null, assembly: null, sim: null,
   section: false, showingDrawing: false, showingGolden: false,
 };
 /* PIPE[k] 는 k+1 단계. cta/note 는 그 단계를 "실행"하는 버튼의 말 — 다음 단계가 무엇을 하는지 미리 알린다 */
@@ -43,7 +45,8 @@ const PIPE = [
   { n: 2, label: "판독 · DSL", cta: "판독 시작", note: "도면을 읽어 파라메트릭 DSL 로 옮깁니다 (실루엣 측정 + AI 판독)" },
   { n: 3, label: "3D CAD", cta: "3D CAD 만들기", note: "DSL 을 회전(lathe) + 국부 CSG 로 컴파일합니다" },
   { n: 4, label: "검증", cta: "검증 실행", note: "DSL 을 다시 그려 도면 실루엣과 대조하고, 읽은 치수 문자를 DSL 과 대조합니다" },
-  { n: 5, label: "내보내기", cta: "내보내기", note: "STEP · STL · GLB · OBJ · USD · DXF · SVG · JSON" },
+  { n: 5, label: "조립 · 시뮬", cta: "조립 · 시뮬레이션", note: "도면의 규격 표기(멈춤링 홈·키홈·나사·공차·횡구멍)에서 상대 부품과 운동을 읽어 분해·조립·회전을 보여 줍니다" },
+  { n: 6, label: "내보내기", cta: "내보내기", note: "STEP · STL · GLB · OBJ · FBX · USD/USDZ · PLY · DXF · SVG · JSON" },
 ];
 const pipe = { done: 0, running: 0, active: false };
 
@@ -78,7 +81,15 @@ shadowCatcher.receiveShadow = true; scene.add(shadowCatcher);
 function resize() { const w = stage.clientWidth, h = stage.clientHeight; if (!w || !h) return; renderer.setSize(w, h); camera.aspect = w / h; camera.updateProjectionMatrix(); }
 new ResizeObserver(resize).observe(stage); resize();
 let gridWanted = true;
-renderer.setAnimationLoop(() => { controls.update(); const below = camera.position.y < controls.target.y; grid.visible = gridWanted && !below; shadowCatcher.visible = !below; renderer.render(scene, camera); });
+const simClock = new THREE.Clock();
+renderer.setAnimationLoop(() => {
+  controls.update();
+  const below = camera.position.y < controls.target.y;
+  grid.visible = gridWanted && !below; shadowCatcher.visible = !below;
+  const dt = simClock.getDelta();
+  if (state.sim) state.sim.update(dt);
+  renderer.render(scene, camera);
+});
 let model = null;
 const materials = makeMaterials();
 function clearModel() { if (!model) return; scene.remove(model); model.traverse((o) => { if (o.isMesh) o.geometry?.dispose(); }); model = null; }
@@ -222,7 +233,8 @@ async function runStep(n) {
     else if (n === 2) await stepExtract();
     else if (n === 3) await stepBuild();
     else if (n === 4) await stepVerify();
-    else if (n === 5) await stepExport();
+    else if (n === 5) await stepAssembly();
+    else if (n === 6) await stepExport();
     pipe.done = Math.max(pipe.done, n);
   } catch (e) {
     console.error(e); toast(`${n}단계 실패: ${e.message}`);
@@ -328,6 +340,7 @@ function applyDslChange(next, why = "") {
   setDsl(next);
   if (pipe.done >= 3) rebuild3D();
   if (pipe.done >= 4) computeVerify();
+  if (pipe.done >= 5 && state.assembly) renderMatePanel();
   if (state.sheetMode === "regen") refreshSheet(); else drawOverlay();
   return true;
 }
@@ -451,6 +464,8 @@ async function stepBuild() {
 }
 function rebuild3D() {
   const dsl = state.dsl; const v = validateShaft(dsl); if (!v.ok) return;
+  const hadAssembly = !!state.assembly;
+  teardownAssembly();
   clearModel();
   const built = buildShaft3D(dsl, { materials, radial: 96 });
   state.built = built; model = built.root;
@@ -460,6 +475,7 @@ function rebuild3D() {
   if (state.section) setSectionPlanes(built, [sectionPlane]);
   $("stageEmpty").style.display = "none";
   $("mTris").textContent = `${built.stats.tris.toLocaleString()} · ${built.stats.ms}ms`;
+  if (hadAssembly) spawnAssembly();
   $("mNote").textContent = built.notes.length ? built.notes.join(" · ") : `밴드 ${built.stats.bands}개, CSG ${built.stats.csg}회. 나사·널링은 관례대로 장식 표현(호출·STEP 은 규격을 싣습니다).`;
   return built;
 }
@@ -505,15 +521,114 @@ function computeVerify() {
   } else gc.innerHTML = "";
 }
 
-/* ---- 5단계: 내보내기 */
+/* ---- 5단계: 조립 · 시뮬레이션
+   도면(DSL)의 규격 표기에서 상대 부품과 운동을 결정론 규칙으로 읽는다(shaft-mates.js).
+   우리 부품 형상은 정확하고 상대 부품은 규격표 근사 — UI 가 그렇게 말한다. */
+const mateMaterials = makeMateMaterials();
+function teardownAssembly() {
+  if (state.sim) { state.sim.reset(); state.sim = null; }
+  if (state.assembly) {
+    scene.remove(state.assembly.group);
+    state.assembly.group.traverse((o) => { if (o.isMesh) o.geometry?.dispose(); });
+    state.assembly = null;
+  }
+  if (model) model.rotation.x = 0;
+  $("simDock").classList.remove("show");
+}
+function spawnAssembly() {
+  if (!state.dsl || !model) return;
+  state.mates = analyzeMates(state.dsl);
+  const asm = buildAssembly(state.mates, { materials: mateMaterials });
+  /* 부품과 같은 좌표계에 놓는다 (model 은 화면 중앙으로 옮겨져 있다) */
+  asm.group.position.copy(model.position);
+  asm.group.rotation.copy(model.rotation);
+  scene.add(asm.group);
+  state.assembly = asm;
+  state.sim = createAssemblySim({ part: model, assembly: asm, analysis: state.mates });
+  state.sim.applyExplode(Number($("simExplode").value) / 100);
+  $("simDock").classList.add("show");
+  return asm;
+}
+async function stepAssembly() {
+  const steps = [{ text: "도면 규격 표기에서 결합부 판정 (멈춤링·키·나사·공차·횡구멍)", state: "run" }, { text: "상대 부품 생성 (규격표 근사)" }, { text: "분해 순서·조립 점검" }];
+  showGen(true, "5단계 · 조립 · 시뮬레이션", "", steps);
+  await sleep(120);
+  teardownAssembly();
+  spawnAssembly();
+  steps.forEach((x) => (x.state = "done")); showGen(true, "5단계 · 조립 · 시뮬레이션", "", steps);
+  renderMatePanel();
+  showSheet(false);
+  $("mateBlock").style.display = ""; $("mateBlock").scrollIntoView({ behavior: "smooth", block: "start" });
+  const n = state.mates.mates.filter((m) => m.part).length;
+  toast(n ? `결합부 ${n}개 인식 — 분해 슬라이더·회전으로 확인하세요` : "상대 부품이 없는 단품입니다 — 회전만 보여 줍니다", true);
+}
+const MATE_KO = { spin: "자전축", snap: "멈춤링", key: "키·허브", screw: "나사 체결", bearing: "베어링", pin: "핀", wrench: "공구", fit: "끼워맞춤" };
+function renderMatePanel() {
+  const a = state.mates; if (!a) return;
+  $("mateMeta").textContent = matesSummary(a);
+  $("mateList").innerHTML = a.mates.map((m, i) => {
+    const conf = Math.round(m.confidence * 100);
+    const cls = conf >= 85 ? "ok" : conf >= 70 ? "warn" : "err";
+    return `<div class="joint-row" data-mate="${i}">
+      <div class="jr-head"><b>${MATE_KO[m.kind] || m.kind}</b>
+        ${m.part ? `<span class="tag" style="font-size:10.5px">${m.approx ? "규격 근사" : "정확"}</span>` : ""}
+        <span class="conf ${cls}">${conf}%</span></div>
+      <div class="jr-body"><div class="jr-meta">x ${m.x.toFixed(1)}${m.x1 !== undefined ? `–${m.x1.toFixed(1)}` : ""} mm · ${m.motion.type === "spin" ? "자전(X축)" : m.motion.type === "axial" ? "축방향 조립" : m.motion.type === "radial" ? "반경 방향 조립" : `나사 이송 ${m.motion.pitch}mm/회전`}</div>
+      <div class="jr-ev">${m.evidence.map((e) => `· ${escapeHtml(e)}`).join("<br/>")}</div></div></div>`;
+  }).join("");
+  $("mateOrder").innerHTML = a.order.length ? a.order.map((o) => `<div class="gen-step done" style="padding:3px 0"><span class="dot"></span>${o.step}. ${escapeHtml(o.text)}</div>`).join("") : `<div class="hint">분해할 상대 부품이 없습니다.</div>`;
+  const checks = assemblyChecks(a, state.dsl);
+  $("mateChecks").innerHTML = checks.length ? checks.map((c) => `<div class="simcheck"><div class="r"><span>${c.label}</span><b class="${c.ok === true ? "ok" : c.ok === false ? "bad" : ""}">${c.value}</b></div><div class="n">${escapeHtml(c.note)}</div></div>`).join("") : `<div class="hint">점검할 결합부가 없습니다.</div>`;
+  if (a.notes.length) $("mateChecks").innerHTML += `<div class="hint" style="margin-top:6px">${a.notes.map(escapeHtml).join("<br/>")}</div>`;
+}
+$("mateList").addEventListener("mouseover", (e) => { const r = e.target.closest("[data-mate]"); if (r) highlightMate(Number(r.dataset.mate)); });
+$("mateList").addEventListener("mouseout", () => highlightMate(-1));
+function highlightMate(i) {
+  if (!state.assembly) return;
+  for (const { wrap, index } of state.assembly.items) {
+    wrap.traverse((o) => { if (o.isMesh && o.material) { o.material.emissive?.setHex(index === i ? 0x2a3a8a : 0x000000); } });
+  }
+  /* 자전축을 가리키면 축선을 그린다 */
+  if (i >= 0 && state.mates?.mates[i]?.kind === "spin") showAxisLine(true); else showAxisLine(false);
+}
+let axisLine = null;
+function showAxisLine(on) {
+  if (!on) { if (axisLine) { scene.remove(axisLine); axisLine.geometry.dispose(); axisLine = null; } return; }
+  if (axisLine || !model || !state.dsl) return;
+  const L = totalLength(state.dsl);
+  const g = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(-L * 0.15, 0, 0), new THREE.Vector3(L * 1.15, 0, 0)]);
+  axisLine = new THREE.Line(g, new THREE.LineDashedMaterial({ color: 0x7C89FF, dashSize: 4, gapSize: 3 }));
+  axisLine.computeLineDistances();
+  axisLine.position.copy(model.position);
+  scene.add(axisLine);
+}
+$("btnSpin").onclick = () => { if (!state.sim) return; state.sim.spin(Number($("simRpm").value) || 300); $("btnSpin").classList.add("on"); toast(`자전 ${$("simRpm").value} rpm — 축과 함께 도는 부품만 회전합니다(베어링 외륜·공구는 고정)`, true); };
+$("btnScrewSim").onclick = () => { if (!state.sim) return; const has = state.mates?.mates.some((m) => m.motion.type === "screw" && m.part); if (!has) return toast("이 부품에는 나사 체결부가 없습니다"); state.sim.screw(true); $("btnSpin").classList.remove("on"); };
+$("btnAssemble").onclick = () => { if (!state.sim) return; $("simExplode").value = 0; state.sim.applyExplode(0); state.sim.stop(); $("btnSpin").classList.remove("on"); };
+$("btnSimStop").onclick = () => { if (!state.sim) return; state.sim.stop(); $("btnSpin").classList.remove("on"); };
+$("simExplode").oninput = () => { if (!state.sim) return; state.sim.stop(); $("btnSpin").classList.remove("on"); state.sim.applyExplode(Number($("simExplode").value) / 100); };
+$("simRpm").oninput = () => { $("simRpmV").textContent = $("simRpm").value; state.sim?.setRpm(Number($("simRpm").value)); };
+
+/* ---- 6단계: 내보내기 */
 async function stepExport() {
   await sleep(120);
   renderExportPanel();
   $("exportBlock").style.display = ""; $("exportBlock").scrollIntoView({ behavior: "smooth", block: "start" });
   toast("내보내기 준비 완료", true);
 }
+function exportRoot() {
+  /* 조립체 포함 체크 시 상대 부품까지 한 그룹으로 (부품은 항상 첫 자식) */
+  if (!$("asmExport")?.checked || !state.assembly) return model;
+  const g = new THREE.Group(); g.name = `${state.dsl.id || "shaft"}_assembly`;
+  g.add(model.clone(true));
+  const asm = state.assembly.group.clone(true);
+  asm.position.sub(model.position); asm.updateMatrixWorld(true);
+  g.add(asm);
+  return g;
+}
 function renderExportPanel() {
   const dsl = state.dsl; const id = (dsl.id || "shaft").replace(/[^A-Za-z0-9_-]/g, "_");
+  $("asmExportRow").style.display = state.assembly ? "flex" : "none";
   const row = (f, n, fn) => { const d = document.createElement("div"); d.className = "exp"; d.innerHTML = `<span class="f">${f}</span><span class="n">${n}</span><button title="내려받기"><svg><use href="#i-dl"/></svg></button>`; d.querySelector("button").onclick = fn; return d; };
   const l3 = $("dlList3d"), l2 = $("dlList2d"); l3.innerHTML = ""; l2.innerHTML = "";
   /* 정답과 형상이 완전히 같으면(키 순서·메타는 무시) 미리 만든 해석적 STEP 을 그대로 준다 */
@@ -525,14 +640,14 @@ function renderExportPanel() {
     if (!r.ok) { const j = await r.json().catch(() => ({})); return toast(`STEP 실패: ${j.error || r.status}`); }
     downloadBlob(await r.blob(), `${id}.step`); toast("STEP (해석적 B-rep) 내려받음", true);
   }));
-  l3.appendChild(row("STEP", "면분할 B-rep · 이 브라우저 메시에서 (AP214)", () => downloadBlob(exportSTEP(model, id), `${id}_faceted.step`, "application/step")));
-  l3.appendChild(row("STL", "바이너리 · 3D 프린팅", () => downloadBlob(exportSTL(model), `${id}.stl`, "model/stl")));
-  l3.appendChild(row("GLB", "재질 포함 · 웹/뷰어", async () => downloadBlob(await exportGLB(model), `${id}.glb`, "model/gltf-binary")));
-  l3.appendChild(row("OBJ", "메시 (mm)", () => downloadBlob(exportOBJ(model), `${id}.obj`, "text/plain")));
-  l3.appendChild(row("FBX", "ASCII 7.4 · Maya/3ds Max/Unity/Unreal/Omniverse (Blender 는 GLB 권장)", () => downloadBlob(exportFBX(model), `${id}.fbx`, "application/octet-stream")));
-  l3.appendChild(row("USD", "usda · 메시 + DSL 파라미터를 custom 속성으로 (Omniverse/Isaac)", () => downloadBlob(exportUSDA(model, dsl), `${id}.usda`, "text/plain")));
-  l3.appendChild(row("USDZ", "OpenUSD 패키지 · three.js r185 USDZExporter (AR Quick Look/Omniverse)", async () => downloadBlob(await exportUSDZ(model), `${id}.usdz`, "model/vnd.usdz+zip")));
-  l3.appendChild(row("PLY", "ASCII 정점/면 (점군·해석 도구)", () => downloadBlob(exportPLY(model), `${id}.ply`, "text/plain")));
+  l3.appendChild(row("STEP", "면분할 B-rep · 이 브라우저 메시에서 (AP214)", () => downloadBlob(exportSTEP(exportRoot(), id), `${id}_faceted.step`, "application/step")));
+  l3.appendChild(row("STL", "바이너리 · 3D 프린팅", () => downloadBlob(exportSTL(exportRoot()), `${id}.stl`, "model/stl")));
+  l3.appendChild(row("GLB", "재질 포함 · 웹/뷰어", async () => downloadBlob(await exportGLB(exportRoot()), `${id}.glb`, "model/gltf-binary")));
+  l3.appendChild(row("OBJ", "메시 (mm)", () => downloadBlob(exportOBJ(exportRoot()), `${id}.obj`, "text/plain")));
+  l3.appendChild(row("FBX", "ASCII 7.4 · Maya/3ds Max/Unity/Unreal/Omniverse (Blender 는 GLB 권장)", () => downloadBlob(exportFBX(exportRoot()), `${id}.fbx`, "application/octet-stream")));
+  l3.appendChild(row("USD", "usda · 메시 + DSL 파라미터를 custom 속성으로 (Omniverse/Isaac)", () => downloadBlob(exportUSDA(exportRoot(), dsl), `${id}.usda`, "text/plain")));
+  l3.appendChild(row("USDZ", "OpenUSD 패키지 · three.js r185 USDZExporter (AR Quick Look/Omniverse)", async () => downloadBlob(await exportUSDZ(exportRoot()), `${id}.usdz`, "model/vnd.usdz+zip")));
+  l3.appendChild(row("PLY", "ASCII 정점/면 (점군·해석 도구)", () => downloadBlob(exportPLY(exportRoot()), `${id}.ply`, "text/plain")));
   l2.appendChild(row("DXF", "이 DSL 로 다시 그린 제작 도면 (R12, 레이어·치수)", () => downloadBlob(exportDrawingDXF(dsl), `${id}_drawing.dxf`, "application/dxf")));
   l2.appendChild(row("SVG", "이 DSL 로 다시 그린 제작 도면", () => downloadBlob(exportDrawingSVG(dsl), `${id}_drawing.svg`, "image/svg+xml")));
   l2.appendChild(row("JSON", "DSL 사양 (스키마: schema/shaft_dsl.schema.json)", () => downloadBlob(exportJSON(dsl), `${id}.dsl.json`, "application/json")));
@@ -573,14 +688,15 @@ async function startRun(src) {
   runStep(1);
 }
 function resetWorkspace(full = true) {
-  clearModel(); highlightSegment(-1);
+  teardownAssembly(); clearModel(); highlightSegment(-1); showAxisLine(false);
+  state.mates = null; $("simExplode").value = 0;
   if ($("unsuitable")) { $("unsuitable").style.display = "none"; $("unsuitable").innerHTML = ""; }
   state.source = null; state.raster = null; state.extraction = null; state.dsl = null; state.pristine = null; state.gold = null; state.built = null; state.verify = null; state.sample = null;
   state.showingGolden = false; $("btnGolden").textContent = "정답 DSL 보기"; $("btnGolden").classList.remove("on");
   state.sheetMode = "original"; $("btnRegen").textContent = "재생성 도면"; $("btnRegen").classList.remove("on");
   pipe.done = 0; pipe.running = 0; pipe.active = false;
   showSheet(false); $("stageEmpty").style.display = ""; $("dock").style.display = "none";
-  for (const id of ["extractBlock", "segBlock", "featBlock", "jsonBlock", "verifyBlock", "exportBlock"]) $(id).style.display = "none";
+  for (const id of ["extractBlock", "segBlock", "featBlock", "jsonBlock", "verifyBlock", "mateBlock", "exportBlock"]) $(id).style.display = "none";
   ["mLen", "mDia", "mMass", "mMat", "mTris"].forEach((id) => ($(id).textContent = "—")); $("mNote").textContent = "";
   if (full) { $("projName").textContent = "새 프로젝트"; $("mName").textContent = "—"; $("lenBlock").style.display = "none"; }
   renderStepper();
@@ -615,7 +731,16 @@ $("btnLib").onclick = () => ($("lib").style.display === "none" ? openLib() : clo
 $("btnLibClose").onclick = closeLib;
 
 /* QA 훅: 콘솔에서 상태를 들여다보고 판독기를 직접 돌릴 수 있다 */
-window.__vringon = { state, pipe, runStep, extractHeuristic, verifyExtraction, goldenMetrics, drawShaft, toSVG, sampleShaft, buildShaft3D, applyDslChange, get model() { return model; } };
+window.__vringon = { state, pipe, runStep, extractHeuristic, verifyExtraction, goldenMetrics, drawShaft, toSVG, sampleShaft, buildShaft3D, applyDslChange, analyzeMates, assemblyChecks,
+  get model() { return model; }, get scene() { return scene; }, get camera() { return camera; },
+  /* QA: 탭이 가려져 rAF 가 멈춰도 한 프레임을 강제로 그리고 저장한다 */
+  forceRender(dt = 0) { if (dt && state.sim) state.sim.update(dt); controls.update(); renderer.render(scene, camera); },
+  async shot(name = "shot") {
+    this.forceRender();
+    const dataUrl = renderer.domElement.toDataURL("image/png");
+    const r = await fetch("/__save", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name, dataUrl }) });
+    return r.json();
+  } };
 
 /* ================================================================ 부팅 */
 (async () => {

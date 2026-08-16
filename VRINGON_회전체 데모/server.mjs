@@ -241,6 +241,20 @@ const server = createServer(async (req, res) => {
       res.writeHead(200, { "Content-Type": MIME["." + fmt] || "application/octet-stream", "Content-Disposition": `attachment; filename="${(body.dsl?.id || "shaft")}.${fmt}"`, "X-Executor-Summary": encodeURIComponent(JSON.stringify(summary)), "Cache-Control": "no-store" });
       return res.end(buf);
     }
+    /* 개발용 화면 저장 (루프백 전용): 브라우저가 캔버스 dataURL 을 보내면 data/shots/ 에 쓴다.
+       QA 스크린샷 말고는 쓰지 않으며, 외부 주소에서 오면 거부한다. */
+    if (req.method === "POST" && path === "/__save") {
+      const ra = req.socket.remoteAddress || "";
+      if (!/^(::1|::ffff:127\.0\.0\.1|127\.0\.0\.1)$/.test(ra)) return json(res, 403, { error: "loopback only" });
+      const body = await readBody(req, 32e6);
+      const m = /^data:image\/(png|jpeg|webp);base64,(.+)$/.exec(String(body.dataUrl || ""));
+      if (!m) return json(res, 400, { error: "dataUrl 이 필요합니다" });
+      const name = String(body.name || "shot").replace(/[^A-Za-z0-9_.-]/g, "_");
+      await mkdir(join(rootDir, "data/shots"), { recursive: true });
+      const file = join(rootDir, "data/shots", `${name}.${m[1] === "jpeg" ? "jpg" : m[1]}`);
+      await writeFile(file, Buffer.from(m[2], "base64"));
+      return json(res, 200, { ok: true, file: `data/shots/${name}.${m[1] === "jpeg" ? "jpg" : m[1]}` });
+    }
     if (path.startsWith("/api/")) return json(res, 404, { error: "no such api" });
     if (path.startsWith("/data/") || path.includes("config.local") || path.includes("/.")) return json(res, 403, { error: "forbidden" });
     /* 정적 */

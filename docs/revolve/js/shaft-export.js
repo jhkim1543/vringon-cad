@@ -10,10 +10,10 @@ import { GLTFExporter } from "three/addons/exporters/GLTFExporter.js";
 import { STLExporter } from "three/addons/exporters/STLExporter.js";
 import { PLYExporter } from "three/addons/exporters/PLYExporter.js";
 import { USDZExporter } from "three/addons/exporters/USDZExporter.js";
-import { exportFBX } from "./fbx-export.js?v=2ebcdab1";
-import { drawShaft, toSVG, toDXF } from "./shaft-drawing.js?v=2ebcdab1";
-import { computeMass, totalLength, maxDiameter } from "./shaft-profile.js?v=2ebcdab1";
-import { densityOf } from "./shaft-standards.js?v=2ebcdab1";
+import { exportFBX } from "./fbx-export.js?v=14c93c89";
+import { drawShaft, toSVG, toDXF } from "./shaft-drawing.js?v=14c93c89";
+import { computeMass, totalLength, maxDiameter } from "./shaft-profile.js?v=14c93c89";
+import { densityOf } from "./shaft-standards.js?v=14c93c89";
 
 /* 파트 삼각형 수집 (렌더 전용 뒷면/고스트 메시 제외) */
 export function collectTriangles(root, filter = null) {

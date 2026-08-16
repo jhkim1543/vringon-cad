@@ -189,7 +189,9 @@
         <span class="arw">›</span>
         <button class="st" data-step="4" disabled><span class="n">4</span><span class="lb">검증</span></button>
         <span class="arw">›</span>
-        <button class="st" data-step="5" disabled><span class="n">5</span><span class="lb">내보내기</span></button>
+        <button class="st" data-step="5" disabled><span class="n">5</span><span class="lb">조립 · 시뮬</span></button>
+        <span class="arw">›</span>
+        <button class="st" data-step="6" disabled><span class="n">6</span><span class="lb">내보내기</span></button>
       </div>
       <div class="stepper-note" id="stepperNote"></div>
 
@@ -200,6 +202,20 @@
         <button class="stage-btn" id="btnDrawing">도면 보기</button>
         <button class="stage-btn" id="btnRegen" title="지금 DSL 로 다시 그린 도면 ↔ 올린 원본 도면">재생성 도면</button>
         <button class="stage-btn" id="btnGolden">정답 DSL 보기</button>
+      </div>
+
+      <div class="simdock" id="simDock">
+        <button class="btn btn-primary btn-sm" id="btnSpin">회전</button>
+        <button class="btn btn-ghost btn-sm" id="btnScrewSim" title="나사 체결 — 1회전당 피치만큼 전진">나사 체결</button>
+        <button class="btn btn-ghost btn-sm" id="btnAssemble">조립</button>
+        <button class="btn btn-ghost btn-sm" id="btnSimStop">정지</button>
+        <span style="display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--text-3);padding:0 4px">
+          분해 <input type="range" id="simExplode" min="0" max="100" value="0" step="1" style="width:82px" />
+        </span>
+        <span style="display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--text-3);padding:0 4px">
+          rpm <input type="range" id="simRpm" min="0" max="1800" value="300" step="30" style="width:70px" />
+          <b id="simRpmV" style="color:var(--text-2);font-variant-numeric:tabular-nums">300</b>
+        </span>
       </div>
 
       <div class="dock" id="dock" style="display:none">
@@ -268,8 +284,19 @@
           <div id="goldenCmp" style="margin-top:8px"></div>
         </div>
 
+        <div class="block" id="mateBlock" style="display:none">
+          <h3>조립 인터페이스 <span class="tag" id="mateMeta" style="margin-left:6px"></span></h3>
+          <div id="mateList"></div>
+          <div class="dl-group" style="margin-top:10px">분해 순서</div>
+          <div id="mateOrder"></div>
+          <div class="dl-group" style="margin-top:10px">조립 점검</div>
+          <div id="mateChecks"></div>
+          <div class="hint" style="margin-top:7px">우리 부품 형상은 도면(DSL)에서 정확히 나오고, <b>상대 부품은 규격표 근사</b>입니다(반투명·색으로 구분). 방향과 축은 회전체 기하라 정확합니다.</div>
+        </div>
+
         <div class="block" id="exportBlock" style="display:none">
           <h3>내보내기</h3>
+          <label class="inline" id="asmExportRow" style="display:none;align-items:center;gap:7px;font-size:11.5px;color:var(--text-2);margin-bottom:8px"><input type="checkbox" id="asmExport" /> 상대 부품(조립체) 포함해 내보내기</label>
           <div class="dl-group">3D</div>
           <div id="dlList3d"></div>
           <div class="dl-group">도면 · 사양</div>
@@ -291,6 +318,6 @@
 
 <div class="toasts" id="toasts"></div>
 
-<script type="module" src="./js/app.js?v=2ebcdab1"></script>
+<script type="module" src="./js/app.js?v=14c93c89"></script>
 </body>
 </html>
