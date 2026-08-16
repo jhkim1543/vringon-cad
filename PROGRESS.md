@@ -2479,6 +2479,22 @@ fire-octo ≈4p · sar-vtol ≈3p)과 프리미티브 어휘로는 말할 수 �
 같은 것을 서빙하는지는 `docs/index.html`의 `BUILD` 스탬프로 확인한다 — 스탬프는 `js/`와 `docs/specs/`의
 내용 해시라서, 같으면 페이지가 읽는 모듈과 사양서가 같다는 뜻이다. 이번 빌드는 `832e871a`.
 
+온프렘은 저장소 루트를 서빙하므로 대조표 주소가 `/docs/renders.html`이고, Pages는 `docs/`를 루트로 서빙하므로
+`/renders.html`이다. 상대 경로로 쓴 덕분에 페이지 자체는 양쪽에서 그대로 돈다.
+
+**Pages에서 밑줄로 시작하는 파일이 404였다 (`docs/.nojekyll` 추가).** 배포 후 스모크에서
+`/specs/_design-similarity.json`이 404로 돌아왔다. GitHub Pages는 기본으로 Jekyll을 태우고, Jekyll은
+밑줄로 시작하는 파일·폴더를 출력에서 제외한다. `_similarity.json`·`_photo-inventory.json`도 같이 빠져
+있었는데 **지금까지는 앱이 이 셋을 아무도 읽지 않아서 드러나지 않았다** — 밑줄은 `stamp-version`이
+"소스가 아니라 소스의 측정치"를 빌드 해시에서 빼려고 쓰는 표시였고, 그게 우연히 Jekyll의 제외 규칙과
+겹쳤다. 대조표가 처음으로 이 파일을 읽으면서 나타난 것이다. 점수 없이도 그림은 뜨도록 `catch`를 걸어
+두었지만 사진·겹침이 통째로 빠지므로 실제로는 깨진 페이지였다.
+
+`docs/` 아래 추적 파일 전부를 확인했다 — front matter(첫 줄 `---`)를 가진 html·md 0개(7개 검사),
+`_layouts`·`_includes`·`_config.yml`·`Gemfile` 없음. 즉 이 사이트는 Jekyll을 쓴 적이 없고 태울 이유도
+없어서, 빈 `docs/.nojekyll`로 처리를 끈다. 다른 작업의 `docs/revolve/`도 같은 조건이라(html 3개 모두
+front matter 없음) 영향이 없고, 그쪽 파일은 한 줄도 건드리지 않았다.
+
 ### 검증
 
 - `qa-samples` **10/10** · `qa-vocab` 전부 통과 · `qa-vendor-scan` 추적 파일 0건
