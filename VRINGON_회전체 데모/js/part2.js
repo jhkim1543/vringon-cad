@@ -5,6 +5,7 @@
 
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+import { TransformControls } from "three/addons/controls/TransformControls.js";
 import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
 import { splitViews, viewProfile, viewContours, suggestKind } from "./views.js";
 import { makePartMaterials, buildRevolvePart, buildExtrudePart, meshVolumeCm3, arrangeRow } from "./part2-cad.js";
@@ -26,7 +27,7 @@ const SAMPLES = [
   { id: "sole", name: "신발 밑창", file: "assets/part2/sole.svg" },
 ];
 
-const state = { image: null, raster: null, views: [], pick: null, mmPerPx: 0, parts: [], name: "" };
+const state = { image: null, raster: null, views: [], pick: null, mmPerPx: 0, parts: [], name: "", sel: null };
 
 /* ================================================================ 3D */
 const stage = $("stage");
@@ -72,6 +73,92 @@ function fitView() {
   camera.near = Math.max(0.2, r / 80); camera.far = r * 90; camera.updateProjectionMatrix(); controls.update();
 }
 $("btnFit").onclick = fitView;
+
+/* ---------------- 부품 고르기 · 옮기기 (조립) */
+const gizmo = new TransformControls(camera, renderer.domElement);
+gizmo.setSize(0.85);
+gizmo.addEventListener("dragging-changed", (e) => (controls.enabled = !e.value));
+gizmo.addEventListener("objectChange", () => renderTransform());
+scene.add(typeof gizmo.getHelper === "function" ? gizmo.getHelper() : gizmo);
+const ray = new THREE.Raycaster(), ptr = new THREE.Vector2();
+renderer.domElement.addEventListener("pointerdown", (e) => {
+  if (gizmo.dragging) return;
+  const r = renderer.domElement.getBoundingClientRect();
+  ptr.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
+  ray.setFromCamera(ptr, camera);
+  const hit = ray.intersectObjects(root.children, false)[0];
+  selectPart(hit ? state.parts.find((p) => p.mesh === hit.object) || null : null);
+});
+function selectPart(p) {
+  for (const q of state.parts) q.mesh.material.emissive?.setHex(0x000000);
+  state.sel = p || null;
+  if (!p) { gizmo.detach(); $("asmBlock").style.display = "none"; renderParts(); return; }
+  p.mesh.material.emissive?.setHex(0x1E2A6B);
+  gizmo.attach(p.mesh);
+  $("asmBlock").style.display = "";
+  $("selTag").textContent = `${p.id}. ${KIND_KO[p.kind]}`;
+  renderTransform(); renderHoleOptions(); renderParts();
+}
+$("gizmoSeg").onclick = (e) => {
+  const b = e.target.closest("button"); if (!b) return;
+  document.querySelectorAll("#gizmoSeg button").forEach((x) => x.classList.toggle("on", x === b));
+  gizmo.setMode(b.dataset.g);
+};
+/* 위치·회전 숫자 (기즈모와 양방향) */
+function renderTransform() {
+  const p = state.sel; if (!p) return;
+  const m = p.mesh, deg = (r) => +THREE.MathUtils.radToDeg(r).toFixed(1);
+  $("posRow").innerHTML = `
+    <span>X</span><input data-t="px" value="${+m.position.x.toFixed(1)}"/>
+    <span>Y</span><input data-t="py" value="${+m.position.y.toFixed(1)}"/>
+    <span>Z</span><input data-t="pz" value="${+m.position.z.toFixed(1)}"/>
+    <span>RX</span><input data-t="rx" value="${deg(m.rotation.x)}"/>
+    <span>RY</span><input data-t="ry" value="${deg(m.rotation.y)}"/>
+    <span>RZ</span><input data-t="rz" value="${deg(m.rotation.z)}"/>`;
+}
+$("posRow").addEventListener("change", (e) => {
+  const p = state.sel, el = e.target; if (!p || !el.dataset.t) return;
+  const v = Number(el.value) || 0, m = p.mesh, k = el.dataset.t;
+  if (k === "px") m.position.x = v; else if (k === "py") m.position.y = v; else if (k === "pz") m.position.z = v;
+  else if (k === "rx") m.rotation.x = THREE.MathUtils.degToRad(v);
+  else if (k === "ry") m.rotation.y = THREE.MathUtils.degToRad(v);
+  else if (k === "rz") m.rotation.z = THREE.MathUtils.degToRad(v);
+  m.updateMatrixWorld(true);
+});
+/* 상대 부품의 구멍 목록 */
+function renderHoleOptions() {
+  const sel = $("holeSel"), me = state.sel, opts = [];
+  for (const p of state.parts) {
+    if (p === me) continue;
+    (p.mesh.userData.holes || []).forEach((h, i) => opts.push({ v: `${p.id}:${i}`, t: `부품 ${p.id} 의 구멍 ${i + 1} (지름 ${(h.r * 2).toFixed(1)})` }));
+  }
+  sel.innerHTML = opts.length ? opts.map((o) => `<option value="${o.v}">${o.t}</option>`).join("") : `<option value="">맞출 구멍이 없습니다</option>`;
+  $("btnSnapHole").disabled = !opts.length;
+}
+/* 고른 부품의 축을 상대 부품 구멍의 중심·방향에 맞춘다 */
+$("btnSnapHole").onclick = () => {
+  const me = state.sel, val = $("holeSel").value;
+  if (!me || !val) return;
+  const [pid, hi] = val.split(":").map(Number);
+  const target = state.parts.find((p) => p.id === pid); if (!target) return;
+  const h = target.mesh.userData.holes[hi]; if (!h) return;
+  target.mesh.updateMatrixWorld(true);
+  const pos = new THREE.Vector3(h.x, h.y, h.z).applyMatrix4(target.mesh.matrixWorld);
+  const dir = new THREE.Vector3(...(target.mesh.userData.axis || [0, 0, 1])).applyQuaternion(target.mesh.quaternion).normalize();
+  const myAxis = new THREE.Vector3(...(me.mesh.userData.axis || [1, 0, 0])).normalize();
+  me.mesh.quaternion.setFromUnitVectors(myAxis, dir);
+  me.mesh.position.copy(pos);
+  me.mesh.updateMatrixWorld(true);
+  renderTransform();
+  toast(`부품 ${me.id} 의 축을 부품 ${pid} 의 구멍 ${hi + 1} 에 맞췄습니다`, true);
+};
+$("btnFloor").onclick = () => { const p = state.sel; if (!p) return; const bb = new THREE.Box3().setFromObject(p.mesh); p.mesh.position.y -= bb.min.y; renderTransform(); };
+$("btnCenter").onclick = () => { const p = state.sel; if (!p) return; p.mesh.position.set(0, 0, 0); renderTransform(); };
+$("btnRow").onclick = () => {
+  for (const p of state.parts) { p.mesh.position.set(0, 0, 0); p.mesh.rotation.set(0, 0, 0); }
+  arrangeRow(state.parts.map((p) => p.mesh));
+  renderTransform(); fitView(); toast("나란히 정렬했습니다");
+};
 
 /* ================================================================ 도면 시트 */
 function showSheet(on) { $("sheet").classList.toggle("show", on); $("btnSheet").classList.toggle("on", on); }
@@ -206,31 +293,43 @@ $("btnMake").onclick = () => {
   mesh.name = `part${part.id}:${kind}`;
   state.parts.push(part);
   root.add(mesh);
-  arrangeRow(state.parts.map((p) => p.mesh));
+  placeNext(part);                   /* 이미 옮겨 둔 부품은 건드리지 않고 옆자리에 놓는다 */
   v.used = (v.used || 0) + 1;
   renderParts(); renderViewList(); drawBoxes();
   showSheet(false); fitView();
+  selectPart(part);
   $("exportBlock").style.display = ""; renderExport();
   toast(`부품 ${part.id} (${KIND_KO[kind]}) 을 만들었습니다`, true);
 };
 
+/* 새 부품은 지금까지 놓인 것들의 오른쪽 옆에 (수동 배치를 흩뜨리지 않는다) */
+function placeNext(part) {
+  const others = state.parts.filter((p) => p !== part).map((p) => p.mesh);
+  const bb = new THREE.Box3().setFromObject(part.mesh);
+  const size = bb.getSize(new THREE.Vector3());
+  let x = 0;
+  if (others.length) { const ob = new THREE.Box3(); for (const m of others) ob.expandByObject(m); x = ob.max.x + 12 + size.x / 2; }
+  part.mesh.position.set(x, size.y / 2, 0);
+}
 function renderParts() {
   $("partsBlock").style.display = state.parts.length ? "" : "none";
   $("partCount").textContent = `${state.parts.length}개`;
   $("partList").innerHTML = state.parts.map((p) => `
-    <div class="prow" data-p="${p.id}">
+    <div class="prow" data-p="${p.id}" style="${state.sel === p ? "background:rgba(91,107,240,.12)" : ""}">
       <span class="k"><b>${p.id}. ${KIND_KO[p.kind]}</b><br/><span class="t">뷰 ${p.view} · ${Object.entries(p.meta).map(([k, v]) => `${k} ${v}`).join(" · ")}</span></span>
       <button title="삭제">×</button></div>`).join("");
   $("totVol").textContent = `${fmt(state.parts.reduce((a, p) => a + p.vol, 0), 1)} cm³`;
 }
 $("partList").onclick = (e) => {
-  const b = e.target.closest("button"); if (!b) return;
-  const id = Number(b.closest("[data-p]").dataset.p);
+  const rowEl = e.target.closest("[data-p]"); if (!rowEl) return;
+  const b = e.target.closest("button");
+  if (!b) { const p = state.parts.find((x) => x.id === Number(rowEl.dataset.p)); return selectPart(p || null); }
+  const id = Number(rowEl.dataset.p);
   const i = state.parts.findIndex((p) => p.id === id); if (i < 0) return;
+  if (state.sel === state.parts[i]) { gizmo.detach(); state.sel = null; $("asmBlock").style.display = "none"; }
   root.remove(state.parts[i].mesh); state.parts[i].mesh.geometry.dispose();
   const v = state.views.find((x) => x.id === state.parts[i].view); if (v) v.used = Math.max(0, (v.used || 1) - 1);
   state.parts.splice(i, 1);
-  arrangeRow(state.parts.map((p) => p.mesh));
   renderParts(); renderViewList(); drawBoxes(); fitView();
   if (!state.parts.length) $("exportBlock").style.display = "none";
 };
@@ -259,6 +358,7 @@ function reset(full = true) {
   state.parts = []; state.views = []; state.pick = null; state.mmPerPx = 0;
   $("viewBlock").style.display = "none"; $("scaleBlock").style.display = "none";
   $("makeBlock").style.display = "none"; $("partsBlock").style.display = "none"; $("exportBlock").style.display = "none";
+  $("asmBlock").style.display = "none"; gizmo.detach(); state.sel = null;
   $("ov").innerHTML = ""; $("scaleLen").value = "";
   $("scaleNote").textContent = "한 번만 넣으면 도면 전체에 적용됩니다. 넣기 전에는 실제 치수를 알 수 없습니다.";
   $("hintBox").innerHTML = "도면을 올리면 뷰를 자동으로 나눕니다. 뷰를 고르고 유형을 정한 뒤 <b>부품 만들기</b> 를 누르세요.";
@@ -266,7 +366,21 @@ function reset(full = true) {
 }
 $("btnNew").onclick = () => { reset(true); toast("처음으로 돌아왔습니다"); };
 const drop = $("drop"), fileInput = $("file");
-drop.onclick = () => fileInput.click();
+const SKIP_KEY = "vringon.part2.check.v1";
+function openCheck() { $("checkModal").classList.add("show"); }
+function closeCheck(pick) {
+  $("checkModal").classList.remove("show");
+  if ($("chkSkip").checked) { try { localStorage.setItem(SKIP_KEY, "1"); } catch {} }
+  if (pick) fileInput.click();
+}
+$("btnPickFile").onclick = () => closeCheck(true);
+$("checkModal").onclick = (e) => { if (e.target === $("checkModal")) closeCheck(false); };
+$("linkCheck").onclick = (e) => { e.preventDefault(); openCheck(); };
+drop.onclick = () => {
+  let skip = false;
+  try { skip = localStorage.getItem(SKIP_KEY) === "1"; } catch {}
+  if (skip) fileInput.click(); else openCheck();
+};
 fileInput.onchange = async () => { const f = fileInput.files[0]; if (f) await fromFile(f); fileInput.value = ""; };
 drop.ondragover = (e) => { e.preventDefault(); drop.classList.add("over"); };
 drop.ondragleave = () => drop.classList.remove("over");

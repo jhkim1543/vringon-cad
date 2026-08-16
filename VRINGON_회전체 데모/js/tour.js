@@ -32,8 +32,10 @@ const STEPS_P2 = [
     body: "고른 뷰의 가로 실제 길이를 넣으면 도면 전체 치수가 정해집니다. 넣기 전에는 실제 치수를 만들지 않습니다." },
   { el: "makeBlock", fallback: "sideRight", fallbackBox: { right: 20, top: 120, w: 260, h: 200 }, place: "left", title: "유형을 정하고 만들기",
     body: "회전체 · 판 · 윤곽 압출 중에서 고르고, 판이면 두께를 넣습니다. 두께는 한 뷰만으로는 알 수 없습니다." },
+  { el: "asmBlock", fallback: "sideRight", fallbackBox: { right: 20, top: 200, w: 260, h: 180 }, place: "left", title: "배치 · 조립",
+    body: "3D 에서 부품을 눌러 고르고 화살표로 옮깁니다. 축을 상대 부품의 구멍에 맞추는 버튼도 있습니다. 조립 위치는 도면에서 읽지 않습니다." },
   { el: "sideRight", place: "left", title: "쌓고 내려받기",
-    body: "부품이 목록에 쌓이고, 아래에서 STEP · STL · GLB 등으로 한 번에 받습니다. 배치는 보기용이며 조립 위치가 아닙니다." },
+    body: "부품이 목록에 쌓이고, 아래에서 STEP · STL · GLB 등으로 한 번에 받습니다." },
 ];
 let STEPS = STEPS_P1;
 

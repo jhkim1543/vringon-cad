@@ -39,6 +39,25 @@
   .mini { font-size: 11.5px; color: var(--text-3); line-height: 1.6; }
   .kf label.inline { display: flex; align-items: center; gap: 7px; font-size: 11.5px; color: var(--text-2); }
   .scope-note.ok { border-color: rgba(61,214,160,.35); background: rgba(61,214,160,.07); color: var(--ok); }
+  .cmp3 { display: grid; grid-template-columns: 14px 1fr 14px 1fr 14px 1fr; gap: 5px 4px; align-items: center; }
+  .cmp3 span { font-size: 11px; color: var(--text-3); }
+  .cmp3 input { width: 100%; background: #0F0F13; border: 1px solid var(--line-2); border-radius: 5px; color: var(--text);
+    font-size: 11.5px; padding: 4px 5px; font-variant-numeric: tabular-nums; }
+  .cmp3 input:focus { border-color: var(--accent); outline: none; }
+  /* 올리기 전 확인 */
+  .modal { position: fixed; inset: 0; z-index: 70; display: none; place-items: center; background: rgba(6,6,10,.72); }
+  .modal.show { display: grid; }
+  .modal-box { width: min(560px, calc(100vw - 40px)); background: var(--panel); border: 1px solid var(--line-2);
+    border-radius: 14px; padding: 22px 24px 18px; box-shadow: 0 22px 60px rgba(0,0,0,.6); }
+  .modal-box h2 { font-size: 18px; margin-bottom: 4px; }
+  .modal-box p { font-size: 13px; color: var(--text-2); line-height: 1.7; }
+  .chk { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 18px; margin: 14px 0 4px; }
+  .chk div { font-size: 12.5px; color: var(--text-2); display: flex; gap: 7px; align-items: flex-start; line-height: 1.55; }
+  .chk i { font-style: normal; flex: none; }
+  .chk .y i { color: var(--ok); }
+  .chk .n i { color: var(--danger); }
+  .modal-row { display: flex; align-items: center; gap: 9px; margin-top: 16px; }
+  @media (max-width: 700px) { .chk { grid-template-columns: 1fr; } }
 
   /* 첫 방문 사용법 안내 */
   .tour { position: fixed; inset: 0; z-index: 60; }
@@ -94,7 +113,8 @@
         <div class="drop compact" id="drop">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M6 10l6-6 6 6M4 20h16"/></svg>
           <b>도면 이미지 올리기</b>
-          PNG · JPG · SVG · 여러 투상도가 있어도 됩니다
+          PNG · JPG · SVG · 여러 투상도가 있어도 됩니다<br/>
+          <a href="#" id="linkCheck" style="color:var(--accent-hi)" onclick="event.stopPropagation()">올리기 전에 확인</a>
           <input type="file" id="file" accept="image/png,image/jpeg,image/svg+xml,.svg,.png,.jpg,.jpeg" style="display:none" />
         </div>
 
@@ -180,11 +200,33 @@
           <button class="btn btn-primary" id="btnMake" style="width:100%;margin-top:12px">부품 만들기</button>
         </div>
 
+        <div class="block" id="asmBlock" style="display:none">
+          <h3>배치 · 조립 <span class="tag" id="selTag"></span></h3>
+          <div class="seg" id="gizmoSeg" style="margin-bottom:8px">
+            <button data-g="translate" class="on">이동</button>
+            <button data-g="rotate">회전</button>
+          </div>
+          <div class="cmp3" id="posRow"></div>
+          <div class="dl-group" style="margin-top:10px">맞추기</div>
+          <div class="kf">
+            <label>이 부품의 축을 다른 부품의 구멍에</label>
+            <select class="input" id="holeSel" style="padding:6px 9px"></select>
+          </div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">
+            <button class="btn btn-primary btn-sm" id="btnSnapHole">구멍에 맞추기</button>
+            <button class="btn btn-ghost btn-sm" id="btnFloor">바닥에 놓기</button>
+            <button class="btn btn-ghost btn-sm" id="btnCenter">원점으로</button>
+            <button class="btn btn-ghost btn-sm" id="btnRow">나란히 정렬</button>
+          </div>
+          <div class="mini" style="margin-top:7px">3D 에서 부품을 눌러 고르고, 화살표를 끌어 옮깁니다.
+          <b>구멍에 맞추기</b> 는 고른 부품의 축을 상대 부품의 구멍 중심·방향에 정렬합니다.</div>
+        </div>
+
         <div class="block" id="partsBlock" style="display:none">
           <h3>만든 부품 <span class="tag" id="partCount"></span></h3>
           <div id="partList"></div>
           <div class="kv" style="margin-top:8px"><span>합계 부피</span><b id="totVol">—</b></div>
-          <div class="mini" style="margin-top:6px">배치는 보기 편하도록 나란히 놓은 것입니다. <b>조립 위치는 도면에서 정하지 않습니다</b>(뷰 사이 대응이 필요).</div>
+          <div class="mini" style="margin-top:6px">처음 배치는 보기 편하도록 나란히 놓은 것입니다. <b>도면에서 조립 위치를 읽지는 않습니다</b> — 위의 배치·조립에서 직접 맞춥니다.</div>
         </div>
 
         <div class="block" id="exportBlock" style="display:none">
@@ -202,6 +244,31 @@
   <symbol id="i-new" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></symbol>
   <symbol id="i-dl" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 10l5 5 5-5M5 19h14"/></symbol>
 </svg>
+
+<div class="modal" id="checkModal">
+  <div class="modal-box">
+    <div class="eyebrow">올리기 전에</div>
+    <h2>어떤 도면을 올리면 되나요</h2>
+    <p>여러 투상도가 한 장에 있어도 됩니다. 다만 <b>선으로 그린 도면</b>이어야 하고, 뷰끼리 떨어져 있어야 뷰를 나눌 수 있습니다.</p>
+    <div class="chk">
+      <div class="y"><i>✓</i><span>정면 · 평면 · 측면이 한 장에 있는 부품 도면</span></div>
+      <div class="n"><i>✕</i><span>사진 · 3D 렌더 · 손그림</span></div>
+      <div class="y"><i>✓</i><span>뷰 사이가 조금 떨어져 있는 배치</span></div>
+      <div class="n"><i>✕</i><span>뷰끼리 겹치거나 붙어 있는 배치</span></div>
+      <div class="y"><i>✓</i><span>외형선이 뚜렷한 PNG · SVG (가로 1,200px 이상)</span></div>
+      <div class="n"><i>✕</i><span>흐릿하거나 기울어진 저해상 스캔</span></div>
+      <div class="y"><i>✓</i><span>어딘가에 실제 치수 하나 (축척을 정합니다)</span></div>
+      <div class="n"><i>✕</i><span>치수가 A · B · H 기호뿐인 카탈로그 도면</span></div>
+    </div>
+    <p style="margin-top:10px;font-size:12.5px;color:var(--text-3)">두께는 한 뷰만으로 알 수 없어 직접 넣습니다. 조립 위치도 도면에서 읽지 않고 화면에서 맞춥니다.</p>
+    <div class="modal-row">
+      <a class="btn btn-ghost btn-sm" href="./guide.html#part2" target="_blank">자세한 안내</a>
+      <span style="flex:1"></span>
+      <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-3)"><input type="checkbox" id="chkSkip" /> 다시 보지 않기</label>
+      <button class="btn btn-primary btn-sm" id="btnPickFile">파일 고르기</button>
+    </div>
+  </div>
+</div>
 
 <div class="toasts" id="toasts"></div>
 <script type="module" src="./js/part2.js"></script>

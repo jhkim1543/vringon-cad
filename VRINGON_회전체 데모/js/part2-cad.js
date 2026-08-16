@@ -43,6 +43,8 @@ export function buildRevolvePart(rMm, lengthMm, { radial = 96, material, tol = 0
   geo.translate(-c.x, -c.y, -c.z);
   const mesh = new THREE.Mesh(geo, material);
   mesh.castShadow = mesh.receiveShadow = true;
+  mesh.userData.axis = [1, 0, 0];      /* 회전축은 X */
+  mesh.userData.holes = [];
   return mesh;
 }
 
@@ -63,6 +65,16 @@ export function buildExtrudePart(outerMm, holesMm, thicknessMm, { material, beve
   geo.translate(-c.x, -c.y, -c.z);
   const mesh = new THREE.Mesh(geo, material);
   mesh.castShadow = mesh.receiveShadow = true;
+  /* 조립에 쓸 정보: 구멍 중심(부품 좌표)과 구멍 축 방향. 압출 방향(Z)이 곧 구멍이 뚫린 방향이다. */
+  mesh.userData.axis = [0, 0, 1];
+  mesh.userData.holes = (holesMm || []).filter((h) => h && h.length >= 3).map((h) => {
+    let sx = 0, sy = 0;
+    for (const [x, y] of h) { sx += x; sy += -y; }
+    const cx = sx / h.length, cy = sy / h.length;
+    let r = 0;
+    for (const [x, y] of h) r += Math.hypot(x - cx, -y - cy);
+    return { x: cx - c.x, y: cy - c.y, z: 0, r: +(r / h.length).toFixed(2) };
+  });
   return mesh;
 }
 
