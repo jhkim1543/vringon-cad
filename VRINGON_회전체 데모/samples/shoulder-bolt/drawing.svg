@@ -1,0 +1,102 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 297 210" width="1188" height="840" font-family="Pretendard, 'Segoe UI', Arial, sans-serif" data-vringon-dsl="shoulder-bolt" data-scale="2">
+<rect width="297" height="210" fill="#FFFFFF"/>
+<g id="center" stroke="#111111" stroke-width="0.18" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="8 1.5 0.5 1.5">
+<line x1="94.56" y1="85.6" x2="208.56" y2="85.6"/>
+</g>
+<g id="hidden" stroke="#111111" stroke-width="0.25" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="3 1.5">
+<line x1="102.56" y1="77.6" x2="110.56" y2="77.6"/>
+<line x1="102.56" y1="93.6" x2="110.56" y2="93.6"/>
+<line x1="110.56" y1="93.6" x2="110.56" y2="77.6"/>
+</g>
+<g id="thin" stroke="#111111" stroke-width="0.25" fill="none" stroke-linecap="round" stroke-linejoin="round">
+<line x1="176.56" y1="79.134" x2="198.56" y2="79.134"/>
+<line x1="176.56" y1="92.066" x2="198.56" y2="92.066"/>
+</g>
+<g id="dim" stroke="#111111" stroke-width="0.18" fill="none" stroke-linecap="round" stroke-linejoin="round">
+<line x1="102.56" y1="102.6" x2="102.56" y2="118.6"/>
+<line x1="116.56" y1="102.6" x2="116.56" y2="118.6"/>
+<line x1="102.56" y1="116.6" x2="116.56" y2="116.6"/>
+<polygon points="102.56,116.6 105.56,116.09 105.56,117.11" fill="#111111" stroke="none"/>
+<polygon points="116.56,116.6 113.56,117.11 113.56,116.09" fill="#111111" stroke="none"/>
+<line x1="176.56" y1="94.6" x2="176.56" y2="118.6"/>
+<line x1="200.56" y1="94.6" x2="200.56" y2="118.6"/>
+<line x1="176.56" y1="116.6" x2="200.56" y2="116.6"/>
+<polygon points="176.56,116.6 179.56,116.09 179.56,117.11" fill="#111111" stroke="none"/>
+<polygon points="200.56,116.6 197.56,117.11 197.56,116.09" fill="#111111" stroke="none"/>
+<line x1="102.56" y1="102.6" x2="102.56" y2="127.6"/>
+<line x1="200.56" y1="102.6" x2="200.56" y2="127.6"/>
+<line x1="102.56" y1="125.6" x2="200.56" y2="125.6"/>
+<polygon points="102.56,125.6 105.56,125.09 105.56,126.11" fill="#111111" stroke="none"/>
+<polygon points="200.56,125.6 197.56,126.11 197.56,125.09" fill="#111111" stroke="none"/>
+<line x1="109.56" y1="101.6" x2="109.56" y2="59.6"/>
+<polygon points="109.56,101.6 109.05,98.6 110.07,98.6" fill="#111111" stroke="none"/>
+<polygon points="109.56,69.6 110.07,72.6 109.05,72.6" fill="#111111" stroke="none"/>
+<line x1="146.56" y1="97.6" x2="146.56" y2="63.6"/>
+<polygon points="146.56,97.6 146.05,94.6 147.07,94.6" fill="#111111" stroke="none"/>
+<polygon points="146.56,73.6 147.07,76.6 146.05,76.6" fill="#111111" stroke="none"/>
+<line x1="188.56" y1="77.6" x2="194.56" y2="68.6"/>
+<line x1="194.56" y1="68.6" x2="200.9" y2="68.6"/>
+<polygon points="188.56,77.6 187.32,80.379 186.472,79.813" fill="#111111" stroke="none"/>
+<line x1="103.16" y1="70.2" x2="97.16" y2="62.2"/>
+<line x1="97.16" y1="62.2" x2="87.88" y2="62.2"/>
+<polygon points="103.16,70.2 105.368,72.294 104.552,72.906" fill="#111111" stroke="none"/>
+<line x1="117.16" y1="70.2" x2="111.16" y2="62.2"/>
+<line x1="111.16" y1="62.2" x2="101.88" y2="62.2"/>
+<polygon points="117.16,70.2 119.368,72.294 118.552,72.906" fill="#111111" stroke="none"/>
+<line x1="174.16" y1="78.8" x2="168.16" y2="68.6"/>
+<line x1="168.16" y1="68.6" x2="129.27" y2="68.6"/>
+<polygon points="174.16,78.8 176.121,81.127 175.241,81.644" fill="#111111" stroke="none"/>
+<line x1="199.56" y1="78.6" x2="205.56" y2="70.6"/>
+<line x1="205.56" y1="70.6" x2="211.9" y2="70.6"/>
+<polygon points="199.56,78.6 198.168,81.306 197.352,80.694" fill="#111111" stroke="none"/>
+<line x1="106.56" y1="77.6" x2="100.56" y2="55.6"/>
+<line x1="100.56" y1="55.6" x2="76.81" y2="55.6"/>
+<polygon points="106.56,77.6 107.841,80.36 106.857,80.628" fill="#111111" stroke="none"/>
+</g>
+<g id="outline" stroke="#111111" stroke-width="0.5" fill="none" stroke-linecap="round" stroke-linejoin="round">
+<polyline points="102.56,70.8 103.76,69.6 115.36,69.6 116.56,70.8 116.56,73.6 176.56,73.6 176.56,78.8 181.36,78.8 181.36,77.6 198.56,77.6 200.56,79.6"/>
+<polyline points="102.56,100.4 103.76,101.6 115.36,101.6 116.56,100.4 116.56,97.6 176.56,97.6 176.56,92.4 181.36,92.4 181.36,93.6 198.56,93.6 200.56,91.6"/>
+<line x1="102.56" y1="100.4" x2="102.56" y2="70.8"/>
+<line x1="200.56" y1="91.6" x2="200.56" y2="79.6"/>
+<line x1="103.76" y1="101.6" x2="103.76" y2="69.6"/>
+<line x1="115.36" y1="101.6" x2="115.36" y2="69.6"/>
+<line x1="115.36" y1="101.6" x2="115.36" y2="69.6"/>
+<line x1="116.56" y1="97.6" x2="116.56" y2="73.6"/>
+<line x1="176.56" y1="92.4" x2="176.56" y2="78.8"/>
+<line x1="181.36" y1="92.4" x2="181.36" y2="78.8"/>
+<line x1="198.56" y1="93.6" x2="198.56" y2="77.6"/>
+<line x1="198.56" y1="93.6" x2="198.56" y2="77.6"/>
+</g>
+<g id="text" fill="#111111">
+<text x="109.56" y="114.8" font-size="3.5" text-anchor="middle" fill="#111111" data-role="dim">7</text>
+<text x="188.56" y="114.8" font-size="3.5" text-anchor="middle" fill="#111111" data-role="dim">12</text>
+<text x="151.56" y="123.8" font-size="3.5" text-anchor="middle" fill="#111111" data-role="dim">49</text>
+<text x="109.56" y="58" font-size="3.5" text-anchor="middle" fill="#111111" data-role="dim">⌀16</text>
+<text x="146.56" y="62" font-size="3.5" text-anchor="middle" fill="#111111" data-role="dim">⌀12 h8</text>
+<text x="195.56" y="67.2" font-size="3.5" text-anchor="start" fill="#111111" data-role="dim">M8</text>
+<text x="96.16" y="60.8" font-size="3.5" text-anchor="end" fill="#111111" data-role="dim">C0.6</text>
+<text x="110.16" y="60.8" font-size="3.5" text-anchor="end" fill="#111111" data-role="dim">C0.6</text>
+<text x="167.16" y="67.2" font-size="3.5" text-anchor="end" fill="#111111" data-role="dim">2.4×⌀6.8 (DIN 76-A)</text>
+<text x="206.56" y="69.2" font-size="3.5" text-anchor="start" fill="#111111" data-role="dim">C1</text>
+<text x="99.56" y="54.2" font-size="2.5" text-anchor="end" fill="#111111" data-role="dim">육각 소켓 S8 깊이 4</text>
+</g>
+<g id="frame" stroke="#111111" stroke-width="0.5" fill="none" stroke-linecap="round" stroke-linejoin="round">
+<rect x="10" y="10" width="277" height="190"/>
+<rect x="177" y="176" width="110" height="24"/>
+<line x1="177" y1="192" x2="287" y2="192"/>
+<line x1="177" y1="184" x2="287" y2="184"/>
+<line x1="232" y1="200" x2="232" y2="184"/>
+<line x1="255" y1="184" x2="255" y2="176"/>
+<circle cx="269" cy="193.5" r="2.4"/>
+<circle cx="269" cy="193.5" r="1.2"/>
+<polyline points="274.5,196.1 281,194.9 281,192.1 274.5,190.9"/>
+</g><g id="sheet-text" fill="#111111">
+<text x="179" y="181.5" font-size="4.2" text-anchor="start" font-weight="700" data-role="title">VRINGON</text>
+<text x="257" y="181.5" font-size="2.5" text-anchor="start" font-weight="700" data-role="title">도번 VR-RB-021</text>
+<text x="179" y="189.5" font-size="2.8" text-anchor="start" font-weight="700" data-role="title">품명 숄더 볼트 M8</text>
+<text x="234" y="189.5" font-size="2.8" text-anchor="start" font-weight="700" data-role="title">재질 SCM435</text>
+<text x="179" y="197.5" font-size="2.5" text-anchor="start" font-weight="700" data-role="title">척도 2:1</text>
+<text x="234" y="197.5" font-size="2.5" text-anchor="start" font-weight="700" data-role="title">3각법 · 단위 mm</text>
+<text x="14" y="191.8" font-size="2.6" text-anchor="start" font-weight="400" data-role="note">1. 지시 없는 모따기 C0.5</text>
+<text x="14" y="196" font-size="2.6" text-anchor="start" font-weight="400" data-role="note">2. 지시 없는 공차 KS B ISO 2768-m</text>
+</g></svg>

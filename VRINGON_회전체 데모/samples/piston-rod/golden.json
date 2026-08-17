@@ -1,0 +1,107 @@
+{
+  "dsl": "vringon-shaft/1.0",
+  "id": "piston-rod",
+  "name": "Piston rod",
+  "name_ko": "피스톤 로드",
+  "part_class": "shaft",
+  "units": "mm",
+  "material": "SUS304",
+  "drawing": {
+    "number": "VR-RB-023",
+    "scale": "1:1",
+    "projection": "third"
+  },
+  "segments": [
+    {
+      "type": "thread",
+      "length": 18,
+      "diameter": 14,
+      "spec": "M14x1.5",
+      "pitch": 1.5
+    },
+    {
+      "type": "cyl",
+      "length": 12,
+      "diameter": 18
+    },
+    {
+      "type": "cyl",
+      "length": 70,
+      "diameter": 16,
+      "tolerance": "f7",
+      "label": "실링 면"
+    },
+    {
+      "type": "cyl",
+      "length": 20,
+      "diameter": 20
+    }
+  ],
+  "transitions": [
+    {
+      "at": 0,
+      "type": "chamfer",
+      "size": 1.5
+    },
+    {
+      "at": 1,
+      "type": "undercut",
+      "width": 3,
+      "depth": 0.8,
+      "standard": "DIN 76-A"
+    },
+    {
+      "at": 2,
+      "type": "fillet",
+      "radius": 1
+    },
+    {
+      "at": 3,
+      "type": "fillet",
+      "radius": 1.5
+    },
+    {
+      "at": 4,
+      "type": "chamfer",
+      "size": 1
+    }
+  ],
+  "grooves": [
+    {
+      "segment": 2,
+      "offset": 6,
+      "width": 1.6,
+      "depth": 0.7,
+      "kind": "snap_ring",
+      "standard": "DIN 471 ⌀14.6×1.6"
+    }
+  ],
+  "bore": null,
+  "features": [
+    {
+      "type": "flat",
+      "segment": 1,
+      "offset": 2,
+      "length": 8,
+      "depth": 2,
+      "count": 2
+    },
+    {
+      "type": "cross_hole",
+      "position": 110,
+      "diameter": 8,
+      "through": true,
+      "angle": 0
+    },
+    {
+      "type": "center_hole",
+      "end": "right",
+      "form": "B",
+      "d": 2.5
+    }
+  ],
+  "meta": {
+    "source": "golden",
+    "difficulty": 5
+  }
+}

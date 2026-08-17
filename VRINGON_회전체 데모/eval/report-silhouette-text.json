@@ -1,0 +1,1228 @@
+{
+ "date": "2026-08-17T11:48:44.998Z",
+ "method": "silhouette",
+ "tier": "text",
+ "n": 25,
+ "silhouette": {
+  "n": 25,
+  "valid_rate": 1,
+  "segment_f1": 0.5097948717948718,
+  "segment_precision": 0.5071428571428571,
+  "segment_recall": 0.5133333333333333,
+  "feature_f1": 0.32266666666666666,
+  "transition_f1": 0.609111111111111,
+  "groove_f1": 0.6933333333333332,
+  "dim_rate": 0.6435823514054003,
+  "iou": 0.9922790468132031,
+  "iou_abs": 0.9923395076038704,
+  "length_ok_rate": 1,
+  "bore_ok_rate": 0.92,
+  "exact_rate": 0.04
+ },
+ "server": null,
+ "server_ms_mean": null,
+ "server_repaired": 0,
+ "calibration": [],
+ "rows": [
+  {
+   "id": "spacer",
+   "kind": "golden",
+   "L": 12,
+   "archetype": "spacer",
+   "silhouette": {
+    "ms": 191,
+    "metrics": {
+     "valid": true,
+     "segment": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "feature": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "transition": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "groove": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "dim_rate": 1,
+     "dims_total": 7,
+     "iou": 0.9916521797202268,
+     "iou_abs": 0.9916521797202245,
+     "bore_ok": true,
+     "length_ok": true,
+     "exact": true
+    },
+    "self": {
+     "valid": true,
+     "errors": [],
+     "warnings": [],
+     "iou": 0.9992615401177583,
+     "dims": null,
+     "confidence": 0.8,
+     "verdict": "review"
+    }
+   }
+  },
+  {
+   "id": "clevis-pin",
+   "kind": "golden",
+   "L": 51,
+   "archetype": "pin",
+   "silhouette": {
+    "ms": 153,
+    "metrics": {
+     "valid": true,
+     "segment": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "feature": {
+      "precision": 0,
+      "recall": 0,
+      "f1": 0
+     },
+     "transition": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "groove": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "dim_rate": 0.8888888888888888,
+     "dims_total": 9,
+     "iou": 1,
+     "iou_abs": 1,
+     "bore_ok": true,
+     "length_ok": true,
+     "exact": false
+    },
+    "self": {
+     "valid": true,
+     "errors": [],
+     "warnings": [],
+     "iou": 0.9957342024310334,
+     "dims": null,
+     "confidence": 0.8,
+     "verdict": "review"
+    }
+   }
+  },
+  {
+   "id": "bushing",
+   "kind": "golden",
+   "L": 25,
+   "archetype": "bushing",
+   "silhouette": {
+    "ms": 114,
+    "metrics": {
+     "valid": true,
+     "segment": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "feature": {
+      "precision": 0,
+      "recall": 0,
+      "f1": 0
+     },
+     "transition": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "groove": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "dim_rate": 0.7777777777777778,
+     "dims_total": 9,
+     "iou": 0.9966644429619896,
+     "iou_abs": 0.9966644429619675,
+     "bore_ok": true,
+     "length_ok": true,
+     "exact": false
+    },
+    "self": {
+     "valid": true,
+     "errors": [],
+     "warnings": [],
+     "iou": 0.9990906218721873,
+     "dims": null,
+     "confidence": 0.8,
+     "verdict": "review"
+    }
+   }
+  },
+  {
+   "id": "flanged-bushing",
+   "kind": "golden",
+   "L": 30,
+   "archetype": "bushing",
+   "silhouette": {
+    "ms": 109,
+    "metrics": {
+     "valid": true,
+     "segment": {
+      "precision": 0.5,
+      "recall": 0.5,
+      "f1": 0.5
+     },
+     "feature": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "transition": {
+      "precision": 1,
+      "recall": 0.6666666666666666,
+      "f1": 0.8
+     },
+     "groove": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "dim_rate": 0.7,
+     "dims_total": 10,
+     "iou": 0.9947609239573685,
+     "iou_abs": 0.9947609239573685,
+     "bore_ok": false,
+     "length_ok": true,
+     "exact": false
+    },
+    "self": {
+     "valid": true,
+     "errors": [],
+     "warnings": [],
+     "iou": 0.9894908784419321,
+     "dims": null,
+     "confidence": 0.8,
+     "verdict": "review"
+    }
+   }
+  },
+  {
+   "id": "roller",
+   "kind": "golden",
+   "L": 110,
+   "archetype": "roller",
+   "silhouette": {
+    "ms": 117,
+    "metrics": {
+     "valid": true,
+     "segment": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "feature": {
+      "precision": 0,
+      "recall": 0,
+      "f1": 0
+     },
+     "transition": {
+      "precision": 0.6666666666666666,
+      "recall": 0.6666666666666666,
+      "f1": 0.6666666666666666
+     },
+     "groove": {
+      "precision": 0,
+      "recall": 0,
+      "f1": 0
+     },
+     "dim_rate": 0.7368421052631579,
+     "dims_total": 19,
+     "iou": 0.9992050072497081,
+     "iou_abs": 0.999205007249708,
+     "bore_ok": true,
+     "length_ok": true,
+     "exact": false
+    },
+    "self": {
+     "valid": true,
+     "errors": [],
+     "warnings": [],
+     "iou": 0.9955257151476509,
+     "dims": null,
+     "confidence": 0.8,
+     "verdict": "review"
+    }
+   }
+  },
+  {
+   "id": "hex-stud",
+   "kind": "golden",
+   "L": 57,
+   "archetype": "shaft",
+   "silhouette": {
+    "ms": 143,
+    "metrics": {
+     "valid": true,
+     "segment": {
+      "precision": 0.6666666666666666,
+      "recall": 0.6666666666666666,
+      "f1": 0.6666666666666666
+     },
+     "feature": {
+      "precision": 0,
+      "recall": 0,
+      "f1": 0
+     },
+     "transition": {
+      "precision": 0.6666666666666666,
+      "recall": 0.6666666666666666,
+      "f1": 0.6666666666666666
+     },
+     "groove": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "dim_rate": 0.6153846153846154,
+     "dims_total": 13,
+     "iou": 0.9995338495208784,
+     "iou_abs": 0.9995338495208785,
+     "bore_ok": true,
+     "length_ok": true,
+     "exact": false
+    },
+    "self": {
+     "valid": true,
+     "errors": [],
+     "warnings": [],
+     "iou": 0.98844107855167,
+     "dims": null,
+     "confidence": 0.8,
+     "verdict": "review"
+    }
+   }
+  },
+  {
+   "id": "threaded-shaft",
+   "kind": "golden",
+   "L": 118,
+   "archetype": "shaft",
+   "silhouette": {
+    "ms": 111,
+    "metrics": {
+     "valid": true,
+     "segment": {
+      "precision": 0.5,
+      "recall": 0.5,
+      "f1": 0.5
+     },
+     "feature": {
+      "precision": 0,
+      "recall": 0,
+      "f1": 0
+     },
+     "transition": {
+      "precision": 0.6,
+      "recall": 0.6,
+      "f1": 0.6
+     },
+     "groove": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "dim_rate": 0.7222222222222222,
+     "dims_total": 18,
+     "iou": 0.9964380010271501,
+     "iou_abs": 0.9964380010271507,
+     "bore_ok": true,
+     "length_ok": true,
+     "exact": false
+    },
+    "self": {
+     "valid": true,
+     "errors": [],
+     "warnings": [],
+     "iou": 0.9889313826287893,
+     "dims": null,
+     "confidence": 0.8,
+     "verdict": "review"
+    }
+   }
+  },
+  {
+   "id": "sleeve",
+   "kind": "golden",
+   "L": 60,
+   "archetype": "sleeve",
+   "silhouette": {
+    "ms": 118,
+    "metrics": {
+     "valid": true,
+     "segment": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "feature": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "transition": {
+      "precision": 0,
+      "recall": 0,
+      "f1": 0
+     },
+     "groove": {
+      "precision": 0,
+      "recall": 0,
+      "f1": 0
+     },
+     "dim_rate": 0.6666666666666666,
+     "dims_total": 12,
+     "iou": 0.9986902135766571,
+     "iou_abs": 0.9986902135766571,
+     "bore_ok": true,
+     "length_ok": true,
+     "exact": false
+    },
+    "self": {
+     "valid": true,
+     "errors": [],
+     "warnings": [],
+     "iou": 0.9934519555332845,
+     "dims": null,
+     "confidence": 0.8,
+     "verdict": "review"
+    }
+   }
+  },
+  {
+   "id": "taper-shaft",
+   "kind": "golden",
+   "L": 95,
+   "archetype": "shaft",
+   "silhouette": {
+    "ms": 177,
+    "metrics": {
+     "valid": true,
+     "segment": {
+      "precision": 0.6666666666666666,
+      "recall": 0.6666666666666666,
+      "f1": 0.6666666666666666
+     },
+     "feature": {
+      "precision": 1,
+      "recall": 0.5,
+      "f1": 0.6666666666666666
+     },
+     "transition": {
+      "precision": 0.6666666666666666,
+      "recall": 0.6666666666666666,
+      "f1": 0.6666666666666666
+     },
+     "groove": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "dim_rate": 0.8125,
+     "dims_total": 16,
+     "iou": 0.999111034735444,
+     "iou_abs": 0.9991110347354454,
+     "bore_ok": true,
+     "length_ok": true,
+     "exact": false
+    },
+    "self": {
+     "valid": true,
+     "errors": [],
+     "warnings": [],
+     "iou": 0.9943500690043425,
+     "dims": null,
+     "confidence": 0.8,
+     "verdict": "review"
+    }
+   }
+  },
+  {
+   "id": "motor-shaft",
+   "kind": "golden",
+   "L": 205,
+   "archetype": "shaft",
+   "silhouette": {
+    "ms": 117,
+    "metrics": {
+     "valid": true,
+     "segment": {
+      "precision": 0,
+      "recall": 0,
+      "f1": 0
+     },
+     "feature": {
+      "precision": 1,
+      "recall": 0.25,
+      "f1": 0.4
+     },
+     "transition": {
+      "precision": 1,
+      "recall": 0.2857142857142857,
+      "f1": 0.4444444444444445
+     },
+     "groove": {
+      "precision": 0,
+      "recall": 0,
+      "f1": 0
+     },
+     "dim_rate": 0.41379310344827586,
+     "dims_total": 29,
+     "iou": 0.9930889139195633,
+     "iou_abs": 0.9930889139195632,
+     "bore_ok": true,
+     "length_ok": true,
+     "exact": false
+    },
+    "self": {
+     "valid": true,
+     "errors": [],
+     "warnings": [],
+     "iou": 0.9797833898227424,
+     "dims": null,
+     "confidence": 0.8,
+     "verdict": "review"
+    }
+   }
+  },
+  {
+   "id": "stepped-shaft",
+   "kind": "golden",
+   "L": 100,
+   "archetype": "shaft",
+   "silhouette": {
+    "ms": 338,
+    "metrics": {
+     "valid": true,
+     "segment": {
+      "precision": 0.75,
+      "recall": 0.75,
+      "f1": 0.75
+     },
+     "feature": {
+      "precision": 0.5,
+      "recall": 0.25,
+      "f1": 0.3333333333333333
+     },
+     "transition": {
+      "precision": 0.6,
+      "recall": 0.6,
+      "f1": 0.6
+     },
+     "groove": {
+      "precision": 0,
+      "recall": 0,
+      "f1": 0
+     },
+     "dim_rate": 0.8,
+     "dims_total": 25,
+     "iou": 0.9987246707571322,
+     "iou_abs": 0.9987246707571323,
+     "bore_ok": true,
+     "length_ok": true,
+     "exact": false
+    },
+    "self": {
+     "valid": true,
+     "errors": [],
+     "warnings": [],
+     "iou": 0.9946197553667352,
+     "dims": null,
+     "confidence": 0.8,
+     "verdict": "review"
+    }
+   }
+  },
+  {
+   "id": "spindle",
+   "kind": "golden",
+   "L": 119,
+   "archetype": "spindle",
+   "silhouette": {
+    "ms": 272,
+    "metrics": {
+     "valid": true,
+     "segment": {
+      "precision": 0.42857142857142855,
+      "recall": 0.5,
+      "f1": 0.4615384615384615
+     },
+     "feature": {
+      "precision": 1,
+      "recall": 0.5,
+      "f1": 0.6666666666666666
+     },
+     "transition": {
+      "precision": 0.6,
+      "recall": 0.42857142857142855,
+      "f1": 0.5
+     },
+     "groove": {
+      "precision": 0,
+      "recall": 0,
+      "f1": 0
+     },
+     "dim_rate": 0.6785714285714286,
+     "dims_total": 28,
+     "iou": 0.9972296580795257,
+     "iou_abs": 0.9972296580795257,
+     "bore_ok": true,
+     "length_ok": true,
+     "exact": false
+    },
+    "self": {
+     "valid": true,
+     "errors": [],
+     "warnings": [],
+     "iou": 0.9925179824836905,
+     "dims": null,
+     "confidence": 0.8,
+     "verdict": "review"
+    }
+   }
+  },
+  {
+   "id": "hex-bolt-m10",
+   "kind": "golden",
+   "L": 46.4,
+   "archetype": "other",
+   "silhouette": {
+    "ms": 286,
+    "metrics": {
+     "valid": true,
+     "segment": {
+      "precision": 0,
+      "recall": 0,
+      "f1": 0
+     },
+     "feature": {
+      "precision": 0,
+      "recall": 0,
+      "f1": 0
+     },
+     "transition": {
+      "precision": 0.6666666666666666,
+      "recall": 0.6666666666666666,
+      "f1": 0.6666666666666666
+     },
+     "groove": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "dim_rate": 0.45454545454545453,
+     "dims_total": 11,
+     "iou": 0.9888489606549031,
+     "iou_abs": 0.9903604804216126,
+     "bore_ok": true,
+     "length_ok": true,
+     "exact": false
+    },
+    "self": {
+     "valid": true,
+     "errors": [],
+     "warnings": [],
+     "iou": 0.990992247502444,
+     "dims": null,
+     "confidence": 0.8,
+     "verdict": "review"
+    }
+   }
+  },
+  {
+   "id": "socket-cap-m8",
+   "kind": "golden",
+   "L": 38,
+   "archetype": "other",
+   "silhouette": {
+    "ms": 333,
+    "metrics": {
+     "valid": true,
+     "segment": {
+      "precision": 0,
+      "recall": 0,
+      "f1": 0
+     },
+     "feature": {
+      "precision": 0,
+      "recall": 0,
+      "f1": 0
+     },
+     "transition": {
+      "precision": 0.6666666666666666,
+      "recall": 0.6666666666666666,
+      "f1": 0.6666666666666666
+     },
+     "groove": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "dim_rate": 0.5,
+     "dims_total": 12,
+     "iou": 0.9767195422286958,
+     "iou_abs": 0.9767195422286965,
+     "bore_ok": true,
+     "length_ok": true,
+     "exact": false
+    },
+    "self": {
+     "valid": true,
+     "errors": [],
+     "warnings": [],
+     "iou": 0.9734456938408482,
+     "dims": null,
+     "confidence": 0.8,
+     "verdict": "review"
+    }
+   }
+  },
+  {
+   "id": "set-screw-m6",
+   "kind": "golden",
+   "L": 12,
+   "archetype": "other",
+   "silhouette": {
+    "ms": 273,
+    "metrics": {
+     "valid": true,
+     "segment": {
+      "precision": 0,
+      "recall": 0,
+      "f1": 0
+     },
+     "feature": {
+      "precision": 0,
+      "recall": 0,
+      "f1": 0
+     },
+     "transition": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "groove": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "dim_rate": 0.5714285714285714,
+     "dims_total": 7,
+     "iou": 1,
+     "iou_abs": 1,
+     "bore_ok": true,
+     "length_ok": true,
+     "exact": false
+    },
+    "self": {
+     "valid": true,
+     "errors": [],
+     "warnings": [],
+     "iou": 0.9803805376156449,
+     "dims": null,
+     "confidence": 0.8,
+     "verdict": "review"
+    }
+   }
+  },
+  {
+   "id": "countersunk-m6",
+   "kind": "golden",
+   "L": 23.3,
+   "archetype": "other",
+   "silhouette": {
+    "ms": 245,
+    "metrics": {
+     "valid": true,
+     "segment": {
+      "precision": 0,
+      "recall": 0,
+      "f1": 0
+     },
+     "feature": {
+      "precision": 0,
+      "recall": 0,
+      "f1": 0
+     },
+     "transition": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "groove": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "dim_rate": 0.5555555555555556,
+     "dims_total": 9,
+     "iou": 0.9307106077657389,
+     "iou_abs": 0.9307106077657379,
+     "bore_ok": true,
+     "length_ok": true,
+     "exact": false
+    },
+    "self": {
+     "valid": true,
+     "errors": [],
+     "warnings": [],
+     "iou": 0.9309384081280545,
+     "dims": null,
+     "confidence": 0.8,
+     "verdict": "review"
+    }
+   }
+  },
+  {
+   "id": "stud-m12",
+   "kind": "golden",
+   "L": 60,
+   "archetype": "other",
+   "silhouette": {
+    "ms": 283,
+    "metrics": {
+     "valid": true,
+     "segment": {
+      "precision": 0,
+      "recall": 0,
+      "f1": 0
+     },
+     "feature": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "transition": {
+      "precision": 0.5,
+      "recall": 0.5,
+      "f1": 0.5
+     },
+     "groove": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "dim_rate": 0.4444444444444444,
+     "dims_total": 9,
+     "iou": 1,
+     "iou_abs": 1,
+     "bore_ok": true,
+     "length_ok": true,
+     "exact": false
+    },
+    "self": {
+     "valid": true,
+     "errors": [],
+     "warnings": [],
+     "iou": 0.9933753461734193,
+     "dims": null,
+     "confidence": 0.8,
+     "verdict": "review"
+    }
+   }
+  },
+  {
+   "id": "hub-flange",
+   "kind": "golden",
+   "L": 38,
+   "archetype": "flange",
+   "silhouette": {
+    "ms": 287,
+    "metrics": {
+     "valid": true,
+     "segment": {
+      "precision": 0.3333333333333333,
+      "recall": 0.3333333333333333,
+      "f1": 0.3333333333333333
+     },
+     "feature": {
+      "precision": 0,
+      "recall": 0,
+      "f1": 0
+     },
+     "transition": {
+      "precision": 0.5,
+      "recall": 0.5,
+      "f1": 0.5
+     },
+     "groove": {
+      "precision": 0,
+      "recall": 0,
+      "f1": 0
+     },
+     "dim_rate": 0.5,
+     "dims_total": 20,
+     "iou": 0.9941493839449065,
+     "iou_abs": 0.9941493839449085,
+     "bore_ok": false,
+     "length_ok": true,
+     "exact": false
+    },
+    "self": {
+     "valid": true,
+     "errors": [],
+     "warnings": [],
+     "iou": 0.9903593853383286,
+     "dims": null,
+     "confidence": 0.8,
+     "verdict": "review"
+    }
+   }
+  },
+  {
+   "id": "dowel-pin",
+   "kind": "golden",
+   "L": 40,
+   "archetype": "pin",
+   "silhouette": {
+    "ms": 283,
+    "metrics": {
+     "valid": true,
+     "segment": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "feature": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "transition": {
+      "precision": 0,
+      "recall": 0,
+      "f1": 0
+     },
+     "groove": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "dim_rate": 0.6,
+     "dims_total": 5,
+     "iou": 0.9977409638554217,
+     "iou_abs": 0.9977409638554218,
+     "bore_ok": true,
+     "length_ok": true,
+     "exact": false
+    },
+    "self": {
+     "valid": true,
+     "errors": [],
+     "warnings": [],
+     "iou": 0.9960468354834617,
+     "dims": null,
+     "confidence": 0.8,
+     "verdict": "review"
+    }
+   }
+  },
+  {
+   "id": "taper-pin",
+   "kind": "golden",
+   "L": 45,
+   "archetype": "pin",
+   "silhouette": {
+    "ms": 339,
+    "metrics": {
+     "valid": true,
+     "segment": {
+      "precision": 0,
+      "recall": 0,
+      "f1": 0
+     },
+     "feature": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "transition": {
+      "precision": 0,
+      "recall": 0,
+      "f1": 0
+     },
+     "groove": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "dim_rate": 0.6666666666666666,
+     "dims_total": 6,
+     "iou": 0.9913821449220209,
+     "iou_abs": 0.9913821449220172,
+     "bore_ok": true,
+     "length_ok": true,
+     "exact": false
+    },
+    "self": {
+     "valid": true,
+     "errors": [],
+     "warnings": [],
+     "iou": 0.989255532729316,
+     "dims": null,
+     "confidence": 0.8,
+     "verdict": "review"
+    }
+   }
+  },
+  {
+   "id": "shoulder-bolt",
+   "kind": "golden",
+   "L": 49,
+   "archetype": "other",
+   "silhouette": {
+    "ms": 305,
+    "metrics": {
+     "valid": true,
+     "segment": {
+      "precision": 0.6666666666666666,
+      "recall": 0.6666666666666666,
+      "f1": 0.6666666666666666
+     },
+     "feature": {
+      "precision": 0,
+      "recall": 0,
+      "f1": 0
+     },
+     "transition": {
+      "precision": 0.75,
+      "recall": 0.75,
+      "f1": 0.75
+     },
+     "groove": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "dim_rate": 0.6428571428571429,
+     "dims_total": 14,
+     "iou": 0.9985753686450799,
+     "iou_abs": 0.9985753686450801,
+     "bore_ok": true,
+     "length_ok": true,
+     "exact": false
+    },
+    "self": {
+     "valid": true,
+     "errors": [],
+     "warnings": [],
+     "iou": 0.9934936016184868,
+     "dims": null,
+     "confidence": 0.8,
+     "verdict": "review"
+    }
+   }
+  },
+  {
+   "id": "knurled-knob",
+   "kind": "golden",
+   "L": 33,
+   "archetype": "other",
+   "silhouette": {
+    "ms": 283,
+    "metrics": {
+     "valid": true,
+     "segment": {
+      "precision": 0,
+      "recall": 0,
+      "f1": 0
+     },
+     "feature": {
+      "precision": 0,
+      "recall": 0,
+      "f1": 0
+     },
+     "transition": {
+      "precision": 0,
+      "recall": 0,
+      "f1": 0
+     },
+     "groove": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "dim_rate": 0.36363636363636365,
+     "dims_total": 11,
+     "iou": 0.9764785149340354,
+     "iou_abs": 0.9764785149340369,
+     "bore_ok": true,
+     "length_ok": true,
+     "exact": false
+    },
+    "self": {
+     "valid": true,
+     "errors": [],
+     "warnings": [],
+     "iou": 0.9699852388166004,
+     "dims": null,
+     "confidence": 0.8,
+     "verdict": "review"
+    }
+   }
+  },
+  {
+   "id": "piston-rod",
+   "kind": "golden",
+   "L": 120,
+   "archetype": "shaft",
+   "silhouette": {
+    "ms": 292,
+    "metrics": {
+     "valid": true,
+     "segment": {
+      "precision": 0.16666666666666666,
+      "recall": 0.25,
+      "f1": 0.2
+     },
+     "feature": {
+      "precision": 0,
+      "recall": 0,
+      "f1": 0
+     },
+     "transition": {
+      "precision": 0.2,
+      "recall": 0.2,
+      "f1": 0.20000000000000004
+     },
+     "groove": {
+      "precision": 0,
+      "recall": 0,
+      "f1": 0
+     },
+     "dim_rate": 0.5,
+     "dims_total": 22,
+     "iou": 0.9979596967651523,
+     "iou_abs": 0.9979596967651523,
+     "bore_ok": true,
+     "length_ok": true,
+     "exact": false
+    },
+    "self": {
+     "valid": true,
+     "errors": [],
+     "warnings": [],
+     "iou": 0.993763591227339,
+     "dims": null,
+     "confidence": 0.8,
+     "verdict": "review"
+    }
+   }
+  },
+  {
+   "id": "valve-spool",
+   "kind": "golden",
+   "L": 76,
+   "archetype": "spindle",
+   "silhouette": {
+    "ms": 284,
+    "metrics": {
+     "valid": true,
+     "segment": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "feature": {
+      "precision": 0,
+      "recall": 0,
+      "f1": 0
+     },
+     "transition": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "groove": {
+      "precision": 0.3333333333333333,
+      "recall": 0.3333333333333333,
+      "f1": 0.3333333333333333
+     },
+     "dim_rate": 0.7,
+     "dims_total": 20,
+     "iou": 0.9924493460104403,
+     "iou_abs": 0.9924493460104401,
+     "bore_ok": true,
+     "length_ok": true,
+     "exact": false
+    },
+    "self": {
+     "valid": true,
+     "errors": [],
+     "warnings": [],
+     "iou": 0.9883209100988097,
+     "dims": null,
+     "confidence": 0.8,
+     "verdict": "review"
+    }
+   }
+  },
+  {
+   "id": "shaft-collar",
+   "kind": "golden",
+   "L": 16,
+   "archetype": "spacer",
+   "silhouette": {
+    "ms": 285,
+    "metrics": {
+     "valid": true,
+     "segment": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "feature": {
+      "precision": 0,
+      "recall": 0,
+      "f1": 0
+     },
+     "transition": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "groove": {
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+     },
+     "dim_rate": 0.7777777777777778,
+     "dims_total": 9,
+     "iou": 0.996862745098033,
+     "iou_abs": 0.996862745098033,
+     "bore_ok": true,
+     "length_ok": true,
+     "exact": false
+    },
+    "self": {
+     "valid": true,
+     "errors": [],
+     "warnings": [],
+     "iou": 0.9991124127096112,
+     "dims": null,
+     "confidence": 0.8,
+     "verdict": "review"
+    }
+   }
+  }
+ ]
+}

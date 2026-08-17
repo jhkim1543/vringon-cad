@@ -1,0 +1,68 @@
+{
+  "dsl": "vringon-shaft/1.0",
+  "id": "knurled-knob",
+  "name": "Knurled thumb screw",
+  "name_ko": "널링 손잡이 나사",
+  "part_class": "other",
+  "units": "mm",
+  "material": "SUS303",
+  "drawing": {
+    "number": "VR-RB-022",
+    "scale": "2:1",
+    "projection": "third"
+  },
+  "segments": [
+    {
+      "type": "cyl",
+      "length": 14,
+      "diameter": 20,
+      "label": "손잡이"
+    },
+    {
+      "type": "taper",
+      "length": 3,
+      "d_start": 20,
+      "d_end": 12
+    },
+    {
+      "type": "thread",
+      "length": 16,
+      "diameter": 8,
+      "spec": "M8",
+      "pitch": 1.25
+    }
+  ],
+  "transitions": [
+    {
+      "at": 0,
+      "type": "chamfer",
+      "size": 1
+    },
+    {
+      "at": 2,
+      "type": "chamfer",
+      "size": 0.5
+    },
+    {
+      "at": 3,
+      "type": "chamfer",
+      "size": 1
+    }
+  ],
+  "grooves": [],
+  "bore": null,
+  "features": [
+    {
+      "type": "knurl",
+      "segment": 0,
+      "offset": 1.5,
+      "length": 11,
+      "pitch": 0.8,
+      "pattern": "diamond"
+    }
+  ],
+  "meta": {
+    "source": "golden",
+    "difficulty": 3
+  }
+}

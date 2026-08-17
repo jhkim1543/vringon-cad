@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1220" height="1000" viewBox="0 0 1220 1000">
+<rect width="1220" height="1000" fill="#ffffff"/>
+<g stroke="#111111" stroke-width="2.6" fill="#f3f3f3">
+  <path d="M110 800 H342 V626 H313 V771 H139 V626 H110 Z"/>
+  <!-- 우측면도: 길이 × 높이 / right view: length by height -->
+  <rect x="432" y="626" width="435" height="174"/>
+  <path d="M432 771 H867"/>
+  <!-- 윗면도: 길이 × 폭, 양 날개 안쪽 선 + 웨브 구멍 2-⌀12 / top view with the two flange lines and 2-⌀12 in the web -->
+  <rect x="110" y="111" width="232" height="435"/>
+  <path d="M139 111 V546 M313 111 V546"/>
+  <circle cx="226" cy="227" r="17.4" fill="#fff"/>
+  <circle cx="226" cy="430" r="17.4" fill="#fff"/>
+</g>
+<g stroke="#111111" stroke-width="1" fill="none">
+  <path d="M548 800 V771 M751 800 V771" stroke-dasharray="6 3"/>
+  <path d="M226 177 L226 277" stroke-dasharray="16 5 3 5" stroke-width="0.9"/>
+  <path d="M226 380 L226 480" stroke-dasharray="16 5 3 5" stroke-width="0.9"/>
+  <path d="M110 803 V852 M342 803 V852"/><path d="M110 846 H342"/><path d="M110 846 l8 -1.5 v3 z M342 846 l-8 -1.5 v3 z" fill="#111111"/>
+    <text x="226" y="841" text-anchor="middle" font-size="15" font-family="Helvetica, Arial, sans-serif" fill="#111111">80</text>
+  <path d="M139 803 V828 M313 803 V828"/><path d="M139 822 H313"/><path d="M139 822 l8 -1.5 v3 z M313 822 l-8 -1.5 v3 z" fill="#111111"/>
+    <text x="226" y="817" text-anchor="middle" font-size="15" font-family="Helvetica, Arial, sans-serif" fill="#111111">60</text>
+  <path d="M107 626 H64 M107 800 H64"/><path d="M70 626 V800"/><path d="M70 626 l-1.5 8 h3 z M70 800 l-1.5 -8 h3 z" fill="#111111"/>
+    <text x="76" y="718" font-size="15" font-family="Helvetica, Arial, sans-serif" fill="#111111">60</text>
+  <path d="M107 771 H88 M107 800 H88"/><path d="M94 771 V800"/><path d="M94 771 l-1.5 8 h3 z M94 800 l-1.5 -8 h3 z" fill="#111111"/>
+    <text x="100" y="790.5" font-size="15" font-family="Helvetica, Arial, sans-serif" fill="#111111">10</text>
+  <path d="M432 803 V852 M867 803 V852"/><path d="M432 846 H867"/><path d="M432 846 l8 -1.5 v3 z M867 846 l-8 -1.5 v3 z" fill="#111111"/>
+    <text x="649.5" y="841" text-anchor="middle" font-size="15" font-family="Helvetica, Arial, sans-serif" fill="#111111">150</text>
+  <path d="M345 227 H392 M345 430 H392"/><path d="M386 227 V430"/><path d="M386 227 l-1.5 8 h3 z M386 430 l-1.5 -8 h3 z" fill="#111111"/>
+    <text x="392" y="333.5" font-size="15" font-family="Helvetica, Arial, sans-serif" fill="#111111">70</text>
+</g>
+<g font-size="15" font-family="Helvetica, Arial, sans-serif" fill="#111111">
+  <text x="252" y="232">2-⌀12</text>
+</g>
+<g transform="translate(760 120) scale(0.85)" stroke="#111111" stroke-width="1.6" fill="#f3f3f3" stroke-linejoin="round"><path d="M30 150 L150 90 L150 30 L190 50 L190 110 L310 50 L310 110 L230 150 L230 210 L110 270 L110 210 L30 250 Z" fill="#e6e6e6"/></g>
+<text x="780" y="380" font-size="12" font-family="Helvetica, Arial, sans-serif" fill="#111111">등각 (참고)</text>
+<g stroke="#111111" stroke-width="1" fill="none"><rect x="870" y="900" width="300" height="60"/><path d="M870 930 H1170 M1020 900 V960"/></g>
+  <g font-size="12" font-family="Helvetica, Arial, sans-serif" fill="#111111"><text x="876" y="920">부품명 ㄷ 채널 브래킷</text><text x="1026" y="920">도번 P2-CHN-05</text><text x="876" y="950">척도 1:1</text><text x="1026" y="950">3각법 · 단위 mm</text></g>
+</svg>

@@ -8,7 +8,7 @@
 ## 두 갈래
 - **Part 1 (`revolve.html`)** — 단일 도면 회전체. 아래 설명이 전부 여기에 해당합니다.
 - **Part 2 (`assembly.html`)** — 다시점 도면에서 **부품 하나**를 복원합니다: 뷰 분할 → 방향(사람이 확정, 정육면체 UI) →
-  치수 OCR 로 축척 → 각 뷰 압출의 교집합 → 뷰 재투영 정합. 예시 3종(브래킷·하우징·곡관)과 `tools/test-multiview.mjs` 회귀.
+  치수 OCR 로 축척 → 각 뷰 압출의 교집합 → 뷰 재투영 정합. 예시 6종(브래킷·플레이트·채널·하우징·블록·곡관)과 `tools/test-multiview.mjs` 회귀.
 
 | | 주소 | 비고 |
 |---|---|---|
@@ -78,7 +78,8 @@ node tools/gen-dataset.mjs --n 5000 --out dataset --augment 0.3 --omit 0.15
 node tools/deploy-docs.mjs                  # ../docs/revolve/ 보호 빌드 갱신 → 커밋 (--raw 는 디버깅용 원본 복사)
 node tools/test-assembly.mjs && node tools/test-exports.mjs      # 조립·시뮬 / 내보내기 회귀
 node tools/test-input-guard.mjs             # 회전체가 아닌 도면을 판독 전에 막는지 (정상 60건 오거부 0)
-node tools/test-multiview.mjs               # Part 2: 뷰 분할·방향·OCR 축척·교집합·정합 (예시 3종)
+node tools/test-multiview.mjs               # Part 2: 뷰 분할·방향·OCR 축척·교집합·정합 (예시 6종)
+node tools/test-pairs.mjs                   # 라이브러리 쌍 데이터: 도면과 결과 그림이 모두 있는가
 cd pipeline && PYTHONIOENCODING=utf-8 .venv/Scripts/python.exe tests/test_golden.py
 ```
 방법론·마일스톤 상태·수치·데이터 소스·다음 할 일은 [HANDOFF.md](HANDOFF.md), 외부 공유·도메인 배포·코드 보호는 [DEPLOY.md](DEPLOY.md) 에 있습니다.

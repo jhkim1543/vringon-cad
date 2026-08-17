@@ -65,6 +65,34 @@ export function components(mask, w, h, minPixels = 6) {
   return { label, comps };
 }
 
+/* 후보가 "정면에서 본 원" 인지 재는 값. 0 이면 완전한 원, 클수록 원과 멀다.
+   How much a candidate looks like a circle seen face on: 0 is a perfect circle, larger is further from one.
+
+   왜 필요한가 / Why this exists:
+   정면도를 고를 때 가장 큰 성분을 쓰는데, 짧고 굵은 부품(플랜지·칼라)에서는 옆에 있는
+   단면도 A-A 의 원이 정면도보다 커서 그쪽이 뽑힌다. 그러면 원의 윤곽을 축 방향 외형으로
+   잘못 읽어 결과가 완전히 달라진다.
+   The front view is chosen by size, but on short fat parts (flanges, collars) the A-A section
+   circle beside it is larger than the front view and wins. The circle outline then gets read as
+   an axial profile and the result is nothing like the part. */
+function circleness(comp, label, w) {
+  const cw = comp.x1 - comp.x0 + 1, ch = comp.y1 - comp.y0 + 1;
+  if (cw < 8 || ch < 8) return 1;
+  if (Math.abs(cw - ch) > Math.max(cw, ch) * 0.18) return 1;   /* 원은 가로세로가 거의 같다 / a circle is near square */
+  const R = (cw + ch) / 4, cx = (comp.x0 + comp.x1) / 2, cy = (comp.y0 + comp.y1) / 2;
+  let err = 0, n = 0;
+  for (let x = comp.x0; x <= comp.x1; x++) {
+    let top = Infinity, bot = -Infinity;
+    for (let y = comp.y0; y <= comp.y1; y++) { const id = label[y * w + x]; if (id === comp.id) { if (y < top) top = y; if (y > bot) bot = y; } }
+    if (top === Infinity) continue;
+    const dx = (x - cx) / R;
+    if (Math.abs(dx) > 0.94) continue;              /* 가장자리는 기울기가 급해 판단이 어렵다 / edges are too steep to judge */
+    const want = Math.sqrt(1 - dx * dx) * R;
+    err += Math.abs((cy - top) - want) + Math.abs((bot - cy) - want); n += 2;
+  }
+  return n ? err / n / R : 1;
+}
+
 /* ------------------------------------------------------------ 실루엣 측정 */
 export function measureSilhouette(img, opts = {}) {
   const w = img.width, h = img.height;
@@ -83,8 +111,27 @@ export function measureSilhouette(img, opts = {}) {
   if (!comps.length) return { ok: false, notes: ["잉크를 찾지 못했습니다(빈 이미지?)"] };
   /* 도면 틀(테두리)은 이미지의 대부분을 덮는다 → 제외 */
   const frame = comps.filter((c) => c.w > w * 0.8 && c.h > h * 0.8);
-  const cands = comps.filter((c) => !frame.includes(c) && c.w >= 12 && c.h >= 6);
+  let cands = comps.filter((c) => !frame.includes(c) && c.w >= 12 && c.h >= 6);
   if (!cands.length) return { ok: false, notes: ["부품 외형으로 볼 성분이 없습니다"] };
+  /* 정면에서 본 원(단면도 A-A 따위)은 후보에서 아예 뺀다. 고른 뒤에 바꾸면 전단면도의
+     위·아래 반쪽 짝짓기가 어긋나 해상도에 따라 결과가 달라졌다.
+     Circles seen face on (A-A sections and the like) are dropped before selection. Swapping the pick
+     afterwards broke the mirror-half pairing of sectioned views, which made the result vary by resolution. */
+  const round = cands.filter((c) => circleness(c, label, w) < 0.10);
+  let boltCircle = 0;
+  if (round.length && round.length < cands.length) {
+    /* 뺀 원 안에 작은 닫힌 성분이 여럿 있으면 볼트 원 위의 구멍이다. 그것은 이 버전이 만들지
+       못하는 형상이므로, 원을 뺐다고 조용히 넘어가면 안 되고 판독을 멈춰야 한다.
+       Several small closed components inside a dropped circle mean holes on a bolt circle. That is a
+       shape this version cannot build, so dropping the circle must not quietly continue: it has to stop. */
+    for (const c of round) {
+      const inside = comps.filter((o) => o !== c && o.x0 > c.x0 && o.x1 < c.x1 && o.y0 > c.y0 && o.y1 < c.y1
+        && o.w < c.w * 0.3 && o.h < c.h * 0.3 && Math.abs(o.w - o.h) < Math.max(o.w, o.h) * 0.3);
+      if (inside.length > boltCircle) boltCircle = inside.length;
+    }
+    cands = cands.filter((c) => !round.includes(c));
+    notes.push("옆에 있는 원은 단면도로 보고 정면도를 따로 잡았습니다");
+  }
   /* 정면도 = 가장 넓은(가로) 성분. 가로세로 큰 쪽을 축으로 본다 */
   cands.sort((a, b) => (b.w * b.h) - (a.w * a.h));
   let main = cands[0];
@@ -95,7 +142,7 @@ export function measureSilhouette(img, opts = {}) {
   if (vertical) notes.push("세로로 놓인 부품으로 보고 축을 세로로 잡았습니다");
   /* 전단면도(부시류): 위·아래 재료 반쪽이 거울상 두 성분으로 나뉜다 → 짝을 찾아 하나로 본다.
      두 성분 사이의 빈 띠가 보어이고, 그 가장자리로 보어 지름을 잰다. */
-  let partner = null;
+  let partner = null, mates = [];
   if (!vertical) {
     for (const c of cands) {
       if (c === main) continue;
@@ -104,23 +151,50 @@ export function measureSilhouette(img, opts = {}) {
       /* 거울상 반쪽은 폭·높이·픽셀 수가 비슷하다. 높이가 다르면(예: 정면도+평면도가 위아래로 놓인 다중 투상도) 짝이 아니다 */
       if (ov > 0.85 * Math.min(c.w, main.w) && disjoint && c.n > main.n * 0.4 && c.n < main.n * 2.5 && Math.abs(c.w - main.w) < main.w * 0.15 && Math.abs(c.h - main.h) < Math.max(c.h, main.h) * 0.35) { partner = c; break; }
     }
+    /* 반대쪽 반쪽이 조각나 있으면 성분 하나로는 못 찾는다. 얇게 그려진 부분에서 외형선이
+       끊기면(스캔·저해상에서 흔하다) 한 반쪽이 여러 조각으로 나온다. 그 조각들을 모아 하나로 본다.
+       모으지 않으면 반쪽만 읽고 "위아래가 다르다" 며 멀쩡한 도면을 되돌려보낸다.
+       When the opposite half is fragmented, no single component matches. A thinly drawn stretch can
+       break the outline (common in scans and at low resolution) and split one half into pieces.
+       Those pieces are gathered into one; without this the reader sees half a part and turns a
+       perfectly good drawing away for being asymmetric. */
+    if (!partner) {
+      const near = cands.filter((c) => c !== main && c.x1 > main.x0 && c.x0 < main.x1);
+      for (const side of [near.filter((c) => c.y1 < main.y0), near.filter((c) => c.y0 > main.y1)]) {
+        if (side.length < 2) continue;
+        const bx0 = Math.min(...side.map((c) => c.x0)), bx1 = Math.max(...side.map((c) => c.x1));
+        const by0 = Math.min(...side.map((c) => c.y0)), by1 = Math.max(...side.map((c) => c.y1));
+        const nSum = side.reduce((a, c) => a + c.n, 0);
+        if (bx1 - bx0 >= main.w * 0.85 && Math.abs(bx1 - bx0 - main.w) < main.w * 0.15
+          && Math.abs(by1 - by0 - main.h) < Math.max(by1 - by0, main.h) * 0.35 && nSum > main.n * 0.4 && nSum < main.n * 2.5) {
+          mates = side; notes.push(`반대쪽 반쪽이 ${side.length}조각으로 끊겨 있어 하나로 모았습니다`);
+          break;
+        }
+      }
+    }
   }
-  const upper = partner ? (partner.y0 < main.y0 ? partner : main) : null, lower = partner ? (upper === main ? partner : main) : null;
-  const ux0 = partner ? Math.min(main.x0, partner.x0) : main.x0, ux1 = partner ? Math.max(main.x1, partner.x1) : main.x1;
-  const uy0 = partner ? Math.min(main.y0, partner.y0) : main.y0, uy1 = partner ? Math.max(main.y1, partner.y1) : main.y1;
-  if (partner) notes.push("위아래가 거울상이라 전단면도로 보고 보어를 함께 읽었습니다");
+  const half = partner ? [partner] : mates;                     /* 반대쪽 반쪽 / the opposite half */
+  const sectioned = half.length > 0;
+  const aboveMain = sectioned && half[0].y0 < main.y0;          /* 반대쪽이 위인가 / is it the upper half */
+  const ux0 = sectioned ? Math.min(main.x0, ...half.map((c) => c.x0)) : main.x0;
+  const ux1 = sectioned ? Math.max(main.x1, ...half.map((c) => c.x1)) : main.x1;
+  const uy0 = sectioned ? Math.min(main.y0, ...half.map((c) => c.y0)) : main.y0;
+  const uy1 = sectioned ? Math.max(main.y1, ...half.map((c) => c.y1)) : main.y1;
+  const upperIds = new Set((aboveMain ? half : [main]).map((c) => c.id));
+  const lowerIds = new Set((aboveMain ? [main] : half).map((c) => c.id));
+  if (sectioned) notes.push("위아래가 거울상이라 전단면도로 보고 보어를 함께 읽었습니다");
   /* 성분 픽셀만으로 열(또는 행) 별 상·하 외곽 */
   const along = vertical ? main.h : (ux1 - ux0 + 1);   /* 축 방향 길이(px) */
   const topArr = new Float64Array(along), botArr = new Float64Array(along), has = new Uint8Array(along);
   const boreTop = new Float64Array(along), boreBot = new Float64Array(along);
   for (let k = 0; k < along; k++) { topArr[k] = Infinity; botArr[k] = -Infinity; boreTop[k] = -Infinity; boreBot[k] = Infinity; }
-  const ids = new Set([main.id, partner?.id].filter(Boolean));
+  const ids = new Set([main.id, ...half.map((c) => c.id)]);
   for (let y = uy0; y <= uy1; y++) for (let x = ux0; x <= ux1; x++) {
     const id = label[y * w + x];
     if (!ids.has(id)) continue;
     const k = vertical ? y - main.y0 : x - ux0, v = vertical ? x : y;
     if (v < topArr[k]) topArr[k] = v; if (v > botArr[k]) botArr[k] = v; has[k] = 1;
-    if (partner) { if (id === upper.id && v > boreTop[k]) boreTop[k] = v; if (id === lower.id && v < boreBot[k]) boreBot[k] = v; }
+    if (sectioned) { if (upperIds.has(id) && v > boreTop[k]) boreTop[k] = v; if (lowerIds.has(id) && v < boreBot[k]) boreBot[k] = v; }
   }
   main = { ...main, x0: ux0, x1: ux1, y0: uy0, y1: uy1, w: ux1 - ux0 + 1, h: uy1 - uy0 + 1 };
   /* 빈 열(외형선이 없는 열: 원통 중간)은 이웃에서 보간 — 외형은 위·아래 선만 있으므로 열마다 있어야 정상.
@@ -139,7 +213,7 @@ export function measureSilhouette(img, opts = {}) {
   const N = Math.min(800, along);
   const top = new Float64Array(N), bottom = new Float64Array(N);
   let bore = null;
-  if (partner) {
+  if (sectioned) {
     /* 보어 반경(px): 위 반쪽 아래 가장자리 ↔ 아래 반쪽 위 가장자리 */
     const b = new Float64Array(along);
     for (let k = 0; k < along; k++) b[k] = Number.isFinite(boreTop[k]) && Number.isFinite(boreBot[k]) && boreBot[k] > boreTop[k] ? (boreBot[k] - boreTop[k]) / 2 : NaN;
@@ -156,13 +230,13 @@ export function measureSilhouette(img, opts = {}) {
   /* 안쪽 성분 힌트: 키홈(길쭉한 둥근 홈 윤곽)·횡구멍(원)은 굵은선 마스크에서, 나사 골지름선(긴 가는 선 두 개)은
      침식 전 마스크에서 찾는다(가는선은 침식에서 사라진다). */
   const hints = [];
-  const insideOf = (list) => list.filter((c) => c.id !== main.id && c.id !== partner?.id && c.x0 > main.x0 + 2 && c.x1 < main.x1 - 2 && c.y0 > main.y0 + 1 && c.y1 < main.y1 - 1 && !frame.includes(c));
+  const insideOf = (list) => list.filter((c) => !ids.has(c.id) && c.x0 > main.x0 + 2 && c.x1 < main.x1 - 2 && c.y0 > main.y0 + 1 && c.y1 < main.y1 - 1 && !frame.includes(c));
   for (const c of insideOf(comps)) {
     const asp = c.w / c.h;
     const relX0 = (c.x0 - main.x0) / main.w, relX1 = (c.x1 - main.x0) / main.w;
     if (asp >= 8) continue;
     if (asp >= 1.7 && c.h >= 3 && c.w >= 6 && Math.abs(c.cy - axis) < main.h * 0.15) hints.push({ type: "keyway", relX0, relX1, width_px: c.h, len_px: c.w });
-    else if (asp >= 0.7 && asp <= 1.4 && c.w >= 4 && Math.abs(c.cy - axis) < main.h * 0.15 && !partner) hints.push({ type: "cross_hole", relX: (c.cx - main.x0) / main.w, dia_px: (c.w + c.h) / 2 });
+    else if (asp >= 0.7 && asp <= 1.4 && c.w >= 4 && Math.abs(c.cy - axis) < main.h * 0.15 && !sectioned) hints.push({ type: "cross_hole", relX: (c.cx - main.x0) / main.w, dia_px: (c.w + c.h) / 2 });
   }
   /* 가는선 전용 마스크: 원 마스크에서 굵은선(팽창) 을 뺀다 — 골지름선이 외형선에 붙어 있어도 떨어져 나온다 */
   let thinComps = comps;
@@ -186,9 +260,9 @@ export function measureSilhouette(img, opts = {}) {
     }
   }
   /* 입력 적합성 신호: 큰 성분이 여럿(다중 투상도·조립체), 저해상, 짝 없이 위아래로 큰 성분이 더 있음 */
-  const bigOnes = cands.filter((c) => c.w >= w * 0.22 || c.n >= main.n * 0.35).filter((c) => c.id !== main.id && c.id !== partner?.id);
+  const bigOnes = cands.filter((c) => c.w >= w * 0.22 || c.n >= main.n * 0.35).filter((c) => c.id !== main.id && !ids.has(c.id));
   const flags = [];
-  if (bigOnes.length >= 1) flags.push({ kind: "multiview", n: bigOnes.length + 1 + (partner ? 1 : 0), text: `큰 성분이 ${bigOnes.length + 1}개. 여러 투상도나 조립체로 보입니다. 이 데모는 회전체 정면도 한 장을 읽습니다(단면도·키홈 단면은 옆에 있어도 됩니다).` });
+  if (bigOnes.length >= 1) flags.push({ kind: "multiview", n: bigOnes.length + 1 + half.length, text: `큰 성분이 ${bigOnes.length + 1}개. 여러 투상도나 조립체로 보입니다. 이 데모는 회전체 정면도 한 장을 읽습니다(단면도·키홈 단면은 옆에 있어도 됩니다).` });
   /* hard 신호: 여기 걸리면 결과가 "덜 정확" 한 게 아니라 아예 다른 것을 읽은 것이므로 진행을 멈춘다.
      기준값은 샘플 17종×3해상도 + 열화 스캔(정상 60여 건)에서 오거부 0 건이 되도록 잡았다. */
   const sig = revolveSignals(top, bottom, { x0: main.x0, y0: main.y0, x1: main.x1, y1: main.y1 }, vertical);
@@ -200,14 +274,22 @@ export function measureSilhouette(img, opts = {}) {
     flags.push({ kind: "circle_view", hard: true, value: sig.circleErr,
       text: "정면에서 본 원(원형 투상)으로 보입니다. 이 데모는 축이 가로로 놓인 옆모습 도면을 읽습니다." });
   }
+  /* 볼트 원 위의 구멍: 옆 원형 뷰 안에 작은 구멍이 셋 이상 있으면 플랜지 정면도다.
+     그 구멍은 이 버전이 만들지 못하므로, 옆모습만 읽어 조용히 넘어가면 도면과 다른 부품이 나온다.
+     Holes on a bolt circle: three or more small holes inside the round view mean a flange face view.
+     Those holes cannot be built here, so reading only the side view would silently produce a different part. */
+  if (boltCircle >= 3) {
+    flags.push({ kind: "bolt_circle", hard: true, value: boltCircle,
+      text: `옆 원형 뷰에 구멍이 ${boltCircle}개 있습니다. 볼트 원 위의 구멍은 아직 만들지 못하는 형상이라, 이 도면은 읽어도 실제 부품과 달라집니다.` });
+  }
   if (along < 500) flags.push({ kind: "lowres", px: along, text: `부품이 가로 ${along}px 로 작습니다(권장 1,000px 이상). 저해상 JPEG 은 외형선과 치수선이 붙어 판독이 어긋납니다.` });
-  if (partner) {
+  if (sectioned) {
     /* 짝을 잡았어도 보어가 외경에 비해 너무 크면 거울상 반쪽이 아니라 별개 뷰다 */
     let badBore = 0; for (let i = 0; i < N; i++) if (bore[i] > 0.92 * Math.min(top[i], bottom[i])) badBore++;
     if (badBore > N * 0.2) flags.push({ kind: "not_section", text: "위·아래 두 성분을 전단면 반쪽으로 보기엔 안쪽 띠가 너무 넓습니다. 서로 다른 투상도일 가능성이 큽니다." });
   }
   for (const f of flags) notes.push(f.text);
-  return { ok: true, L_px: along, top, bottom, bore, sectioned: !!partner, axis, bbox: { x0: main.x0, y0: main.y0, x1: main.x1, y1: main.y1 }, vertical, hints, notes, flags, signals: sig, pxPerLen: along, imageSize: { w, h } };
+  return { ok: true, L_px: along, top, bottom, bore, sectioned, axis, bbox: { x0: main.x0, y0: main.y0, x1: main.x1, y1: main.y1 }, vertical, hints, notes, flags, signals: sig, pxPerLen: along, imageSize: { w, h } };
 }
 function median(a) { const s = [...a].sort((p, q) => p - q); return s.length ? s[Math.floor(s.length / 2)] : 0; }
 /* 가는선(치수·보조선 ≈ 외형선의 1/3)만 걷어내는 침식 횟수. round(굵기/2)−1 은 4.8px 외형선을 0~1px 로 만들어

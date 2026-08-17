@@ -50,3 +50,8 @@ for (const g of GOLDENS) {
 }
 writeFileSync(`${ROOT}samples/index.json`, JSON.stringify({ built: new Date().toISOString().slice(0, 10), count: index.length, samples: index }, null, 1));
 console.log(`samples/index.json — ${index.length}개`);
+/* 이 파일이 index.json 을 새로 쓰므로 라이브러리 쌍 정보(files.result · result_from)가 지워진다.
+   이어서 render-thumb 을 돌려 3D 그림을 다시 굽고 그 정보를 채워 넣어야 한다. tools/test-pairs.mjs 가 잊었는지 본다.
+   This rewrites index.json, so the library pair fields (files.result, result_from) are dropped.
+   Run render-thumb next to re-bake the 3D images and put them back. tools/test-pairs.mjs catches it if you forget. */
+console.log("이어서: node tools/render-thumb.mjs  (라이브러리 결과 그림 다시 굽기 / re-bake the library result images)");

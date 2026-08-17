@@ -1,0 +1,41 @@
+{
+  "dsl": "vringon-shaft/1.0",
+  "id": "dowel-pin",
+  "name": "Parallel dowel pin",
+  "name_ko": "평행핀",
+  "part_class": "pin",
+  "units": "mm",
+  "material": "SUJ2",
+  "drawing": {
+    "number": "VR-RB-019",
+    "scale": "2:1",
+    "projection": "third"
+  },
+  "segments": [
+    {
+      "type": "cyl",
+      "length": 40,
+      "diameter": 8,
+      "tolerance": "m6"
+    }
+  ],
+  "transitions": [
+    {
+      "at": 0,
+      "type": "chamfer",
+      "size": 0.8
+    },
+    {
+      "at": 1,
+      "type": "chamfer",
+      "size": 0.8
+    }
+  ],
+  "grooves": [],
+  "bore": null,
+  "features": [],
+  "meta": {
+    "source": "golden",
+    "difficulty": 1
+  }
+}

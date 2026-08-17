@@ -1,0 +1,42 @@
+{
+  "dsl": "vringon-shaft/1.0",
+  "id": "taper-pin",
+  "name": "Taper pin 1:50",
+  "name_ko": "테이퍼 핀",
+  "part_class": "pin",
+  "units": "mm",
+  "material": "S45C",
+  "drawing": {
+    "number": "VR-RB-020",
+    "scale": "2:1",
+    "projection": "third"
+  },
+  "segments": [
+    {
+      "type": "taper",
+      "length": 45,
+      "d_start": 8,
+      "d_end": 8.9,
+      "label": "1:50 테이퍼"
+    }
+  ],
+  "transitions": [
+    {
+      "at": 0,
+      "type": "round",
+      "radius": 0.8
+    },
+    {
+      "at": 1,
+      "type": "round",
+      "radius": 1
+    }
+  ],
+  "grooves": [],
+  "bore": null,
+  "features": [],
+  "meta": {
+    "source": "golden",
+    "difficulty": 2
+  }
+}

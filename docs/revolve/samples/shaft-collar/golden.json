@@ -1,0 +1,60 @@
+{
+  "dsl": "vringon-shaft/1.0",
+  "id": "shaft-collar",
+  "name": "Set screw collar",
+  "name_ko": "세트 스크루 칼라",
+  "part_class": "spacer",
+  "units": "mm",
+  "material": "S45C",
+  "drawing": {
+    "number": "VR-RB-025",
+    "scale": "2:1",
+    "projection": "third"
+  },
+  "segments": [
+    {
+      "type": "cyl",
+      "length": 16,
+      "diameter": 32
+    }
+  ],
+  "transitions": [
+    {
+      "at": 0,
+      "type": "chamfer",
+      "size": 1
+    },
+    {
+      "at": 1,
+      "type": "chamfer",
+      "size": 1
+    }
+  ],
+  "grooves": [],
+  "bore": {
+    "through": true,
+    "segments": [
+      {
+        "length": 16,
+        "diameter": 20,
+        "tolerance": "H8"
+      }
+    ],
+    "chamfer_left": 0.6,
+    "chamfer_right": 0.6
+  },
+  "features": [
+    {
+      "type": "cross_hole",
+      "position": 8,
+      "diameter": 6,
+      "through": false,
+      "depth": 6,
+      "angle": 90
+    }
+  ],
+  "meta": {
+    "source": "golden",
+    "difficulty": 2
+  }
+}

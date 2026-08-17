@@ -907,9 +907,16 @@ $("overallLen").onchange = () => { if (state.source && pipe.done >= 2 && state.e
 /* ================================================================ 라이브러리 */
 function renderLibrary() {
   $("libCount").textContent = `${state.samples.length}개`;
+  /* 카드 한 장이 쌍 하나다: 왼쪽은 올리는 도면, 오른쪽은 그 도면에서 나온 3D.
+     오른쪽 그림의 출처를 그대로 적는다 — 판독 결과인지, 정답 사양인지.
+     One card is one pair: the drawing you would upload on the left, the 3D that came out of it on the
+     right. The label says where the right image came from: a reading, or the reference spec. */
   $("libGrid").innerHTML = state.samples.map((s) => `
     <button class="item" data-id="${s.id}">
-      <img class="thumb" src="./samples/${s.id}/${s.files.thumb || s.files.svg}?v=${BUILD}" alt="" loading="lazy" />
+      <div class="pair">
+        <figure><img src="./samples/${s.id}/${s.files.thumb || s.files.svg}?v=${BUILD}" alt="" loading="lazy" /><figcaption>${t("도면")}</figcaption></figure>
+        <figure><img src="./samples/${s.id}/${s.files.result || "result.webp"}?v=${BUILD}" alt="" loading="lazy" /><figcaption>${s.result_from === "read" ? t("판독 결과") : t("정답 사양")}</figcaption></figure>
+      </div>
       <div class="meta"><div class="t">${s.name_ko} <span style="color:var(--text-3);font-weight:500">· ${s.name}</span></div>
       <div class="d">L${s.L} · ⌀${s.Dmax} · ${s.material} · ${t("세그먼트")} ${s.segments}${s.features.length ? ` · ${[...new Set(s.features)].map((f) => t(FEATURE_KO[f] || f)).join("/")}` : ""}${s.bore ? ` · ${t("보어")}` : ""} · ${t("난이도")} ${"●".repeat(s.difficulty)}${"○".repeat(5 - s.difficulty)}</div></div>
     </button>`).join("");

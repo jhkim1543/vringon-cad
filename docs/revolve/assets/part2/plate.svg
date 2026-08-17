@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1180" height="780" viewBox="0 0 1180 780">
+<rect width="1180" height="780" fill="#ffffff"/>
+<g stroke="#111111" stroke-width="2.6" fill="#f3f3f3">
+  <!-- 정면도: 판의 면 / front view: the face -->
+  <rect x="110" y="254" width="476" height="306"/>
+  <circle cx="178" cy="322" r="18.7" fill="#fff"/><circle cx="518" cy="322" r="18.7" fill="#fff"/>
+  <circle cx="178" cy="492" r="18.7" fill="#fff"/><circle cx="518" cy="492" r="18.7" fill="#fff"/>
+  <circle cx="348" cy="407" r="68" fill="#fff"/>
+  <!-- 윗면도: 두께만 보인다 / top view: thickness only -->
+  <rect x="110" y="129.6" width="476" height="54.4"/>
+</g>
+<g stroke="#111111" stroke-width="1" fill="none">
+  <path d="M280 129.6 V184 M416 129.6 V184" stroke-dasharray="6 3"/>
+  <path d="M348 297 L348 517" stroke-dasharray="16 5 3 5" stroke-width="0.9"/>
+  <path d="M238 407 L458 407" stroke-dasharray="16 5 3 5" stroke-width="0.9"/>
+  <path d="M110 563 V612 M586 563 V612"/><path d="M110 606 H586"/><path d="M110 606 l8 -1.5 v3 z M586 606 l-8 -1.5 v3 z" fill="#111111"/>
+    <text x="348" y="601" text-anchor="middle" font-size="15" font-family="Helvetica, Arial, sans-serif" fill="#111111">140</text>
+  <path d="M178 563 V588 M518 563 V588"/><path d="M178 582 H518"/><path d="M178 582 l8 -1.5 v3 z M518 582 l-8 -1.5 v3 z" fill="#111111"/>
+    <text x="348" y="577" text-anchor="middle" font-size="15" font-family="Helvetica, Arial, sans-serif" fill="#111111">100</text>
+  <path d="M107 254 H64 M107 560 H64"/><path d="M70 254 V560"/><path d="M70 254 l-1.5 8 h3 z M70 560 l-1.5 -8 h3 z" fill="#111111"/>
+    <text x="76" y="412" font-size="15" font-family="Helvetica, Arial, sans-serif" fill="#111111">90</text>
+  <path d="M107 322 H88 M107 492 H88"/><path d="M94 322 V492"/><path d="M94 322 l-1.5 8 h3 z M94 492 l-1.5 -8 h3 z" fill="#111111"/>
+    <text x="100" y="412" font-size="15" font-family="Helvetica, Arial, sans-serif" fill="#111111">50</text>
+  <path d="M107 129.6 H64 M107 184 H64"/><path d="M70 129.6 V184"/><path d="M70 129.6 l-1.5 8 h3 z M70 184 l-1.5 -8 h3 z" fill="#111111"/>
+    <text x="76" y="161.8" font-size="15" font-family="Helvetica, Arial, sans-serif" fill="#111111">16</text>
+</g>
+<g font-size="15" font-family="Helvetica, Arial, sans-serif" fill="#111111">
+  <text x="360" y="393">⌀40</text>
+  <text x="532" y="496">4-⌀11</text>
+</g>
+<g transform="translate(720 90) scale(0.8)" stroke="#111111" stroke-width="1.6" fill="#f3f3f3" stroke-linejoin="round"><path d="M30 120 L250 20 L430 90 L210 195 Z" fill="#e6e6e6"/><path d="M30 120 L30 145 L210 220 L210 195 Z" fill="#d5d5d5"/><path d="M210 195 L210 220 L430 115 L430 90 Z" fill="#dcdcdc"/><ellipse cx="228" cy="107" rx="40" ry="19" fill="#fff"/></g>
+<text x="740" y="330" font-size="12" font-family="Helvetica, Arial, sans-serif" fill="#111111">등각 (참고)</text>
+<g stroke="#111111" stroke-width="1" fill="none"><rect x="830" y="690" width="300" height="60"/><path d="M830 720 H1130 M980 690 V750"/></g>
+  <g font-size="12" font-family="Helvetica, Arial, sans-serif" fill="#111111"><text x="836" y="710">부품명 타공 플레이트</text><text x="986" y="710">도번 P2-PLT-04</text><text x="836" y="740">척도 1:1</text><text x="986" y="740">3각법 · 단위 mm</text></g>
+</svg>

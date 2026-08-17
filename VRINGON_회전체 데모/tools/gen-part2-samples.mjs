@@ -189,11 +189,155 @@ ${title(970, 820, "사각 플랜지 곡관", "P2-ELB-03")}
   writeFileSync(join(OUT, "elbow.svg"), svg);
 }
 
+/* ================================================================ 4. 타공 플레이트 / drilled plate
+   가장 단순한 정투상 두 장짜리 부품이다. 면(정면)과 두께(윗면) 두 뷰만 있으면 교집합이 정확히 떨어진다.
+   The simplest two-view part there is: a face view plus a thickness view is all the intersection needs.
+   판 140×90×12, 4-⌀11 (모서리에서 20), 가운데 ⌀40 / plate 140×90×12, four ⌀11 at 20 in from the corners, ⌀40 centre */
+{
+  /* 두께 16: 12 으로 하면 외형선 굵기(≈0.3mm)가 두께의 2.5% 라 크기 검사를 아슬아슬하게 넘긴다.
+     16 thick: at 12 the outline width (≈0.3 mm) is 2.5% of the thickness, right on the size tolerance. */
+  const k = 3.4;                                   /* px/mm — 뷰마다 다르게 둔다 / deliberately differs per sheet */
+  const L = 140, W = 90, T = 16;
+  const fx = 110, fy = 560;                        /* 정면도 왼쪽 아래 / front view, lower left */
+  const tx = fx, ty = fy - W * k - 70 - T * k;     /* 윗면도는 정면도 위 (3각법) / top view sits above (third angle) */
+  const hole = (cx, cy, d) => `<circle cx="${cx}" cy="${cy}" r="${(d / 2) * k}" fill="#fff"/>`;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1180" height="780" viewBox="0 0 1180 780">
+<rect width="1180" height="780" fill="#ffffff"/>
+<g stroke="${S}" stroke-width="${THICK}" fill="#f3f3f3">
+  <!-- 정면도: 판의 면 / front view: the face -->
+  <rect x="${fx}" y="${fy - W * k}" width="${L * k}" height="${W * k}"/>
+  ${hole(fx + 20 * k, fy - (W - 20) * k, 11)}${hole(fx + (L - 20) * k, fy - (W - 20) * k, 11)}
+  ${hole(fx + 20 * k, fy - 20 * k, 11)}${hole(fx + (L - 20) * k, fy - 20 * k, 11)}
+  ${hole(fx + (L / 2) * k, fy - (W / 2) * k, 40)}
+  <!-- 윗면도: 두께만 보인다 / top view: thickness only -->
+  <rect x="${tx}" y="${ty}" width="${L * k}" height="${T * k}"/>
+</g>
+<g stroke="${S}" stroke-width="1" fill="none">
+  <path d="M${tx + 50 * k} ${ty} V${ty + T * k} M${tx + 90 * k} ${ty} V${ty + T * k}" stroke-dasharray="6 3"/>
+  ${cl(fx + (L / 2) * k, fy - (W / 2) * k - 110, fx + (L / 2) * k, fy - (W / 2) * k + 110)}
+  ${cl(fx + (L / 2) * k - 110, fy - (W / 2) * k, fx + (L / 2) * k + 110, fy - (W / 2) * k)}
+  ${dimH(fx, fx + L * k, fy + 46, "140", { from: fy })}
+  ${dimH(fx + 20 * k, fx + (L - 20) * k, fy + 22, "100", { from: fy })}
+  ${dimV(fy - W * k, fy, fx - 40, "90", { from: fx })}
+  ${dimV(fy - (W - 20) * k, fy - 20 * k, fx - 16, "50", { from: fx })}
+  ${dimV(ty, ty + T * k, tx - 40, "16", { from: tx })}
+</g>
+<g font-size="15" ${F} fill="${S}">
+  <text x="${fx + (L / 2) * k + 12}" y="${fy - (W / 2) * k - 14}">⌀40</text>
+  <text x="${fx + (L - 20) * k + 14}" y="${fy - 20 * k + 4}">4-⌀11</text>
+</g>
+${iso(`<path d="M30 120 L250 20 L430 90 L210 195 Z" fill="#e6e6e6"/><path d="M30 120 L30 145 L210 220 L210 195 Z" fill="#d5d5d5"/><path d="M210 195 L210 220 L430 115 L430 90 Z" fill="#dcdcdc"/><ellipse cx="228" cy="107" rx="40" ry="19" fill="#fff"/>`, 720, 90, 0.8)}
+<text x="740" y="330" font-size="12" ${F} fill="${S}">등각 (참고)</text>
+${title(830, 690, "타공 플레이트", "P2-PLT-04")}
+</svg>`;
+  writeFileSync(join(OUT, "plate.svg"), svg);
+}
+
+/* ================================================================ 5. ㄷ 채널 브래킷 / channel bracket
+   정면도가 ㄷ 자라 안쪽이 파인 부품이다. 안쪽 모서리를 구멍으로 잘못 보지 않는지 보는 예시다.
+   The front view is a U, so the part has a recess. This sheet checks that the inner corners are not
+   mistaken for holes. 길이 150, 폭 80, 높이 60, 두께 10 / 150 long, 80 wide, 60 tall, 10 thick */
+{
+  /* k 와 fy 는 윗면도(길이 150)가 화면 안에 들어오도록 잡은 값이다. 처음엔 위로 잘려 나가
+     길이를 못 읽었고 Z 크기가 46% 틀렸다.
+     k and fy are set so the top view (150 long) fits on the sheet. It ran off the top at first,
+     so the length could not be read and the Z size came out 46% wrong. */
+  const k = 2.9;
+  const LEN = 150, WID = 80, HGT = 60, T = 10;
+  const fx = 110, fy = 800;                        /* 정면도(ㄷ 단면) 왼쪽 아래 / front view (the U), lower left */
+  const sx = fx + WID * k + 90, sy = fy;           /* 우측면도: 길이가 보이는 뷰 / right view: shows the length */
+  const tx = fx, ty = fy - HGT * k - 80 - LEN * k; /* 윗면도 / top view */
+  /* ㄷ 자 윤곽: 바깥 → 안쪽 홈을 파고 돌아온다 / U outline: around the outside, into the recess, back */
+  const U = `M${fx} ${fy} H${fx + WID * k} V${fy - HGT * k} H${fx + (WID - T) * k} V${fy - T * k} H${fx + T * k} V${fy - HGT * k} H${fx} Z`;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1220" height="1000" viewBox="0 0 1220 1000">
+<rect width="1220" height="1000" fill="#ffffff"/>
+<g stroke="${S}" stroke-width="${THICK}" fill="#f3f3f3">
+  <path d="${U}"/>
+  <!-- 우측면도: 길이 × 높이 / right view: length by height -->
+  <rect x="${sx}" y="${sy - HGT * k}" width="${LEN * k}" height="${HGT * k}"/>
+  <path d="M${sx} ${sy - T * k} H${sx + LEN * k}"/>
+  <!-- 윗면도: 길이 × 폭, 양 날개 안쪽 선 + 웨브 구멍 2-⌀12 / top view with the two flange lines and 2-⌀12 in the web -->
+  <rect x="${tx}" y="${ty}" width="${WID * k}" height="${LEN * k}"/>
+  <path d="M${tx + T * k} ${ty} V${ty + LEN * k} M${tx + (WID - T) * k} ${ty} V${ty + LEN * k}"/>
+  <circle cx="${tx + (WID / 2) * k}" cy="${ty + 40 * k}" r="${6 * k}" fill="#fff"/>
+  <circle cx="${tx + (WID / 2) * k}" cy="${ty + 110 * k}" r="${6 * k}" fill="#fff"/>
+</g>
+<g stroke="${S}" stroke-width="1" fill="none">
+  <path d="M${sx + 40 * k} ${sy} V${sy - T * k} M${sx + 110 * k} ${sy} V${sy - T * k}" stroke-dasharray="6 3"/>
+  ${cl(tx + (WID / 2) * k, ty + 40 * k - 50, tx + (WID / 2) * k, ty + 40 * k + 50)}
+  ${cl(tx + (WID / 2) * k, ty + 110 * k - 50, tx + (WID / 2) * k, ty + 110 * k + 50)}
+  ${dimH(fx, fx + WID * k, fy + 46, "80", { from: fy })}
+  ${dimH(fx + T * k, fx + (WID - T) * k, fy + 22, "60", { from: fy })}
+  ${dimV(fy - HGT * k, fy, fx - 40, "60", { from: fx })}
+  ${dimV(fy - T * k, fy, fx - 16, "10", { from: fx })}
+  ${dimH(sx, sx + LEN * k, sy + 46, "150", { from: sy })}
+  ${dimV(ty + 40 * k, ty + 110 * k, tx + WID * k + 44, "70", { from: tx + WID * k })}
+</g>
+<g font-size="15" ${F} fill="${S}">
+  <text x="${tx + (WID / 2) * k + 26}" y="${ty + 40 * k + 5}">2-⌀12</text>
+</g>
+${iso(`<path d="M30 150 L150 90 L150 30 L190 50 L190 110 L310 50 L310 110 L230 150 L230 210 L110 270 L110 210 L30 250 Z" fill="#e6e6e6"/>`, 760, 120, 0.85)}
+<text x="780" y="380" font-size="12" ${F} fill="${S}">등각 (참고)</text>
+${title(870, 900, "ㄷ 채널 브래킷", "P2-CHN-05")}
+</svg>`;
+  writeFileSync(join(OUT, "channel.svg"), svg);
+}
+
+/* ================================================================ 6. 축 지지 블록 / shaft support block
+   정면에서 본 구멍이 있는 몸체다. 하우징과 같은 2단계 부류로, 안쪽 단차는 숨은선이라 보이지 않아 근사가 된다.
+   A body with a bore seen face on. Same level 2 family as the housing: the inner step is a hidden line,
+   so the result is an approximation. 몸체 100×70×45, 보어 ⌀36, 바닥 4-⌀10 / body 100×70×45, ⌀36 bore, four ⌀10 in the foot */
+{
+  const k = 3.9;
+  const BW = 100, BH = 70, BD = 45, FT = 12;
+  const fx = 110, fy = 580;
+  const sx = fx + BW * k + 95, sy = fy;
+  const tx = fx, ty = fy - BH * k - 80 - BD * k;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1240" height="860" viewBox="0 0 1240 860">
+<rect width="1240" height="860" fill="#ffffff"/>
+<g stroke="${S}" stroke-width="${THICK}" fill="#f3f3f3">
+  <!-- 정면도: 몸체 + 발 + 보어 / front view: body, foot and bore -->
+  <path d="M${fx} ${fy} H${fx + BW * k} V${fy - FT * k} H${fx + (BW - 15) * k} V${fy - BH * k} H${fx + 15 * k} V${fy - FT * k} H${fx} Z"/>
+  <circle cx="${fx + (BW / 2) * k}" cy="${fy - 45 * k}" r="${18 * k}" fill="#fff"/>
+  <!-- 우측면도: 깊이 × 높이 / right view: depth by height -->
+  <path d="M${sx} ${sy} H${sx + BD * k} V${sy - BH * k} H${sx} Z"/>
+  <path d="M${sx} ${sy - FT * k} H${sx + BD * k}"/>
+  <!-- 윗면도: 폭 × 깊이, 발 구멍 4-⌀10 / top view with four ⌀10 in the foot -->
+  <rect x="${tx}" y="${ty}" width="${BW * k}" height="${BD * k}"/>
+  <path d="M${tx + 15 * k} ${ty} V${ty + BD * k} M${tx + (BW - 15) * k} ${ty} V${ty + BD * k}"/>
+  <circle cx="${tx + 8 * k}" cy="${ty + 11 * k}" r="${5 * k}" fill="#fff"/><circle cx="${tx + 8 * k}" cy="${ty + 34 * k}" r="${5 * k}" fill="#fff"/>
+  <circle cx="${tx + 92 * k}" cy="${ty + 11 * k}" r="${5 * k}" fill="#fff"/><circle cx="${tx + 92 * k}" cy="${ty + 34 * k}" r="${5 * k}" fill="#fff"/>
+</g>
+<g stroke="${S}" stroke-width="1" fill="none">
+  <path d="M${sx} ${sy - 27 * k} H${sx + BD * k} M${sx} ${sy - 63 * k} H${sx + BD * k}" stroke-dasharray="6 3"/>
+  ${cl(fx + (BW / 2) * k, fy - 45 * k - 100, fx + (BW / 2) * k, fy - 45 * k + 100)}
+  ${cl(fx + (BW / 2) * k - 100, fy - 45 * k, fx + (BW / 2) * k + 100, fy - 45 * k)}
+  ${dimH(fx, fx + BW * k, fy + 46, "100", { from: fy })}
+  ${dimV(fy - BH * k, fy, fx - 42, "70", { from: fx })}
+  ${dimV(fy - 45 * k, fy, fx - 18, "45", { from: fx })}
+  ${dimV(fy - FT * k, fy, fx + BW * k + 40, "12", { from: fx + BW * k })}
+  ${dimH(sx, sx + BD * k, sy + 46, "45", { from: sy })}
+  ${dimH(tx + 8 * k, tx + 92 * k, ty - 30, "84", { from: ty })}
+</g>
+<g font-size="15" ${F} fill="${S}">
+  <text x="${fx + (BW / 2) * k + 22}" y="${fy - 45 * k - 22}">⌀36</text>
+  <text x="${tx + 92 * k + 16}" y="${ty + 34 * k + 5}">4-⌀10</text>
+</g>
+${iso(`<path d="M40 210 L160 140 L160 60 L280 130 L280 210 L400 140 L400 190 L220 295 L40 190 Z" fill="#e6e6e6"/><ellipse cx="220" cy="150" rx="34" ry="30" fill="#fff"/>`, 780, 110, 0.82)}
+<text x="800" y="380" font-size="12" ${F} fill="${S}">등각 (참고)</text>
+${title(890, 770, "축 지지 블록", "P2-BLK-06")}
+</svg>`;
+  writeFileSync(join(OUT, "block.svg"), svg);
+}
+
 /* 정답: 복원 결과를 비교할 값 (mm) */
 writeFileSync(join(OUT, "golden.json"), JSON.stringify({
   bracket: { name: "L 브래킷", level: 1, size: [90, 40, 50], volume_cm3: +((90 * 50 * 10 + 40 * 50 * 10 - 10 * 50 * 10 - Math.PI * 100 * 10 - Math.PI * 36 * 10 - 2 * 12.5 * 50) / 1000).toFixed(1),
     holes: [{ dia: 20, axis: "Y" }, { dia: 12, axis: "X" }], dims: [90, 50, 40, 10, 70, 25, 20, 12] },
   housing: { name: "베어링 하우징", level: 2, size: [120, 80, 50], holes: [{ dia: 35, axis: "Z" }, { dia: 9, axis: "Y", count: 4 }], dims: [120, 50, 15, 45, 60, 40, 80, 70, 35, 9] },
   elbow: { name: "사각 플랜지 곡관", level: 3, size: [375, 375, 320], unsupported: "곡관은 단면도의 경로와 단면으로 스윕해야 한다. 3뷰 교집합으로는 만들 수 없다." },
+  plate: { name: "타공 플레이트", level: 1, size: [140, 90, 16], holes: [{ dia: 11, axis: "Z", count: 4 }, { dia: 40, axis: "Z" }], dims: [140, 100, 90, 50, 16, 40, 11] },
+  channel: { name: "ㄷ 채널 브래킷", level: 1, size: [80, 60, 150], holes: [{ dia: 12, axis: "Y", count: 2 }], dims: [150, 80, 60, 60, 10, 70, 12] },
+  block: { name: "축 지지 블록", level: 2, size: [100, 70, 45], holes: [{ dia: 36, axis: "Z" }, { dia: 10, axis: "Y", count: 4 }], dims: [100, 70, 45, 45, 12, 84, 36, 10] },
 }, null, 2));
-console.log("assets/part2: bracket.svg housing.svg elbow.svg golden.json");
+console.log("assets/part2: bracket.svg housing.svg elbow.svg plate.svg channel.svg block.svg golden.json");

@@ -1,6 +1,6 @@
 {
- "built": "2026-08-16",
- "count": 17,
+ "built": "2026-08-17",
+ "count": 25,
  "samples": [
   {
    "id": "spacer",
@@ -27,8 +27,10 @@
     "extracted": "extracted.json",
     "step": "model.step",
     "usda": "model.usda",
-    "usdc": "model.usdc"
-   }
+    "usdc": "model.usdc",
+    "result": "result.webp"
+   },
+   "result_from": "read"
   },
   {
    "id": "clevis-pin",
@@ -57,8 +59,10 @@
     "extracted": "extracted.json",
     "step": "model.step",
     "usda": "model.usda",
-    "usdc": "model.usdc"
-   }
+    "usdc": "model.usdc",
+    "result": "result.webp"
+   },
+   "result_from": "read"
   },
   {
    "id": "bushing",
@@ -87,8 +91,10 @@
     "extracted": "extracted.json",
     "step": "model.step",
     "usda": "model.usda",
-    "usdc": "model.usdc"
-   }
+    "usdc": "model.usdc",
+    "result": "result.webp"
+   },
+   "result_from": "read"
   },
   {
    "id": "flanged-bushing",
@@ -115,8 +121,10 @@
     "extracted": "extracted.json",
     "step": "model.step",
     "usda": "model.usda",
-    "usdc": "model.usdc"
-   }
+    "usdc": "model.usdc",
+    "result": "result.webp"
+   },
+   "result_from": "read"
   },
   {
    "id": "roller",
@@ -146,8 +154,10 @@
     "extracted": "extracted.json",
     "step": "model.step",
     "usda": "model.usda",
-    "usdc": "model.usdc"
-   }
+    "usdc": "model.usdc",
+    "result": "result.webp"
+   },
+   "result_from": "read"
   },
   {
    "id": "hex-stud",
@@ -177,8 +187,10 @@
     "extracted": "extracted.json",
     "step": "model.step",
     "usda": "model.usda",
-    "usdc": "model.usdc"
-   }
+    "usdc": "model.usdc",
+    "result": "result.webp"
+   },
+   "result_from": "read"
   },
   {
    "id": "threaded-shaft",
@@ -207,8 +219,10 @@
     "extracted": "extracted.json",
     "step": "model.step",
     "usda": "model.usda",
-    "usdc": "model.usdc"
-   }
+    "usdc": "model.usdc",
+    "result": "result.webp"
+   },
+   "result_from": "read"
   },
   {
    "id": "sleeve",
@@ -235,8 +249,10 @@
     "extracted": "extracted.json",
     "step": "model.step",
     "usda": "model.usda",
-    "usdc": "model.usdc"
-   }
+    "usdc": "model.usdc",
+    "result": "result.webp"
+   },
+   "result_from": "read"
   },
   {
    "id": "taper-shaft",
@@ -266,8 +282,10 @@
     "extracted": "extracted.json",
     "step": "model.step",
     "usda": "model.usda",
-    "usdc": "model.usdc"
-   }
+    "usdc": "model.usdc",
+    "result": "result.webp"
+   },
+   "result_from": "read"
   },
   {
    "id": "motor-shaft",
@@ -299,8 +317,10 @@
     "extracted": "extracted.json",
     "step": "model.step",
     "usda": "model.usda",
-    "usdc": "model.usdc"
-   }
+    "usdc": "model.usdc",
+    "result": "result.webp"
+   },
+   "result_from": "read"
   },
   {
    "id": "stepped-shaft",
@@ -332,8 +352,10 @@
     "extracted": "extracted.json",
     "step": "model.step",
     "usda": "model.usda",
-    "usdc": "model.usdc"
-   }
+    "usdc": "model.usdc",
+    "result": "result.webp"
+   },
+   "result_from": "read"
   },
   {
    "id": "spindle",
@@ -363,8 +385,10 @@
     "extracted": "extracted.json",
     "step": "model.step",
     "usda": "model.usda",
-    "usdc": "model.usdc"
-   }
+    "usdc": "model.usdc",
+    "result": "result.webp"
+   },
+   "result_from": "read"
   },
   {
    "id": "hex-bolt-m10",
@@ -393,8 +417,10 @@
     "extracted": "extracted.json",
     "step": "model.step",
     "usda": "model.usda",
-    "usdc": "model.usdc"
-   }
+    "usdc": "model.usdc",
+    "result": "result.webp"
+   },
+   "result_from": "read"
   },
   {
    "id": "socket-cap-m8",
@@ -423,8 +449,10 @@
     "extracted": "extracted.json",
     "step": "model.step",
     "usda": "model.usda",
-    "usdc": "model.usdc"
-   }
+    "usdc": "model.usdc",
+    "result": "result.webp"
+   },
+   "result_from": "read"
   },
   {
    "id": "set-screw-m6",
@@ -453,8 +481,10 @@
     "extracted": "extracted.json",
     "step": "model.step",
     "usda": "model.usda",
-    "usdc": "model.usdc"
-   }
+    "usdc": "model.usdc",
+    "result": "result.webp"
+   },
+   "result_from": "read"
   },
   {
    "id": "countersunk-m6",
@@ -483,8 +513,10 @@
     "extracted": "extracted.json",
     "step": "model.step",
     "usda": "model.usda",
-    "usdc": "model.usdc"
-   }
+    "usdc": "model.usdc",
+    "result": "result.webp"
+   },
+   "result_from": "read"
   },
   {
    "id": "stud-m12",
@@ -511,8 +543,264 @@
     "extracted": "extracted.json",
     "step": "model.step",
     "usda": "model.usda",
-    "usdc": "model.usdc"
-   }
+    "usdc": "model.usdc",
+    "result": "result.webp"
+   },
+   "result_from": "read"
+  },
+  {
+   "id": "hub-flange",
+   "name": "Hub flange",
+   "name_ko": "허브 플랜지",
+   "part_class": "flange",
+   "material": "S45C",
+   "difficulty": 3,
+   "L": 38,
+   "Dmax": 72,
+   "mass_g": 515.3,
+   "scale": 1,
+   "segments": 3,
+   "features": [
+    "keyway"
+   ],
+   "grooves": 1,
+   "bore": true,
+   "files": {
+    "golden": "golden.json",
+    "svg": "drawing.svg",
+    "png": "drawing.png",
+    "thumb": "thumb.webp",
+    "dxf": "drawing.dxf",
+    "labels": "labels.json",
+    "extracted": null,
+    "step": null,
+    "usda": null,
+    "usdc": null,
+    "result": "result.webp"
+   },
+   "result_from": "reference"
+  },
+  {
+   "id": "dowel-pin",
+   "name": "Parallel dowel pin",
+   "name_ko": "평행핀",
+   "part_class": "pin",
+   "material": "SUJ2",
+   "difficulty": 1,
+   "L": 40,
+   "Dmax": 8,
+   "mass_g": 15.6,
+   "scale": 2,
+   "segments": 1,
+   "features": [],
+   "grooves": 0,
+   "bore": false,
+   "files": {
+    "golden": "golden.json",
+    "svg": "drawing.svg",
+    "png": "drawing.png",
+    "thumb": "thumb.webp",
+    "dxf": "drawing.dxf",
+    "labels": "labels.json",
+    "extracted": null,
+    "step": null,
+    "usda": null,
+    "usdc": null,
+    "result": "result.webp"
+   },
+   "result_from": "reference"
+  },
+  {
+   "id": "taper-pin",
+   "name": "Taper pin 1:50",
+   "name_ko": "테이퍼 핀",
+   "part_class": "pin",
+   "material": "S45C",
+   "difficulty": 2,
+   "L": 45,
+   "Dmax": 8.9,
+   "mass_g": 19.8,
+   "scale": 2,
+   "segments": 1,
+   "features": [],
+   "grooves": 0,
+   "bore": false,
+   "files": {
+    "golden": "golden.json",
+    "svg": "drawing.svg",
+    "png": "drawing.png",
+    "thumb": "thumb.webp",
+    "dxf": "drawing.dxf",
+    "labels": "labels.json",
+    "extracted": null,
+    "step": null,
+    "usda": null,
+    "usdc": null,
+    "result": "result.webp"
+   },
+   "result_from": "reference"
+  },
+  {
+   "id": "shoulder-bolt",
+   "name": "Shoulder bolt M8",
+   "name_ko": "숄더 볼트 M8",
+   "part_class": "other",
+   "material": "SCM435",
+   "difficulty": 3,
+   "L": 49,
+   "Dmax": 16,
+   "mass_g": 40.2,
+   "scale": 2,
+   "segments": 3,
+   "features": [
+    "hex_socket"
+   ],
+   "grooves": 0,
+   "bore": false,
+   "files": {
+    "golden": "golden.json",
+    "svg": "drawing.svg",
+    "png": "drawing.png",
+    "thumb": "thumb.webp",
+    "dxf": "drawing.dxf",
+    "labels": "labels.json",
+    "extracted": null,
+    "step": null,
+    "usda": null,
+    "usdc": null,
+    "result": "result.webp"
+   },
+   "result_from": "reference"
+  },
+  {
+   "id": "knurled-knob",
+   "name": "Knurled thumb screw",
+   "name_ko": "널링 손잡이 나사",
+   "part_class": "other",
+   "material": "SUS303",
+   "difficulty": 3,
+   "L": 33,
+   "Dmax": 20,
+   "mass_g": 45.8,
+   "scale": 2,
+   "segments": 3,
+   "features": [
+    "knurl"
+   ],
+   "grooves": 0,
+   "bore": false,
+   "files": {
+    "golden": "golden.json",
+    "svg": "drawing.svg",
+    "png": "drawing.png",
+    "thumb": "thumb.webp",
+    "dxf": "drawing.dxf",
+    "labels": "labels.json",
+    "extracted": null,
+    "step": null,
+    "usda": null,
+    "usdc": null,
+    "result": "result.webp"
+   },
+   "result_from": "reference"
+  },
+  {
+   "id": "piston-rod",
+   "name": "Piston rod",
+   "name_ko": "피스톤 로드",
+   "part_class": "shaft",
+   "material": "SUS304",
+   "difficulty": 5,
+   "L": 120,
+   "Dmax": 20,
+   "mass_g": 195.7,
+   "scale": 1,
+   "segments": 4,
+   "features": [
+    "flat",
+    "cross_hole",
+    "center_hole"
+   ],
+   "grooves": 1,
+   "bore": false,
+   "files": {
+    "golden": "golden.json",
+    "svg": "drawing.svg",
+    "png": "drawing.png",
+    "thumb": "thumb.webp",
+    "dxf": "drawing.dxf",
+    "labels": "labels.json",
+    "extracted": null,
+    "step": null,
+    "usda": null,
+    "usdc": null,
+    "result": "result.webp"
+   },
+   "result_from": "reference"
+  },
+  {
+   "id": "valve-spool",
+   "name": "Valve spool",
+   "name_ko": "밸브 스풀",
+   "part_class": "spindle",
+   "material": "SUJ2",
+   "difficulty": 4,
+   "L": 76,
+   "Dmax": 14,
+   "mass_g": 67.1,
+   "scale": 2,
+   "segments": 3,
+   "features": [
+    "center_hole"
+   ],
+   "grooves": 3,
+   "bore": false,
+   "files": {
+    "golden": "golden.json",
+    "svg": "drawing.svg",
+    "png": "drawing.png",
+    "thumb": "thumb.webp",
+    "dxf": "drawing.dxf",
+    "labels": "labels.json",
+    "extracted": null,
+    "step": null,
+    "usda": null,
+    "usdc": null,
+    "result": "result.webp"
+   },
+   "result_from": "reference"
+  },
+  {
+   "id": "shaft-collar",
+   "name": "Set screw collar",
+   "name_ko": "세트 스크루 칼라",
+   "part_class": "spacer",
+   "material": "S45C",
+   "difficulty": 2,
+   "L": 16,
+   "Dmax": 32,
+   "mass_g": 59.3,
+   "scale": 2,
+   "segments": 1,
+   "features": [
+    "cross_hole"
+   ],
+   "grooves": 0,
+   "bore": true,
+   "files": {
+    "golden": "golden.json",
+    "svg": "drawing.svg",
+    "png": "drawing.png",
+    "thumb": "thumb.webp",
+    "dxf": "drawing.dxf",
+    "labels": "labels.json",
+    "extracted": null,
+    "step": null,
+    "usda": null,
+    "usdc": null,
+    "result": "result.webp"
+   },
+   "result_from": "reference"
   }
  ]
 }

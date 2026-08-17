@@ -1,0 +1,94 @@
+{
+  "dsl": "vringon-shaft/1.0",
+  "id": "hub-flange",
+  "name": "Hub flange",
+  "name_ko": "허브 플랜지",
+  "part_class": "flange",
+  "units": "mm",
+  "material": "S45C",
+  "drawing": {
+    "number": "VR-RB-018",
+    "scale": "1:1",
+    "projection": "third"
+  },
+  "segments": [
+    {
+      "type": "cyl",
+      "length": 10,
+      "diameter": 72,
+      "label": "플랜지"
+    },
+    {
+      "type": "cyl",
+      "length": 6,
+      "diameter": 46
+    },
+    {
+      "type": "cyl",
+      "length": 22,
+      "diameter": 40,
+      "tolerance": "h7",
+      "label": "허브"
+    }
+  ],
+  "transitions": [
+    {
+      "at": 0,
+      "type": "chamfer",
+      "size": 1
+    },
+    {
+      "at": 1,
+      "type": "fillet",
+      "radius": 2
+    },
+    {
+      "at": 2,
+      "type": "fillet",
+      "radius": 1.5
+    },
+    {
+      "at": 3,
+      "type": "chamfer",
+      "size": 1
+    }
+  ],
+  "grooves": [
+    {
+      "segment": 2,
+      "offset": 14,
+      "width": 1.75,
+      "depth": 0.75,
+      "kind": "snap_ring",
+      "standard": "DIN 471 ⌀38.5×1.75"
+    }
+  ],
+  "bore": {
+    "through": true,
+    "segments": [
+      {
+        "length": 38,
+        "diameter": 20,
+        "tolerance": "H7"
+      }
+    ],
+    "chamfer_left": 1,
+    "chamfer_right": 1
+  },
+  "features": [
+    {
+      "type": "keyway",
+      "segment": 2,
+      "offset": 4,
+      "length": 16,
+      "width": 8,
+      "depth": 4,
+      "kind": "parallel",
+      "standard": "DIN 6885 8×7"
+    }
+  ],
+  "meta": {
+    "source": "golden",
+    "difficulty": 3
+  }
+}

@@ -1,0 +1,74 @@
+{
+  "dsl": "vringon-shaft/1.0",
+  "id": "shoulder-bolt",
+  "name": "Shoulder bolt M8",
+  "name_ko": "숄더 볼트 M8",
+  "part_class": "other",
+  "units": "mm",
+  "material": "SCM435",
+  "drawing": {
+    "number": "VR-RB-021",
+    "scale": "2:1",
+    "projection": "third"
+  },
+  "segments": [
+    {
+      "type": "cyl",
+      "length": 7,
+      "diameter": 16,
+      "label": "머리"
+    },
+    {
+      "type": "cyl",
+      "length": 30,
+      "diameter": 12,
+      "tolerance": "h8",
+      "label": "숄더"
+    },
+    {
+      "type": "thread",
+      "length": 12,
+      "diameter": 8,
+      "spec": "M8",
+      "pitch": 1.25
+    }
+  ],
+  "transitions": [
+    {
+      "at": 0,
+      "type": "chamfer",
+      "size": 0.6
+    },
+    {
+      "at": 1,
+      "type": "chamfer",
+      "size": 0.6
+    },
+    {
+      "at": 2,
+      "type": "undercut",
+      "width": 2.4,
+      "depth": 0.6,
+      "standard": "DIN 76-A"
+    },
+    {
+      "at": 3,
+      "type": "chamfer",
+      "size": 1
+    }
+  ],
+  "grooves": [],
+  "bore": null,
+  "features": [
+    {
+      "type": "hex_socket",
+      "end": "left",
+      "across_flats": 8,
+      "depth": 4
+    }
+  ],
+  "meta": {
+    "source": "golden",
+    "difficulty": 3
+  }
+}

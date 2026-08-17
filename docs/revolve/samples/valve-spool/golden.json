@@ -1,0 +1,95 @@
+{
+  "dsl": "vringon-shaft/1.0",
+  "id": "valve-spool",
+  "name": "Valve spool",
+  "name_ko": "밸브 스풀",
+  "part_class": "spindle",
+  "units": "mm",
+  "material": "SUJ2",
+  "drawing": {
+    "number": "VR-RB-024",
+    "scale": "2:1",
+    "projection": "third"
+  },
+  "segments": [
+    {
+      "type": "cyl",
+      "length": 8,
+      "diameter": 8,
+      "label": "조작단"
+    },
+    {
+      "type": "cyl",
+      "length": 62,
+      "diameter": 14,
+      "tolerance": "g6",
+      "label": "랜드"
+    },
+    {
+      "type": "cyl",
+      "length": 6,
+      "diameter": 8
+    }
+  ],
+  "transitions": [
+    {
+      "at": 0,
+      "type": "chamfer",
+      "size": 0.5
+    },
+    {
+      "at": 1,
+      "type": "fillet",
+      "radius": 0.6
+    },
+    {
+      "at": 2,
+      "type": "fillet",
+      "radius": 0.6
+    },
+    {
+      "at": 3,
+      "type": "chamfer",
+      "size": 0.5
+    }
+  ],
+  "grooves": [
+    {
+      "segment": 1,
+      "offset": 10,
+      "width": 6,
+      "depth": 2.5,
+      "kind": "generic",
+      "corner_radius": 0.4
+    },
+    {
+      "segment": 1,
+      "offset": 28,
+      "width": 6,
+      "depth": 2.5,
+      "kind": "generic",
+      "corner_radius": 0.4
+    },
+    {
+      "segment": 1,
+      "offset": 46,
+      "width": 6,
+      "depth": 2.5,
+      "kind": "generic",
+      "corner_radius": 0.4
+    }
+  ],
+  "bore": null,
+  "features": [
+    {
+      "type": "center_hole",
+      "end": "left",
+      "form": "A",
+      "d": 2
+    }
+  ],
+  "meta": {
+    "source": "golden",
+    "difficulty": 4
+  }
+}

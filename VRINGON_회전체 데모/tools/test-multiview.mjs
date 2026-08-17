@@ -12,7 +12,7 @@ const root = fileURLToPath(new URL("../", import.meta.url));
 const golden = JSON.parse(readFileSync(root + "assets/part2/golden.json"));
 const worker = await getOcrWorker({ langPath: root + "vendor/tesseract" }, createWorker);
 let fail = 0;
-for (const id of ["bracket", "housing", "elbow"]) {
+for (const id of ["bracket", "housing", "elbow", "plate", "channel", "block"]) {
   const g = golden[id];
   const svg = readFileSync(root + `assets/part2/${id}.svg`);
   const png = await sharp(svg).resize({ width: 2400 }).flatten({ background: "#fff" }).png().toBuffer();

@@ -26,10 +26,16 @@ function toast(msg, ok = false) {
   t.className = `toast${ok ? " ok" : ""}`; t.textContent = msg;
   $("toasts").appendChild(t); setTimeout(() => t.remove(), 4200);
 }
+/* 예시 도면과 그 도면으로 만든 3D 를 짝으로 둔다. result 가 없는 것은 만들지 못하는 부류다.
+   Each example pairs a sheet with the 3D built from it. No result means this version cannot build it.
+   note 는 라이브러리 카드에 그대로 나온다 / note is shown on the library card as is. */
 const SAMPLES = [
-  { id: "bracket", name: "L 브래킷 3면도", file: "assets/part2/bracket.svg", level: 1 },
-  { id: "housing", name: "베어링 하우징", file: "assets/part2/housing.svg", level: 2 },
-  { id: "elbow", name: "사각 플랜지 곡관", file: "assets/part2/elbow.svg", level: 3 },
+  { id: "bracket", name: "L 브래킷 3면도", file: "assets/part2/bracket.svg", result: "assets/part2/bracket-result.webp", level: 1, views: 3, note: "밑판과 세움판, 관통 구멍 둘" },
+  { id: "plate", name: "타공 플레이트", file: "assets/part2/plate.svg", result: "assets/part2/plate-result.webp", level: 1, views: 2, note: "면과 두께 두 뷰면 충분합니다" },
+  { id: "channel", name: "ㄷ 채널 브래킷", file: "assets/part2/channel.svg", result: "assets/part2/channel-result.webp", level: 1, views: 3, note: "안쪽이 파인 단면" },
+  { id: "housing", name: "베어링 하우징", file: "assets/part2/housing.svg", result: "assets/part2/housing-result.webp", level: 2, views: 3, note: "정면에서 본 보어는 근사입니다" },
+  { id: "block", name: "축 지지 블록", file: "assets/part2/block.svg", result: "assets/part2/block-result.webp", level: 2, views: 3, note: "발과 보어, 바닥 구멍 넷" },
+  { id: "elbow", name: "사각 플랜지 곡관", file: "assets/part2/elbow.svg", result: null, level: 3, views: 2, note: "스윕이 필요해 만들지 못합니다" },
 ];
 const LEVEL = { 1: { cls: "l1", ko: "1단계 · 각기둥", note: "정확히 나옵니다." },
                 2: { cls: "l2", ko: "2단계 · 원통 근사", note: "안쪽 형상은 근사입니다." },
@@ -360,12 +366,35 @@ async function fromFile(file) {
   return loadSheet({ name: file.name, dataUrl });
 }
 $("chips").innerHTML = SAMPLES.map((s) => `<button class="sample" data-id="${s.id}" title="${s.name}"><img class="thumb" src="./${s.file}?v=${BUILD}" alt="" loading="lazy" style="background:#fff" /><span class="lb">${s.name}</span></button>`).join("");
-$("chips").onclick = async (e) => {
-  const b = e.target.closest(".sample"); if (!b) return;
-  const s = SAMPLES.find((x) => x.id === b.dataset.id); if (!s) return;
+async function openSample(id) {
+  const s = SAMPLES.find((x) => x.id === id); if (!s) return;
   const svg = await fetch(`./${s.file}?v=${BUILD}`).then((r) => r.text());
   await loadSheet({ name: s.name, svg, sample: s });
-};
+}
+$("chips").onclick = (e) => { const b = e.target.closest(".sample"); if (b) openSample(b.dataset.id); };
+
+/* ---------------------------------------------------------------- 라이브러리 / library
+   도면과 그 도면에서 나온 3D 를 나란히 둔다. 무엇을 올리면 무엇이 나오는지 한눈에 보는 곳이다.
+   Puts each sheet next to the 3D that came out of it: one place to see what goes in and what comes out. */
+function renderLibrary2() {
+  $("libCount").textContent = `${SAMPLES.length}`;
+  $("libGrid").innerHTML = SAMPLES.map((s) => {
+    const lv = LEVEL[s.level];
+    const right = s.result
+      ? `<figure><img src="./${s.result}?v=${BUILD}" alt="" loading="lazy" /><figcaption>${t("복원 결과")}</figcaption></figure>`
+      : `<figure class="none"><span>${t("만들지 못하는 부류")}</span></figure>`;
+    return `<button class="item" data-id="${s.id}">
+      <div class="pair"><figure><img src="./${s.file}?v=${BUILD}" alt="" loading="lazy" /><figcaption>${t("도면")}</figcaption></figure>${right}</div>
+      <div class="meta"><div class="t">${t(s.name)}</div>
+      <div class="d">${t("정투상 {n}뷰", { n: s.views })} · ${t(lv.ko)} · ${t(s.note)}</div></div>
+    </button>`;
+  }).join("");
+}
+$("libGrid").onclick = (e) => { const b = e.target.closest(".item"); if (!b) return; closeLib(); openSample(b.dataset.id); };
+function openLib() { $("lib").style.display = ""; $("wsBody").style.display = "none"; renderLibrary2(); }
+function closeLib() { $("lib").style.display = "none"; $("wsBody").style.display = ""; resize(); }
+$("btnLib").onclick = () => ($("lib").style.display === "none" ? openLib() : closeLib());
+$("btnLibClose").onclick = closeLib;
 renderCube();
 initI18n();
 initTour("part2");

@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 297 210" width="1188" height="840" font-family="Pretendard, 'Segoe UI', Arial, sans-serif" data-vringon-dsl="taper-pin" data-scale="2">
+<rect width="297" height="210" fill="#FFFFFF"/>
+<g id="center" stroke="#111111" stroke-width="0.18" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="8 1.5 0.5 1.5">
+<line x1="98.498" y1="89.101" x2="204.498" y2="89.101"/>
+</g>
+<g id="dim" stroke="#111111" stroke-width="0.18" fill="none" stroke-linecap="round" stroke-linejoin="round">
+<line x1="106.498" y1="99.001" x2="106.498" y2="115.001"/>
+<line x1="196.498" y1="99.001" x2="196.498" y2="115.001"/>
+<line x1="106.498" y1="113.001" x2="196.498" y2="113.001"/>
+<polygon points="106.498,113.001 109.498,112.491 109.498,113.511" fill="#111111" stroke="none"/>
+<polygon points="196.498,113.001 193.498,113.511 193.498,112.491" fill="#111111" stroke="none"/>
+<line x1="126.298" y1="97.299" x2="126.298" y2="70.903"/>
+<polygon points="126.298,97.299 125.788,94.299 126.808,94.299" fill="#111111" stroke="none"/>
+<polygon points="126.298,80.903 126.808,83.903 125.788,83.903" fill="#111111" stroke="none"/>
+<line x1="176.698" y1="97.803" x2="176.698" y2="70.399"/>
+<polygon points="176.698,97.803 176.188,94.803 177.208,94.803" fill="#111111" stroke="none"/>
+<polygon points="176.698,80.399 177.208,83.399 176.188,83.399" fill="#111111" stroke="none"/>
+<line x1="106.962" y1="81.565" x2="101.962" y2="74.565"/>
+<line x1="101.962" y1="74.565" x2="92.682" y2="74.565"/>
+<polygon points="106.962,81.565 109.121,83.71 108.291,84.303" fill="#111111" stroke="none"/>
+<line x1="195.918" y1="80.781" x2="200.918" y2="73.781"/>
+<line x1="200.918" y1="73.781" x2="207.258" y2="73.781"/>
+<polygon points="195.918,80.781 194.589,83.519 193.759,82.926" fill="#111111" stroke="none"/>
+</g>
+<g id="outline" stroke="#111111" stroke-width="0.5" fill="none" stroke-linecap="round" stroke-linejoin="round">
+<polyline points="106.498,82.701 106.512,82.492 106.553,82.287 106.62,82.089 106.712,81.901 106.829,81.727 106.967,81.57 107.124,81.432 107.298,81.315 107.486,81.223 107.684,81.156 107.889,81.115 108.098,81.101 194.498,80.201 194.759,80.218 195.016,80.269 195.263,80.353 195.498,80.469 195.716,80.614 195.912,80.787 196.085,80.983 196.23,81.201 196.346,81.436 196.43,81.683 196.481,81.94 196.498,82.201"/>
+<polyline points="106.498,95.501 106.512,95.71 106.553,95.915 106.62,96.113 106.712,96.301 106.829,96.475 106.967,96.632 107.124,96.77 107.298,96.887 107.486,96.979 107.684,97.046 107.889,97.087 108.098,97.101 194.498,98.001 194.759,97.984 195.016,97.933 195.263,97.849 195.498,97.733 195.716,97.588 195.912,97.415 196.085,97.219 196.23,97.001 196.346,96.766 196.43,96.519 196.481,96.262 196.498,96.001"/>
+<line x1="106.498" y1="95.501" x2="106.498" y2="82.701"/>
+<line x1="196.498" y1="96.001" x2="196.498" y2="82.201"/>
+</g>
+<g id="text" fill="#111111">
+<text x="151.498" y="111.201" font-size="3.5" text-anchor="middle" fill="#111111" data-role="dim">45</text>
+<text x="126.298" y="69.303" font-size="3.5" text-anchor="middle" fill="#111111" data-role="dim">⌀8</text>
+<text x="176.698" y="68.799" font-size="3.5" text-anchor="middle" fill="#111111" data-role="dim">⌀8.9</text>
+<text x="100.962" y="73.165" font-size="3.5" text-anchor="end" fill="#111111" data-role="dim">R0.8</text>
+<text x="201.918" y="72.381" font-size="3.5" text-anchor="start" fill="#111111" data-role="dim">R1</text>
+</g>
+<g id="frame" stroke="#111111" stroke-width="0.5" fill="none" stroke-linecap="round" stroke-linejoin="round">
+<rect x="10" y="10" width="277" height="190"/>
+<rect x="177" y="176" width="110" height="24"/>
+<line x1="177" y1="192" x2="287" y2="192"/>
+<line x1="177" y1="184" x2="287" y2="184"/>
+<line x1="232" y1="200" x2="232" y2="184"/>
+<line x1="255" y1="184" x2="255" y2="176"/>
+<circle cx="269" cy="193.5" r="2.4"/>
+<circle cx="269" cy="193.5" r="1.2"/>
+<polyline points="274.5,196.1 281,194.9 281,192.1 274.5,190.9"/>
+</g><g id="sheet-text" fill="#111111">
+<text x="179" y="181.5" font-size="4.2" text-anchor="start" font-weight="700" data-role="title">VRINGON</text>
+<text x="257" y="181.5" font-size="2.5" text-anchor="start" font-weight="700" data-role="title">도번 VR-RB-020</text>
+<text x="179" y="189.5" font-size="2.8" text-anchor="start" font-weight="700" data-role="title">품명 테이퍼 핀</text>
+<text x="234" y="189.5" font-size="2.8" text-anchor="start" font-weight="700" data-role="title">재질 S45C</text>
+<text x="179" y="197.5" font-size="2.5" text-anchor="start" font-weight="700" data-role="title">척도 2:1</text>
+<text x="234" y="197.5" font-size="2.5" text-anchor="start" font-weight="700" data-role="title">3각법 · 단위 mm</text>
+<text x="14" y="191.8" font-size="2.6" text-anchor="start" font-weight="400" data-role="note">1. 지시 없는 모따기 C0.5</text>
+<text x="14" y="196" font-size="2.6" text-anchor="start" font-weight="400" data-role="note">2. 지시 없는 공차 KS B ISO 2768-m</text>
+</g></svg>

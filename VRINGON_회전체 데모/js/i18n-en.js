@@ -7,7 +7,6 @@ export const EN = {
   /* ---------------- 공통 · 상단 */
   "올리기 안내": "Upload guide",
   "사용법": "How to use",
-  "라이브러리": "Library",
   "새 프로젝트": "New project",
   "새 도면": "New drawing",
   "입력": "Input",
@@ -529,7 +528,6 @@ export const EN = {
   "각 뷰의 윤곽을 그 방향으로 밀어내 교집합합니다. 만든 3D 를 각 뷰로 다시 투영해 도면과 얼마나 겹치는지 보여 줍니다.":
     "Each view's outline is extruded along its direction and intersected. The result is re-projected onto each view to show the overlap.",
   /* ---------------- 라이브러리 · 샘플 이름 */
-  "회전체 도면 라이브러리": "Turned-part drawing library",
   "닫기": "Close",
   "정답 사양에서 그린 도면이라 판독 정확도를 숫자로 보여 줍니다. 카드를 누르면 열립니다.":
     "These drawings come from reference specs, so reading accuracy can be shown as a number. Click a card to open it.",
@@ -726,4 +724,36 @@ export const EN = {
   /* 진행 표시 제목: 자리표시자 패턴보다 먼저 걸리도록 통째로 둔다 */
   "2단계 · 판독": "Step 2 · Reading",
   "3단계 · 3D CAD": "Step 3 · 3D CAD",
+  /* 라이브러리 쌍 데이터 / library pairs */
+  "판독 결과": "As read",
+  "정답 사양": "Reference",
+  "복원 결과": "Rebuilt",
+  "만들지 못하는 부류": "Cannot be built",
+  "다시점 도면 라이브러리": "Multi-view drawing library",
+  "왼쪽이 올리는 도면, 오른쪽이 그 도면에서 나온 3D 입니다. 카드를 누르면 열립니다.":
+    "The drawing you would upload is on the left, the 3D that came out of it on the right. Click a card to open it.",
+  "예시 도면과 결과": "Example drawings and results",
+  /* Part 2 예시 이름과 설명 / Part 2 example names and notes */
+  "타공 플레이트": "Drilled plate",
+  "ㄷ 채널 브래킷": "Channel bracket",
+  "축 지지 블록": "Shaft support block",
+  "밑판과 세움판, 관통 구멍 둘": "Base and upright, two through holes",
+  "면과 두께 두 뷰면 충분합니다": "A face view and a thickness view are enough",
+  "안쪽이 파인 단면": "A recessed section",
+  "정면에서 본 보어는 근사입니다": "The bore seen face on is approximated",
+  "발과 보어, 바닥 구멍 넷": "Foot, bore and four holes in the base",
+  "스윕이 필요해 만들지 못합니다": "Needs a sweep, so it cannot be built",
+  /* Part 1 새 샘플 이름 / new Part 1 sample names */
+  "허브 플랜지": "Hub flange",
+  "평행핀": "Parallel dowel pin",
+  "테이퍼 핀": "Taper pin",
+  "숄더 볼트 M8": "Shoulder bolt M8",
+  "널링 손잡이 나사": "Knurled thumb screw",
+  "피스톤 로드": "Piston rod",
+  "밸브 스풀": "Valve spool",
+  "세트 스크루 칼라": "Set screw collar",
+  "정투상 {n}뷰": "{n} ortho views",
+  /* 라이브러리 안내 / library copy */
+  "회전체 도면 라이브러리": "Turned-part drawing library",
+  "라이브러리": "Library",
 };

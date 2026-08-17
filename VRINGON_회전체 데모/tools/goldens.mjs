@@ -218,4 +218,145 @@ export const GOLDENS = [
     grooves: [], bore: null, features: [],
     meta: { source: "golden", difficulty: 2 },
   },
+
+  /* ------------------------------------------------------------------ 2차 추가 8종 / second batch of eight
+     부품 유형 선택기에 있는 유형마다 예시가 최소 한 장은 있게 채운 것들이다.
+     Filled in so that every part type in the picker has at least one example drawing.
+     · flange 유형은 여기 오기 전까지 예시가 하나도 없었다 / the flange type had no example at all
+     · 핀·볼트·손잡이·로드·스풀·칼라가 나머지 결합 방식을 덮는다
+       pins, bolts, knobs, rods, spools and collars cover the remaining mating styles */
+  {
+    /* 허브 플랜지 — 원판 + 허브 + 관통 보어. 볼트 원 구멍은 아직 표현하지 않는 형상이라 일부러 넣지 않았다.
+       Hub flange: disc, hub and a through bore. Bolt circle holes are not a modelled feature yet,
+       so this drawing deliberately has none. */
+    dsl: "vringon-shaft/1.0", id: "hub-flange", name: "Hub flange", name_ko: "허브 플랜지", part_class: "flange", units: "mm", material: "S45C",
+    drawing: { number: "VR-RB-018", scale: "1:1", projection: "third" },
+    segments: [
+      { type: "cyl", length: 10, diameter: 72, label: "플랜지" },
+      { type: "cyl", length: 6, diameter: 46 },
+      { type: "cyl", length: 22, diameter: 40, tolerance: "h7", label: "허브" },
+    ],
+    transitions: [{ at: 0, type: "chamfer", size: 1 }, { at: 1, type: "fillet", radius: 2 }, { at: 2, type: "fillet", radius: 1.5 }, { at: 3, type: "chamfer", size: 1 }],
+    grooves: [{ segment: 2, offset: 14, width: 1.75, depth: 0.75, kind: "snap_ring", standard: "DIN 471 ⌀38.5×1.75" }],
+    /* 허브 ⌀40 · 보어 ⌀20: 키홈 깊이 4 를 파고도 살이 6 남는다. ⌀34 로 했더니 남는 살이 3 뿐이라
+       도면에서 그 부분이 너무 얇아, 해상도에 따라 외형선이 끊겨 위아래 반쪽 짝짓기가 실패했다.
+       Hub ⌀40 with a ⌀20 bore leaves 6 of wall under the 4 deep keyway. At ⌀34 only 3 was left; that
+       is so thin on the drawing that the outline broke at some resolutions and the mirror halves of
+       the section stopped pairing up. */
+    bore: { through: true, segments: [{ length: 38, diameter: 20, tolerance: "H7" }], chamfer_left: 1, chamfer_right: 1 },
+    features: [{ type: "keyway", segment: 2, offset: 4, length: 16, width: 8, depth: 4, kind: "parallel", standard: "DIN 6885 8×7" }],
+    meta: { source: "golden", difficulty: 3 },
+  },
+  {
+    /* 평행핀 — 가장 단순한 회전체. 판독 정확도의 바닥을 재는 기준으로 쓴다.
+       Parallel dowel pin: the simplest turned part there is, used as the floor of the accuracy range. */
+    dsl: "vringon-shaft/1.0", id: "dowel-pin", name: "Parallel dowel pin", name_ko: "평행핀", part_class: "pin", units: "mm", material: "SUJ2",
+    drawing: { number: "VR-RB-019", scale: "2:1", projection: "third" },
+    segments: [{ type: "cyl", length: 40, diameter: 8, tolerance: "m6" }],
+    transitions: [{ at: 0, type: "chamfer", size: 0.8 }, { at: 1, type: "chamfer", size: 0.8 }],
+    grooves: [], bore: null, features: [],
+    meta: { source: "golden", difficulty: 1 },
+  },
+  {
+    /* 테이퍼 핀 1:50 — 테이퍼 하나로만 이루어진 부품. 양 끝 지름 두 개를 제대로 읽는지 본다.
+       1:50 taper pin: one tapered segment only, which tests reading both end diameters. */
+    dsl: "vringon-shaft/1.0", id: "taper-pin", name: "Taper pin 1:50", name_ko: "테이퍼 핀", part_class: "pin", units: "mm", material: "S45C",
+    drawing: { number: "VR-RB-020", scale: "2:1", projection: "third" },
+    segments: [{ type: "taper", length: 45, d_start: 8, d_end: 8.9, label: "1:50 테이퍼" }],
+    transitions: [{ at: 0, type: "round", radius: 0.8 }, { at: 1, type: "round", radius: 1 }],
+    grooves: [], bore: null, features: [],
+    meta: { source: "golden", difficulty: 2 },
+  },
+  {
+    /* 숄더 볼트 — 매끈한 숄더가 베어링·부시 자리이고 끝만 나사다. 나사 비율이 낮아
+       유형 추정이 볼트가 아니라 축으로 기울 수 있는 경계 사례이기도 하다.
+       Shoulder bolt: the ground shoulder is the bearing surface and only the tip is threaded.
+       Its low thread ratio also makes it a boundary case for type inference. */
+    dsl: "vringon-shaft/1.0", id: "shoulder-bolt", name: "Shoulder bolt M8", name_ko: "숄더 볼트 M8", part_class: "other", units: "mm", material: "SCM435",
+    drawing: { number: "VR-RB-021", scale: "2:1", projection: "third" },
+    segments: [
+      { type: "cyl", length: 7, diameter: 16, label: "머리" },
+      { type: "cyl", length: 30, diameter: 12, tolerance: "h8", label: "숄더" },
+      { type: "thread", length: 12, diameter: 8, spec: "M8", pitch: 1.25 },
+    ],
+    transitions: [{ at: 0, type: "chamfer", size: 0.6 }, { at: 1, type: "chamfer", size: 0.6 }, { at: 2, type: "undercut", width: 2.4, depth: 0.6, standard: "DIN 76-A" }, { at: 3, type: "chamfer", size: 1 }],
+    grooves: [], bore: null,
+    features: [{ type: "hex_socket", end: "left", across_flats: 8, depth: 4 }],
+    meta: { source: "golden", difficulty: 3 },
+  },
+  {
+    /* 널링 손잡이 나사 — 손으로 조이는 부품. 널링 표기를 읽는지 보는 유일한 샘플이다.
+       Knurled thumb screw: hand tightened. The only sample that exercises knurl notation. */
+    dsl: "vringon-shaft/1.0", id: "knurled-knob", name: "Knurled thumb screw", name_ko: "널링 손잡이 나사", part_class: "other", units: "mm", material: "SUS303",
+    drawing: { number: "VR-RB-022", scale: "2:1", projection: "third" },
+    segments: [
+      { type: "cyl", length: 14, diameter: 20, label: "손잡이" },
+      { type: "taper", length: 3, d_start: 20, d_end: 12 },
+      { type: "thread", length: 16, diameter: 8, spec: "M8", pitch: 1.25 },
+    ],
+    transitions: [{ at: 0, type: "chamfer", size: 1 }, { at: 2, type: "chamfer", size: 0.5 }, { at: 3, type: "chamfer", size: 1 }],
+    grooves: [], bore: null,
+    features: [{ type: "knurl", segment: 0, offset: 1.5, length: 11, pitch: 0.8, pattern: "diamond" }],
+    meta: { source: "golden", difficulty: 3 },
+  },
+  {
+    /* 피스톤 로드 — 양 끝이 다르게 끝난다(한쪽은 나사, 한쪽은 클레비스 구멍). 스패너 걸이 평면과
+       멈춤링 홈까지 있어 조립 시뮬레이션이 가장 많이 걸리는 샘플이다.
+       Piston rod: the two ends finish differently (thread one side, clevis hole the other).
+       With a spanner flat and a retaining groove it drives more assembly mates than any other sample. */
+    dsl: "vringon-shaft/1.0", id: "piston-rod", name: "Piston rod", name_ko: "피스톤 로드", part_class: "shaft", units: "mm", material: "SUS304",
+    drawing: { number: "VR-RB-023", scale: "1:1", projection: "third" },
+    segments: [
+      { type: "thread", length: 18, diameter: 14, spec: "M14x1.5", pitch: 1.5 },
+      { type: "cyl", length: 12, diameter: 18 },
+      { type: "cyl", length: 70, diameter: 16, tolerance: "f7", label: "실링 면" },
+      { type: "cyl", length: 20, diameter: 20 },
+    ],
+    transitions: [
+      { at: 0, type: "chamfer", size: 1.5 }, { at: 1, type: "undercut", width: 3, depth: 0.8, standard: "DIN 76-A" },
+      { at: 2, type: "fillet", radius: 1 }, { at: 3, type: "fillet", radius: 1.5 }, { at: 4, type: "chamfer", size: 1 },
+    ],
+    grooves: [{ segment: 2, offset: 6, width: 1.6, depth: 0.7, kind: "snap_ring", standard: "DIN 471 ⌀14.6×1.6" }],
+    bore: null,
+    features: [
+      { type: "flat", segment: 1, offset: 2, length: 8, depth: 2, count: 2 },
+      { type: "cross_hole", position: 110, diameter: 8, through: true, angle: 0 },
+      { type: "center_hole", end: "right", form: "B", d: 2.5 },
+    ],
+    meta: { source: "golden", difficulty: 5 },
+  },
+  {
+    /* 밸브 스풀 — 홈(랜드)이 여럿이라 홈을 몇 개나 읽어 내는지 세기 좋다.
+       Valve spool: several lands, so it counts how many grooves a reader actually finds. */
+    dsl: "vringon-shaft/1.0", id: "valve-spool", name: "Valve spool", name_ko: "밸브 스풀", part_class: "spindle", units: "mm", material: "SUJ2",
+    drawing: { number: "VR-RB-024", scale: "2:1", projection: "third" },
+    segments: [
+      { type: "cyl", length: 8, diameter: 8, label: "조작단" },
+      { type: "cyl", length: 62, diameter: 14, tolerance: "g6", label: "랜드" },
+      { type: "cyl", length: 6, diameter: 8 },
+    ],
+    transitions: [{ at: 0, type: "chamfer", size: 0.5 }, { at: 1, type: "fillet", radius: 0.6 }, { at: 2, type: "fillet", radius: 0.6 }, { at: 3, type: "chamfer", size: 0.5 }],
+    grooves: [
+      { segment: 1, offset: 10, width: 6, depth: 2.5, kind: "generic", corner_radius: 0.4 },
+      { segment: 1, offset: 28, width: 6, depth: 2.5, kind: "generic", corner_radius: 0.4 },
+      { segment: 1, offset: 46, width: 6, depth: 2.5, kind: "generic", corner_radius: 0.4 },
+    ],
+    bore: null,
+    features: [{ type: "center_hole", end: "left", form: "A", d: 2 }],
+    meta: { source: "golden", difficulty: 4 },
+  },
+  {
+    /* 세트 스크루 칼라 — 축에 끼워 위치를 잡는 부품. 보어 + 횡구멍(세트 스크루 자리) 조합이다.
+       Set screw collar: clamps onto a shaft. Combines a bore with a cross hole for the screw. */
+    dsl: "vringon-shaft/1.0", id: "shaft-collar", name: "Set screw collar", name_ko: "세트 스크루 칼라", part_class: "spacer", units: "mm", material: "S45C",
+    drawing: { number: "VR-RB-025", scale: "2:1", projection: "third" },
+    segments: [{ type: "cyl", length: 16, diameter: 32 }],
+    transitions: [{ at: 0, type: "chamfer", size: 1 }, { at: 1, type: "chamfer", size: 1 }],
+    grooves: [],
+    bore: { through: true, segments: [{ length: 16, diameter: 20, tolerance: "H8" }], chamfer_left: 0.6, chamfer_right: 0.6 },
+    /* 깊이 6 = 바깥지름에서 보어까지의 살두께. 세트 스크루가 보어까지 닿는다.
+       Depth 6 is the wall from the outside to the bore, so the set screw reaches the shaft. */
+    features: [{ type: "cross_hole", position: 8, diameter: 6, through: false, depth: 6, angle: 90 }],
+    meta: { source: "golden", difficulty: 2 },
+  },
 ];
