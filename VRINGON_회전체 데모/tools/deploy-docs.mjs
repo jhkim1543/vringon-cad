@@ -53,6 +53,8 @@ if (RAW) {
     setup(b) {
       b.onResolve({ filter: /^three$/ }, () => ({ path: join(threeDir, "three.module.js") }));
       b.onResolve({ filter: /^three\/addons\// }, (a) => ({ path: join(threeDir, a.path.slice("three/".length)) }));
+      /* 문자 인식 엔진 본체는 번들에 넣지 않고 런타임에 vendor/ 에서 부른다(워커·wasm 경로가 상대 경로라서) */
+      b.onResolve({ filter: /tesseract\.esm\.min\.js$/ }, () => ({ path: "../vendor/tesseract/tesseract.esm.min.js", external: true }));   /* 번들은 js/ 에 놓인다 */
       /* 진입점만 로드 시점에 손본다: QA 훅 제거 + 빌드 스탬프 */
       b.onLoad({ filter: /[\\/]js[\\/](app|part2)\.js$/ }, (a) => {
         let s = readFileSync(a.path, "utf8");
@@ -71,8 +73,9 @@ if (RAW) {
     });
     writeFileSync(join(DST, "js", entry), out.outputFiles[0].text);
   }
-  /* three 는 번들에 들어갔지만 폰트는 CSS 가 직접 부른다 */
+  /* three 는 번들에 들어갔지만 폰트는 CSS 가, 문자 인식 엔진(워커·wasm·언어 데이터)은 런타임이 직접 부른다 */
   cpSync(join(SRC, "vendor", "fonts"), join(DST, "vendor", "fonts"), { recursive: true });
+  cpSync(join(SRC, "vendor", "tesseract"), join(DST, "vendor", "tesseract"), { recursive: true });
 
   /* html: 모듈 지도(importmap) 제거, 주석 제거, 인라인 CSS/JS 최소화, 진입점에 버전 스탬프 */
   for (const f of PAGES) {

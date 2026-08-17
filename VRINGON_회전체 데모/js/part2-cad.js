@@ -4,6 +4,7 @@
 
 import * as THREE from "three";
 import { latheXY } from "./shaft-cad.js";
+import { orient } from "./multiview.js";
 
 export function makePartMaterials() {
   const base = { metalness: 0.86, roughness: 0.34, envMapIntensity: 1 };
@@ -51,10 +52,10 @@ export function buildRevolvePart(rMm, lengthMm, { radial = 96, material, tol = 0
 /* 판·윤곽: 닫힌 윤곽(+구멍)을 두께만큼 밀어낸다. 도면 좌표(y 아래로 증가)를 3D 로 뒤집는다 */
 export function buildExtrudePart(outerMm, holesMm, thicknessMm, { material, bevel = 0 } = {}) {
   if (!outerMm || outerMm.length < 3) return null;
-  const shape = new THREE.Shape(outerMm.map(([x, y]) => new THREE.Vector2(x, -y)));
+  const shape = new THREE.Shape(orient(outerMm.map(([x, y]) => new THREE.Vector2(x, -y)), true));
   for (const h of holesMm || []) {
     if (!h || h.length < 3) continue;
-    shape.holes.push(new THREE.Path(h.map(([x, y]) => new THREE.Vector2(x, -y))));
+    shape.holes.push(new THREE.Path(orient(h.map(([x, y]) => new THREE.Vector2(x, -y)), false)));
   }
   const geo = new THREE.ExtrudeGeometry(shape, {
     depth: Math.max(0.2, thicknessMm), bevelEnabled: bevel > 0, bevelSize: bevel, bevelThickness: bevel, bevelSegments: 2, curveSegments: 4,

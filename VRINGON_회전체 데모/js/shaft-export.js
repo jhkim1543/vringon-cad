@@ -160,10 +160,25 @@ export { exportFBX };
    usdview / Omniverse / Isaac 로 바로 열린다. */
 export function exportUSDA(root, dsl, opts = {}) {
   const parts = collectTriangles(root);
-  const name = sanitize(dsl.id || dsl.name || "shaft").replace(/[^A-Za-z0-9_]/g, "_") || "shaft";
-  const mass = computeMass(dsl, densityOf(dsl.material));
   const q = (s) => `"${String(s).replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"`;
   const out = [];
+  /* Part 2(다시점 복원) 결과: 사양 대신 뷰 방향·축척·정합을 싣는다 */
+  if (dsl && dsl.part2) {
+    const name = sanitize(dsl.sheet || "part").replace(/[^A-Za-z0-9_]/g, "_") || "part";
+    out.push(`#usda 1.0`, `(`, `    defaultPrim = "${name}"`, `    metersPerUnit = 0.001`, `    upAxis = "Y"`, `    doc = "VRINGON multiview part — reconstructed from orthographic views"`, `)`, ``);
+    out.push(`def Xform "${name}" (`, `    kind = "component"`, `)`, `{`);
+    out.push(`    custom string vringon:source = "multiview"`);
+    out.push(`    custom string vringon:spec_json = ${q(JSON.stringify(dsl))}`);
+    out.push(`    custom double vringon:mm_per_px = ${dsl.mm_per_px || 0}`);
+    if (dsl.result?.size) out.push(`    custom double3 vringon:size_mm = (${dsl.result.size.X}, ${dsl.result.size.Y}, ${dsl.result.size.Z})`);
+    if (dsl.result?.volume != null) out.push(`    custom double vringon:volume_cm3 = ${dsl.result.volume}`);
+    out.push(``);
+    pushMeshes(out, parts, q);
+    out.push(`}`, ``);
+    return out.join("\n");
+  }
+  const name = sanitize(dsl.id || dsl.name || "shaft").replace(/[^A-Za-z0-9_]/g, "_") || "shaft";
+  const mass = computeMass(dsl, densityOf(dsl.material));
   out.push(`#usda 1.0`, `(`, `    defaultPrim = "${name}"`, `    metersPerUnit = 0.001`, `    upAxis = "Y"`, `    doc = "VRINGON revolve part — generated from shaft DSL"`, `)`, ``);
   out.push(`def Xform "${name}" (`, `    kind = "component"`, `)`, `{`);
   out.push(`    custom string vringon:dsl_version = ${q(dsl.dsl || "vringon-shaft/1.0")}`);
@@ -179,6 +194,11 @@ export function exportUSDA(root, dsl, opts = {}) {
   out.push(`    custom string[] vringon:segment_types = [${(dsl.segments || []).map((s) => q(s.type)).join(", ")}]`);
   out.push(`    custom string[] vringon:features = [${(dsl.features || []).map((s) => q(s.type)).join(", ")}]`);
   out.push(``);
+  pushMeshes(out, parts, q);
+  out.push(`}`, ``);
+  return out.join("\n");
+}
+function pushMeshes(out, parts, q) {
   for (const p of parts) {
     const t = p.tris; const n = t.length / 3;
     const pts = []; for (let i = 0; i < t.length; i += 3) pts.push(`(${f(t[i])}, ${f(t[i + 1])}, ${f(t[i + 2])})`);
@@ -195,8 +215,6 @@ export function exportUSDA(root, dsl, opts = {}) {
     out.push(`        color3f[] primvars:displayColor = [(0.72, 0.74, 0.77)]`);
     out.push(`    }`);
   }
-  out.push(`}`, ``);
-  return out.join("\n");
 }
 
 /* ------------------------------------------------------------ 도면 (DXF/SVG) · JSON */

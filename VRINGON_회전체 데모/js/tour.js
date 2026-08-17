@@ -23,19 +23,18 @@ const STEPS_P1 = [
 
 const STEPS_P2 = [
   { el: "chips", place: "right", title: "예시 도면으로 시작",
-    body: "여러 투상도가 한 장에 있는 도면들입니다. Part 1 이 읽지 못하는 부류를 여기서 다룹니다." },
+    body: "한 부품을 정면 · 윗면 · 측면으로 그린 도면들입니다. 세 번째(곡관)는 이 버전이 만들지 못하는 부류라 이유를 보여 줍니다." },
   { el: "drop", place: "right", title: "내 도면 올리기",
-    body: "정면 · 평면 · 측면이 함께 있어도 됩니다. 올리면 뷰를 자동으로 나눕니다." },
-  { el: "viewBlock", fallback: "stage", fallbackBox: { left: 40, top: 90, w: 260, h: 120 }, place: "right", title: "나눈 뷰 고르기",
-    body: "도면 위 상자를 누르거나 목록에서 고릅니다. 회전 점수는 참고일 뿐, 그 뷰가 무엇인지는 사람이 압니다." },
-  { el: "scaleBlock", fallback: "drop", place: "right", title: "축척 한 번만",
-    body: "고른 뷰의 가로 실제 길이를 넣으면 도면 전체 치수가 정해집니다. 넣기 전에는 실제 치수를 만들지 않습니다." },
-  { el: "makeBlock", fallback: "sideRight", fallbackBox: { right: 20, top: 120, w: 260, h: 200 }, place: "left", title: "유형을 정하고 만들기",
-    body: "회전체 · 판 · 윤곽 압출 중에서 고르고, 판이면 두께를 넣습니다. 두께는 한 뷰만으로는 알 수 없습니다." },
-  { el: "asmBlock", fallback: "sideRight", fallbackBox: { right: 20, top: 200, w: 260, h: 180 }, place: "left", title: "배치 · 조립",
-    body: "3D 에서 부품을 눌러 고르고 화살표로 옮깁니다. 축을 상대 부품의 구멍에 맞추는 버튼도 있습니다. 조립 위치는 도면에서 읽지 않습니다." },
-  { el: "sideRight", place: "left", title: "쌓고 내려받기",
-    body: "부품이 목록에 쌓이고, 아래에서 STEP · STL · GLB 등으로 한 번에 받습니다." },
+    body: "여러 투상도가 한 장에 있는 한 부품 도면을 올립니다. 올리면 뷰를 나누고, 방향을 추천하고, 치수 문자를 읽습니다.",
+    link: { href: "./guide.html#part2", text: "올리기 안내 열기" } },
+  { el: "viewBlock", fallback: "stage", fallbackBox: { left: 40, top: 90, w: 260, h: 140 }, place: "right", title: "뷰마다 방향 확인",
+    body: "추천된 방향(정면 · 윗면 · 우측면 · 등각 참고)이 맞는지 봅니다. 기하만으로는 방향을 확신할 수 없어 사람이 확정합니다." },
+  { el: "cubeBlock", place: "left", title: "정육면체로 방향 주기",
+    body: "뷰를 고른 뒤 정육면체의 면을 누르면 그 뷰가 그 방향이 됩니다. 정투상 방향은 뷰 하나에만 줄 수 있습니다." },
+  { el: "dimBlock", fallback: "sideRight", fallbackBox: { right: 20, top: 220, w: 260, h: 150 }, place: "left", title: "치수는 도면에서 읽습니다",
+    body: "치수 문자를 읽어 치수선과 짝지어 축척을 정합니다. 서로 맞는 치수가 많을수록 믿을 만합니다. 못 읽으면 그때만 한 치수를 묻습니다." },
+  { el: "methodBlock", fallback: "sideRight", fallbackBox: { right: 20, top: 380, w: 260, h: 150 }, place: "left", title: "만들고 정합 보기",
+    body: "각 뷰의 윤곽을 그 방향으로 밀어내 교집합합니다. 만든 3D 를 각 뷰로 다시 투영해 도면과 얼마나 겹치는지 보여 줍니다." },
 ];
 let STEPS = STEPS_P1;
 

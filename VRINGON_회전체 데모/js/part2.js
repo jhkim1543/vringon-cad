@@ -1,15 +1,18 @@
-/* Part 2 — 다시점 도면 부품 워크스페이스.
-   흐름: 도면 올리기 → 뷰 자동 분할 → 뷰 고르기 → 유형·두께 정하기 → 부품 만들기 → 쌓기 → 내보내기.
-   기하만으로는 "무엇을 어느 방향에서 본 것인지" 를 알 수 없으므로(캐스터 평면도가 회전 점수 1.00),
-   판정은 사람이 하고 계산은 전부 이 브라우저가 한다. 없는 치수는 만들지 않는다(축척을 넣기 전에는 만들 수 없다). */
+/* Part 2 — 다시점 도면에서 부품 하나 (워크스페이스).
+   흐름: 도면 올리기 → 뷰 자동 분할 + 방향 추천 → (사람) 뷰마다 방향 확정 → 치수 문자 읽어 축척 → 방법 고르기 → 만들기 → 뷰 정합 → 내보내기.
+   기하만으로는 "무엇을 어느 방향에서 본 것인지" 를 알 수 없으므로 방향은 사람이 확정한다(추천은 배치 기하로).
+   치수는 도면의 문자를 읽어 정한다. 못 읽으면 그때만 한 치수를 묻는다. 지어내지 않는다. */
 
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
-import { TransformControls } from "three/addons/controls/TransformControls.js";
 import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
-import { splitViews, viewProfile, viewContours, suggestKind } from "./views.js";
-import { makePartMaterials, buildRevolvePart, buildExtrudePart, meshVolumeCm3, arrangeRow } from "./part2-cad.js";
-import { exportSTEP, exportSTL, exportGLB, exportOBJ, exportPLY, exportFBX, downloadBlob } from "./shaft-export.js";
+import Tesseract from "../vendor/tesseract/tesseract.esm.min.js";
+const { createWorker } = Tesseract;
+import { splitViews, viewProfile, viewContours } from "./views.js";
+import { getOcrWorker, readNumberTokens, scaleFromDims } from "./ocr-dims.js";
+import { ROLES, ROLE_KO, isOrtho, suggestRoles, suggestMethod, buildOrthoPart, projectionIoU, geometryVolume } from "./multiview.js";
+import { makePartMaterials, buildRevolvePart, buildExtrudePart } from "./part2-cad.js";
+import { exportSTEP, exportSTL, exportGLB, exportOBJ, exportPLY, exportFBX, exportUSDA, exportUSDZ, downloadBlob } from "./shaft-export.js";
 import { initTour } from "./tour.js";
 
 const BUILD = "dev";
@@ -22,158 +25,67 @@ function toast(msg, ok = false) {
   $("toasts").appendChild(t); setTimeout(() => t.remove(), 4200);
 }
 const SAMPLES = [
-  { id: "caster", name: "캐스터 조립도", file: "assets/part2/caster.svg" },
-  { id: "flange", name: "플랜지 3면도", file: "assets/part2/flange.svg" },
-  { id: "sole", name: "신발 밑창", file: "assets/part2/sole.svg" },
+  { id: "bracket", name: "L 브래킷 3면도", file: "assets/part2/bracket.svg", level: 1 },
+  { id: "housing", name: "베어링 하우징", file: "assets/part2/housing.svg", level: 2 },
+  { id: "elbow", name: "사각 플랜지 곡관", file: "assets/part2/elbow.svg", level: 3 },
 ];
+const LEVEL = { 1: { cls: "l1", ko: "1단계 · 각기둥·브래킷", note: "면이 축에 나란한 부품입니다. 정투상 교집합이 정확합니다." },
+                2: { cls: "l2", ko: "2단계 · 원통·보스 근사", note: "원통과 구멍은 맞지만 숨은선·단차의 안쪽 형상은 근사입니다." },
+                3: { cls: "l3", ko: "3단계 · 곡면·스윕", note: "단면도로만 정의되는 부품은 이 버전이 만들지 못합니다." } };
 
-const state = { image: null, raster: null, views: [], pick: null, mmPerPx: 0, parts: [], name: "", sel: null };
+const state = { image: null, raster: null, png: null, views: [], pick: null, roles: {}, projection: "third",
+  ocr: null, tokens: [], scale: null, mmPerPx: 0, part: null, name: "", sample: null, showDims: false };
 
 /* ================================================================ 3D */
 const stage = $("stage");
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
 renderer.outputColorSpace = THREE.SRGBColorSpace;
-renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.45;
+renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.45;
 renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 stage.appendChild(renderer.domElement);
-const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x0C0C10);
+const scene = new THREE.Scene(); scene.background = new THREE.Color(0x0C0C10);
 scene.environment = new THREE.PMREMGenerator(renderer).fromScene(new RoomEnvironment(), 0.04).texture;
-const camera = new THREE.PerspectiveCamera(38, 1, 0.5, 12000);
-camera.position.set(180, 140, 240);
-const controls = new OrbitControls(camera, renderer.domElement);
-controls.enableDamping = true; controls.dampingFactor = 0.075;
+const camera = new THREE.PerspectiveCamera(38, 1, 0.5, 12000); camera.position.set(180, 140, 240);
+const controls = new OrbitControls(camera, renderer.domElement); controls.enableDamping = true; controls.dampingFactor = 0.075;
 const keyLight = new THREE.DirectionalLight(0xffffff, 2.3);
 keyLight.position.set(220, 400, 260); keyLight.castShadow = true; keyLight.shadow.mapSize.set(2048, 2048);
 keyLight.shadow.camera.near = 20; keyLight.shadow.camera.far = 2200;
 keyLight.shadow.camera.left = keyLight.shadow.camera.bottom = -500; keyLight.shadow.camera.right = keyLight.shadow.camera.top = 500;
 keyLight.shadow.bias = -0.0012; keyLight.shadow.normalBias = 0.7;
-scene.add(keyLight, new THREE.DirectionalLight(0xc8d2ff, 0.5).translateX(-320).translateY(180).translateZ(140),
-  new THREE.HemisphereLight(0xc4ccdd, 0x3a3d48, 1.05), new THREE.AmbientLight(0xffffff, 0.25));
-const grid = new THREE.GridHelper(2400, 60, 0x2a2a34, 0x1a1a20);
-grid.material.transparent = true; grid.material.opacity = 0.5; scene.add(grid);
-const floor = new THREE.Mesh(new THREE.CircleGeometry(1200, 64).rotateX(-Math.PI / 2), new THREE.ShadowMaterial({ opacity: 0.4 }));
-floor.receiveShadow = true; scene.add(floor);
+scene.add(keyLight, new THREE.DirectionalLight(0xc8d2ff, 0.5).translateX(-320).translateY(180).translateZ(140), new THREE.HemisphereLight(0xc4ccdd, 0x3a3d48, 1.05), new THREE.AmbientLight(0xffffff, 0.25));
+const grid = new THREE.GridHelper(2400, 60, 0x2a2a34, 0x1a1a20); grid.material.transparent = true; grid.material.opacity = 0.5; scene.add(grid);
+const floor = new THREE.Mesh(new THREE.CircleGeometry(1200, 64).rotateX(-Math.PI / 2), new THREE.ShadowMaterial({ opacity: 0.4 })); floor.receiveShadow = true; scene.add(floor);
 const root = new THREE.Group(); scene.add(root);
 const mats = makePartMaterials();
 function resize() { const w = stage.clientWidth, h = stage.clientHeight; if (!w || !h) return; renderer.setSize(w, h); camera.aspect = w / h; camera.updateProjectionMatrix(); }
 new ResizeObserver(resize).observe(stage); resize();
 renderer.setAnimationLoop(() => { controls.update(); renderer.render(scene, camera); });
 function fitView() {
-  if (!state.parts.length) return;
+  if (!root.children.length) return;
   const bb = new THREE.Box3().setFromObject(root);
-  const c = bb.getCenter(new THREE.Vector3());
-  const r = Math.max(10, bb.getSize(new THREE.Vector3()).length() / 2);
+  const c = bb.getCenter(new THREE.Vector3()), r = Math.max(10, bb.getSize(new THREE.Vector3()).length() / 2);
   controls.target.copy(c);
   const vHalf = THREE.MathUtils.degToRad(camera.fov / 2), hHalf = Math.atan(Math.tan(vHalf) * Math.max(0.6, camera.aspect));
-  const dist = (r / Math.sin(Math.min(vHalf, hHalf))) * 1.15;
-  camera.position.copy(c).add(new THREE.Vector3(0.5, 0.45, 0.75).normalize().multiplyScalar(dist));
+  camera.position.copy(c).add(new THREE.Vector3(0.5, 0.45, 0.75).normalize().multiplyScalar((r / Math.sin(Math.min(vHalf, hHalf))) * 1.15));
   camera.near = Math.max(0.2, r / 80); camera.far = r * 90; camera.updateProjectionMatrix(); controls.update();
 }
 $("btnFit").onclick = fitView;
+function clearPart() { for (const o of root.children.slice()) { root.remove(o); o.geometry?.dispose(); } state.part = null; }
 
-/* ---------------- 부품 고르기 · 옮기기 (조립) */
-const gizmo = new TransformControls(camera, renderer.domElement);
-gizmo.setSize(0.85);
-gizmo.addEventListener("dragging-changed", (e) => (controls.enabled = !e.value));
-gizmo.addEventListener("objectChange", () => renderTransform());
-scene.add(typeof gizmo.getHelper === "function" ? gizmo.getHelper() : gizmo);
-const ray = new THREE.Raycaster(), ptr = new THREE.Vector2();
-renderer.domElement.addEventListener("pointerdown", (e) => {
-  if (gizmo.dragging) return;
-  const r = renderer.domElement.getBoundingClientRect();
-  ptr.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
-  ray.setFromCamera(ptr, camera);
-  const hit = ray.intersectObjects(root.children, false)[0];
-  selectPart(hit ? state.parts.find((p) => p.mesh === hit.object) || null : null);
-});
-function selectPart(p) {
-  for (const q of state.parts) q.mesh.material.emissive?.setHex(0x000000);
-  state.sel = p || null;
-  if (!p) { gizmo.detach(); $("asmBlock").style.display = "none"; renderParts(); return; }
-  p.mesh.material.emissive?.setHex(0x1E2A6B);
-  gizmo.attach(p.mesh);
-  $("asmBlock").style.display = "";
-  $("selTag").textContent = `${p.id}. ${KIND_KO[p.kind]}`;
-  renderTransform(); renderHoleOptions(); renderParts();
-}
-$("gizmoSeg").onclick = (e) => {
-  const b = e.target.closest("button"); if (!b) return;
-  document.querySelectorAll("#gizmoSeg button").forEach((x) => x.classList.toggle("on", x === b));
-  gizmo.setMode(b.dataset.g);
-};
-/* 위치·회전 숫자 (기즈모와 양방향) */
-function renderTransform() {
-  const p = state.sel; if (!p) return;
-  const m = p.mesh, deg = (r) => +THREE.MathUtils.radToDeg(r).toFixed(1);
-  $("posRow").innerHTML = `
-    <span>X</span><input data-t="px" value="${+m.position.x.toFixed(1)}"/>
-    <span>Y</span><input data-t="py" value="${+m.position.y.toFixed(1)}"/>
-    <span>Z</span><input data-t="pz" value="${+m.position.z.toFixed(1)}"/>
-    <span>RX</span><input data-t="rx" value="${deg(m.rotation.x)}"/>
-    <span>RY</span><input data-t="ry" value="${deg(m.rotation.y)}"/>
-    <span>RZ</span><input data-t="rz" value="${deg(m.rotation.z)}"/>`;
-}
-$("posRow").addEventListener("change", (e) => {
-  const p = state.sel, el = e.target; if (!p || !el.dataset.t) return;
-  const v = Number(el.value) || 0, m = p.mesh, k = el.dataset.t;
-  if (k === "px") m.position.x = v; else if (k === "py") m.position.y = v; else if (k === "pz") m.position.z = v;
-  else if (k === "rx") m.rotation.x = THREE.MathUtils.degToRad(v);
-  else if (k === "ry") m.rotation.y = THREE.MathUtils.degToRad(v);
-  else if (k === "rz") m.rotation.z = THREE.MathUtils.degToRad(v);
-  m.updateMatrixWorld(true);
-});
-/* 상대 부품의 구멍 목록 */
-function renderHoleOptions() {
-  const sel = $("holeSel"), me = state.sel, opts = [];
-  for (const p of state.parts) {
-    if (p === me) continue;
-    (p.mesh.userData.holes || []).forEach((h, i) => opts.push({ v: `${p.id}:${i}`, t: `부품 ${p.id} 의 구멍 ${i + 1} (지름 ${(h.r * 2).toFixed(1)})` }));
-  }
-  sel.innerHTML = opts.length ? opts.map((o) => `<option value="${o.v}">${o.t}</option>`).join("") : `<option value="">맞출 구멍이 없습니다</option>`;
-  $("btnSnapHole").disabled = !opts.length;
-}
-/* 고른 부품의 축을 상대 부품 구멍의 중심·방향에 맞춘다 */
-$("btnSnapHole").onclick = () => {
-  const me = state.sel, val = $("holeSel").value;
-  if (!me || !val) return;
-  const [pid, hi] = val.split(":").map(Number);
-  const target = state.parts.find((p) => p.id === pid); if (!target) return;
-  const h = target.mesh.userData.holes[hi]; if (!h) return;
-  target.mesh.updateMatrixWorld(true);
-  const pos = new THREE.Vector3(h.x, h.y, h.z).applyMatrix4(target.mesh.matrixWorld);
-  const dir = new THREE.Vector3(...(target.mesh.userData.axis || [0, 0, 1])).applyQuaternion(target.mesh.quaternion).normalize();
-  const myAxis = new THREE.Vector3(...(me.mesh.userData.axis || [1, 0, 0])).normalize();
-  me.mesh.quaternion.setFromUnitVectors(myAxis, dir);
-  me.mesh.position.copy(pos);
-  me.mesh.updateMatrixWorld(true);
-  renderTransform();
-  toast(`부품 ${me.id} 의 축을 부품 ${pid} 의 구멍 ${hi + 1} 에 맞췄습니다`, true);
-};
-$("btnFloor").onclick = () => { const p = state.sel; if (!p) return; const bb = new THREE.Box3().setFromObject(p.mesh); p.mesh.position.y -= bb.min.y; renderTransform(); };
-$("btnCenter").onclick = () => { const p = state.sel; if (!p) return; p.mesh.position.set(0, 0, 0); renderTransform(); };
-$("btnRow").onclick = () => {
-  for (const p of state.parts) { p.mesh.position.set(0, 0, 0); p.mesh.rotation.set(0, 0, 0); }
-  arrangeRow(state.parts.map((p) => p.mesh));
-  renderTransform(); fitView(); toast("나란히 정렬했습니다");
-};
-
-/* ================================================================ 도면 시트 */
+/* ================================================================ 시트 */
 function showSheet(on) { $("sheet").classList.toggle("show", on); $("btnSheet").classList.toggle("on", on); }
 $("btnSheet").onclick = () => showSheet(!$("sheet").classList.contains("show"));
-
+$("btnDims").onclick = () => { state.showDims = !state.showDims; $("btnDims").classList.toggle("on", state.showDims); drawOverlay(); showSheet(true); };
 async function rasterize(dataUrl, isSvg) {
   const img = new Image();
   await new Promise((res, rej) => { img.onload = res; img.onerror = () => rej(new Error("이미지를 열지 못했습니다")); img.src = dataUrl; });
   const w0 = img.naturalWidth || img.width, h0 = img.naturalHeight || img.height;
-  const scale = isSvg ? Math.min(2.6, Math.max(1, 2600 / Math.max(1, w0))) : Math.min(1.6, 2200 / Math.max(1, w0));
+  const scale = isSvg ? Math.min(2.6, Math.max(1, 2400 / Math.max(1, w0))) : Math.min(1.6, 2400 / Math.max(1, w0));
   const w = Math.max(500, Math.round(w0 * scale)), h = Math.max(300, Math.round(h0 * scale));
   const cv = document.createElement("canvas"); cv.width = w; cv.height = h;
   const ctx = cv.getContext("2d", { willReadFrequently: true });
-  ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, w, h);
-  ctx.drawImage(img, 0, 0, w, h);
+  ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, w, h); ctx.drawImage(img, 0, 0, w, h);
   return { imageData: ctx.getImageData(0, 0, w, h), w, h, png: cv.toDataURL("image/png") };
 }
 const svgToDataUrl = (svg) => "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
@@ -183,204 +95,258 @@ async function loadSheet(src) {
   const dataUrl = src.svg ? svgToDataUrl(src.svg) : src.dataUrl;
   let r;
   try { r = await rasterize(dataUrl, !!src.svg); } catch (e) { return toast(`도면을 열지 못했습니다: ${e.message}`); }
-  state.image = { url: src.svg ? r.png : dataUrl, w: r.w, h: r.h };
-  state.raster = r.imageData;
-  state.name = src.name;
-  $("projName").textContent = src.name;
-  $("sheetImg").src = state.image.url;
-  $("stageEmpty").style.display = "none";
+  state.image = { url: r.png, w: r.w, h: r.h }; state.raster = r.imageData; state.png = r.png; state.name = src.name; state.sample = src.sample || null;
+  $("projName").textContent = src.name; $("sheetImg").src = r.png; $("stageEmpty").style.display = "none";
   showSheet(true);
   await detectViews();
+  await readDims();
 }
 
-/* ================================================================ 뷰 분할 */
+/* ================================================================ ① 뷰 분할 + 방향 추천 */
 async function detectViews() {
-  const steps = [{ text: "외형선만 남기고 성분 찾기", state: "run" }, { text: "가까운 성분을 뷰로 묶기" }, { text: "뷰마다 대칭·평탄·구멍 재기" }];
-  showGen(true, "뷰 나누기", "", steps);
-  await sleep(60);
+  const steps = [{ text: "외형선만 남기고 성분 찾기", state: "run" }, { text: "가까운 성분을 뷰로 묶기" }, { text: "윤곽 · 구멍 따기, 배치로 방향 추천" }];
+  showGen(true, "뷰 나누기", "", steps); await sleep(60);
   const res = splitViews(state.raster);
-  steps.forEach((s) => (s.state = "done")); showGen(true, "뷰 나누기", "", steps);
-  await sleep(120); showGen(false);
-  if (!res.ok) { toast(res.reason || "뷰를 찾지 못했습니다"); return; }
-  state.views = res.views.map((v) => {
-    const c = viewContours(v);
-    return Object.assign(v, { contours: c, suggest: suggestKind(v), used: 0 });
-  });
-  renderViewList(); drawBoxes();
-  $("viewBlock").style.display = ""; $("scaleBlock").style.display = "";
-  $("hintBox").innerHTML = `뷰 <b>${state.views.length}개</b>를 찾았습니다. 도면에서 상자를 누르거나 왼쪽 목록에서 뷰를 고르세요.`;
-  toast(`뷰 ${state.views.length}개를 찾았습니다`, true);
+  if (!res.ok) { showGen(false); toast(res.reason || "뷰를 찾지 못했습니다"); return; }
+  state.views = res.views.map((v) => Object.assign(v, { contours: viewContours(v) }));
+  state.roles = suggestRoles(state.views, state.projection);
+  steps.forEach((s) => (s.state = "done")); showGen(true, "뷰 나누기", "", steps); await sleep(100); showGen(false);
+  $("viewBlock").style.display = ""; $("methodBlock").style.display = "";
+  renderViewList(); drawOverlay(); renderCube(); renderMethod();
+  pickView(state.views.find((v) => state.roles[v.id] === "front") || state.views[0]);
+  toast(`뷰 ${state.views.length}개 · 방향을 확인해 주세요`, true);
 }
-function showGen(on, title, sub, steps) {
-  $("gen").classList.toggle("on", on);
-  if (title) $("genTitle").textContent = title;
-  if (sub !== undefined) $("genSub").textContent = sub;
-  $("genBar").style.width = `${(steps || []).filter((s) => s.state === "done").length / Math.max(1, (steps || []).length) * 100}%`;
-  $("genSteps").innerHTML = (steps || []).map((s) => `<div class="gen-step ${s.state || ""}"><span class="dot"></span>${s.text}</div>`).join("");
-}
-const KIND_KO = { revolve: "회전체", plate: "판", extrude: "윤곽 압출" };
+$("projSeg").onclick = (e) => { const b = e.target.closest("button"); if (!b) return; document.querySelectorAll("#projSeg button").forEach((x) => x.classList.toggle("on", x === b)); state.projection = b.dataset.p; state.roles = suggestRoles(state.views, state.projection); renderAll(); };
 function renderViewList() {
   $("viewCount").textContent = `${state.views.length}개`;
   $("viewList").innerHTML = state.views.map((v) => `
-    <div class="vrow ${state.pick === v ? "on" : ""} ${v.used ? "used" : ""}" data-v="${v.id}">
+    <div class="vrow ${state.pick === v ? "on" : ""}" data-v="${v.id}">
       <span class="n">${v.id}</span>
-      <span class="m">${v.W}×${v.H}<br/><span class="s">추천 ${KIND_KO[v.suggest.kind]}${v.contours.holes.length ? ` · 구멍 ${v.contours.holes.length}` : ""}</span></span>
-      <span class="s">회전 ${v.revolveScore.toFixed(2)}</span>
+      <span class="m">${v.part.W}×${v.part.H} px<br/><small>구멍 ${v.contours.holes.length}${v.contours.ignored.length ? ` · 안쪽 모서리 ${v.contours.ignored.length}` : ""} · 회전 ${v.revolveScore.toFixed(2)}</small></span>
+      <select data-role="${v.id}">${ROLES.map((r) => `<option value="${r.id}" ${state.roles[v.id] === r.id ? "selected" : ""}>${r.ko}</option>`).join("")}</select>
     </div>`).join("");
 }
-$("viewList").onclick = (e) => { const r = e.target.closest("[data-v]"); if (r) pickView(state.views.find((v) => v.id === Number(r.dataset.v))); };
+$("viewList").addEventListener("click", (e) => { if (e.target.tagName === "SELECT") return; const r = e.target.closest("[data-v]"); if (r) pickView(state.views.find((v) => v.id === Number(r.dataset.v))); });
+$("viewList").addEventListener("change", (e) => { const s = e.target; if (!s.dataset.role) return; setRole(Number(s.dataset.role), s.value); });
+function setRole(vid, role) {
+  /* 정투상 방향은 뷰 하나에만 — 같은 방향이 이미 있으면 그쪽을 참고로 돌린다 */
+  if (isOrtho(role)) for (const k of Object.keys(state.roles)) if (Number(k) !== vid && state.roles[k] === role) state.roles[k] = "skip";
+  state.roles[vid] = role;
+  renderAll();
+}
+function renderAll() { renderViewList(); drawOverlay(); renderCube(); renderMethod(); }
+function pickView(v) { state.pick = v || null; $("pickTag").textContent = v ? `뷰 ${v.id}` : "뷰 없음"; renderAll(); }
 
-function drawBoxes() {
-  const ov = $("ov"); const { w, h } = state.image;
-  ov.setAttribute("viewBox", `0 0 ${w} ${h}`);
-  ov.setAttribute("preserveAspectRatio", "none");
-  ov.innerHTML = state.views.map((v) => `
-    <rect class="vbox ${state.pick === v ? "on" : ""} ${v.used ? "used" : ""}" data-v="${v.id}" x="${v.x0 - 6}" y="${v.y0 - 6}" width="${v.W + 12}" height="${v.H + 12}" rx="6"/>
-    <text class="vlab" x="${v.x0 + 4}" y="${v.y0 - 12}">${v.id}${v.used ? " ✓" : ""}</text>`).join("");
+function drawOverlay() {
+  const ov = $("ov"); if (!state.image) return;
+  const { w, h } = state.image;
+  ov.setAttribute("viewBox", `0 0 ${w} ${h}`); ov.setAttribute("preserveAspectRatio", "none");
+  let s = state.views.map((v) => {
+    const role = state.roles[v.id], ref = !isOrtho(role);
+    return `<rect class="vbox ${state.pick === v ? "on" : ""} ${ref ? "ref" : ""}" data-v="${v.id}" x="${v.part.x0 - 8}" y="${v.part.y0 - 8}" width="${v.part.W + 16}" height="${v.part.H + 16}" rx="6"/>
+      <text class="vlab" x="${v.part.x0 - 2}" y="${v.part.y0 - 14}">${v.id}</text><text class="vlab role" x="${v.part.x0 + 16}" y="${v.part.y0 - 14}">${ROLE_KO[role] || ""}</text>`;
+  }).join("");
+  if (state.showDims && state.scale) {
+    const used = new Set((state.scale.used || []).map((u) => u.text));
+    s += state.tokens.map((t) => `<rect class="dimtok ${used.has(t.text) ? "used" : ""}" x="${t.x0 - 2}" y="${t.y0 - 2}" width="${t.x1 - t.x0 + 4}" height="${t.y1 - t.y0 + 4}" rx="3"/>`).join("");
+  }
+  ov.innerHTML = s;
   ov.querySelectorAll(".vbox").forEach((el) => (el.onclick = () => pickView(state.views.find((v) => v.id === Number(el.dataset.v)))));
 }
 
-function pickView(v) {
-  if (!v) return;
-  state.pick = v;
-  $("makeBlock").style.display = "";
-  $("pickTag").textContent = `뷰 ${v.id}`;
-  $("pickSize").textContent = `${v.W} × ${v.H} px`;
-  $("pickScore").textContent = v.revolveScore.toFixed(2);
-  $("pickShape").textContent = `${v.contours.outer ? `${v.contours.outer.length}점` : "윤곽 없음"} · 구멍 ${v.contours.holes.length}개`;
-  setKind(v.suggest.kind);
-  $("kindWhy").textContent = `추천: ${KIND_KO[v.suggest.kind]} — ${v.suggest.why}`;
-  renderViewList(); drawBoxes();
+/* ---- 기준 정육면체: 보이는 세 면 + 나머지 세 방향 버튼. 누르면 고른 뷰에 그 방향을 준다 */
+const FACES = [
+  { id: "top", pts: "75,12 138,42 75,72 12,42", tx: 75, ty: 46 },
+  { id: "front", pts: "12,42 75,72 75,132 12,102", tx: 43, ty: 92 },
+  { id: "right", pts: "75,72 138,42 138,102 75,132", tx: 107, ty: 92 },
+];
+function renderCube() {
+  const assigned = new Map(Object.entries(state.roles).map(([vid, r]) => [r, Number(vid)]));
+  const pickRole = state.pick ? state.roles[state.pick.id] : null;
+  $("cube").innerHTML = FACES.map((f) => {
+    const vid = assigned.get(f.id);
+    return `<polygon class="f ${vid ? "assigned" : "free"} ${pickRole === f.id ? "on" : ""}" data-face="${f.id}" points="${f.pts}" stroke="#0C0C10" stroke-width="1.5"/>
+      <text x="${f.tx}" y="${f.ty}">${ROLE_KO[f.id]}${vid ? ` · 뷰 ${vid}` : ""}</text>`;
+  }).join("");
+  $("cube").querySelectorAll(".f").forEach((el) => (el.onclick = () => { if (!state.pick) return toast("먼저 뷰를 고르세요"); setRole(state.pick.id, el.dataset.face); }));
+  $("roleBtns").innerHTML = ROLES.filter((r) => !FACES.some((f) => f.id === r.id)).map((r) => {
+    const vid = assigned.get(r.id);
+    return `<button data-role="${r.id}" class="${pickRole === r.id ? "on" : ""}">${r.ko}${vid && isOrtho(r.id) ? ` · 뷰 ${vid}` : ""}</button>`;
+  }).join("");
+  $("roleBtns").querySelectorAll("button").forEach((b) => (b.onclick = () => { if (!state.pick) return toast("먼저 뷰를 고르세요"); setRole(state.pick.id, b.dataset.role); }));
+  $("cubeHint").innerHTML = state.pick
+    ? `<b>뷰 ${state.pick.id}</b> 은 지금 <b>${ROLE_KO[state.roles[state.pick.id]]}</b>. 다른 면을 누르면 바뀝니다. 정투상 방향은 뷰 하나에만 줄 수 있습니다.`
+    : "왼쪽 목록이나 도면 위 상자에서 뷰를 고른 뒤 면을 누르세요.";
 }
-function setKind(k) {
-  document.querySelectorAll("#kindSeg button").forEach((b) => b.classList.toggle("on", b.dataset.k === k));
-  $("thickRow").style.display = k === "revolve" ? "none" : "";
-}
-$("kindSeg").onclick = (e) => { const b = e.target.closest("button"); if (b) setKind(b.dataset.k); };
-const chosenKind = () => document.querySelector("#kindSeg button.on")?.dataset.k || "plate";
 
-/* ================================================================ 부품 만들기 */
-$("btnMake").onclick = () => {
-  const v = state.pick; if (!v) return;
-  const len = Number($("scaleLen").value) || 0;
-  if (!state.mmPerPx && !len) {
-    toast("먼저 왼쪽 축척에 이 뷰의 가로 실제 길이를 넣어 주세요");
-    $("scaleLen").focus(); $("scaleLen").scrollIntoView({ behavior: "smooth", block: "center" });
-    return;
+/* ================================================================ ② 치수 읽기 → 축척 */
+let ocrReady = null;
+async function ensureOcr() {
+  if (!ocrReady) {
+    $("ocrTag").textContent = "문자 인식 불러오는 중…";
+    ocrReady = getOcrWorker({ workerPath: "./vendor/tesseract/worker.min.js", corePath: "./vendor/tesseract/", langPath: "./vendor/tesseract" }, createWorker)
+      .then((w) => { $("ocrTag").textContent = "문자 인식 준비됨"; return w; })
+      .catch((e) => { $("ocrTag").textContent = "문자 인식 없음"; throw e; });
   }
-  if (!state.mmPerPx) {
-    state.mmPerPx = len / v.W;
-    $("scaleNote").innerHTML = `1 px = <b>${state.mmPerPx.toFixed(4)} mm</b> (뷰 ${v.id} 의 가로 ${len} mm 기준)`;
-  }
-  const kind = chosenKind();
-  const mm = state.mmPerPx;
-  let mesh = null, meta = {};
-  if (kind === "revolve") {
-    const prof = viewProfile(v, 420);
-    const rMm = Float64Array.from(prof, (p) => p * mm);
-    mesh = buildRevolvePart(rMm, v.W * mm, { material: mats.revolve.clone() });
-    meta = { 길이: `${fmt(v.W * mm, 1)} mm`, 최대지름: `⌀${fmt(2 * Math.max(...rMm), 1)} mm` };
-  } else {
-    if (!v.contours.outer) return toast("이 뷰에서 닫힌 윤곽을 찾지 못했습니다");
+  return ocrReady;
+}
+async function readDims() {
+  if (!state.raster) return;
+  $("dimBlock").style.display = "";
+  $("dimTag").textContent = "읽는 중…"; $("dimList").innerHTML = ""; $("dimNote").textContent = "";
+  let worker;
+  try { worker = await ensureOcr(); } catch (e) { return dimsFailed(`문자 인식 엔진을 불러오지 못했습니다 (${e.message}).`); }
+  const t0 = performance.now();
+  try {
+    state.tokens = await readNumberTokens(worker, state.png);
+    state.scale = scaleFromDims(state.tokens, state.raster);
+  } catch (e) { return dimsFailed(`치수를 읽는 중 오류: ${e.message}`); }
+  const sc = state.scale, ms = Math.round(performance.now() - t0);
+  $("dimTag").textContent = `${state.tokens.length}개 읽음 · ${(ms / 1000).toFixed(1)}초`;
+  const usedSet = new Set((sc.used || []).map((u) => u.text)), rejSet = new Set((sc.rejected || []).map((u) => u.text));
+  $("dimList").innerHTML = state.tokens.map((t) => `<span class="${usedSet.has(t.text) ? "used" : rejSet.has(t.text) ? "rej" : ""}" title="${t.kind}">${t.text}</span>`).join("");
+  if (sc.ok) {
+    state.mmPerPx = sc.mmPerPx;
+    $("dimScale").textContent = `1 px = ${sc.mmPerPx.toFixed(4)} mm`;
+    $("dimAgree").textContent = `${sc.agree} / ${sc.total}`;
+    $("dimNote").innerHTML = `치수선 길이와 문자를 짝지어 서로 맞는 값을 골랐습니다(초록). ${sc.agree < 3 ? "<b>맞는 치수가 적어 축척이 불확실합니다.</b> 아래에 아는 치수 하나를 넣어 확인할 수 있습니다." : "여러 치수가 같은 축척을 가리키므로 믿을 만합니다."}`;
+    $("dimManual").style.display = sc.agree < 3 ? "" : "none";
+  } else dimsFailed(sc.reason || "치수를 읽지 못했습니다.");
+  drawOverlay(); renderMethod();
+}
+function dimsFailed(msg) {
+  state.mmPerPx = 0; state.scale = state.scale && state.scale.ok ? state.scale : { ok: false, used: [], rejected: [] };
+  $("dimTag").textContent = "읽지 못함"; $("dimScale").textContent = "—"; $("dimAgree").textContent = "—";
+  $("dimNote").innerHTML = `${msg} 실제 치수를 지어내지 않습니다. 고른 뷰의 가로 실제 길이를 넣어 주세요.`;
+  $("dimManual").style.display = "";
+  renderMethod();
+}
+$("btnReadDims").onclick = readDims;
+$("manualLen").onchange = () => {
+  const L = Number($("manualLen").value); const v = state.pick;
+  if (!L || !v) return;
+  state.mmPerPx = L / v.part.W;
+  $("dimScale").textContent = `1 px = ${state.mmPerPx.toFixed(4)} mm (뷰 ${v.id} 가로 ${L} mm 입력)`;
+  renderMethod(); toast("입력한 치수로 축척을 정했습니다", true);
+};
+
+/* ================================================================ ③ 방법 · 만들기 */
+const chosenMethod = () => document.querySelector("#methodSeg button.on")?.dataset.m || "auto";
+$("methodSeg").onclick = (e) => { const b = e.target.closest("button"); if (!b) return; document.querySelectorAll("#methodSeg button").forEach((x) => x.classList.toggle("on", x === b)); renderMethod(); };
+function assigned() { return state.views.map((v) => ({ view: v, role: state.roles[v.id] || "skip" })); }
+function effectiveMethod() {
+  const m = chosenMethod();
+  if (m !== "auto") return { method: m, why: "직접 고름" };
+  return suggestMethod(assigned());
+}
+function renderMethod() {
+  const em = effectiveMethod();
+  $("methodWhy").textContent = `${{ ortho: "정투상 교집합", revolve: "회전체", plate: "판 (두께)", unsupported: "미지원", none: "뷰 방향 필요" }[em.method] || em.method}: ${em.why}`;
+  $("thickRow").style.display = em.method === "plate" ? "" : "none";
+  const lv = state.sample?.level;
+  $("levelNote").innerHTML = lv ? `<span class="lvl ${LEVEL[lv].cls}">${LEVEL[lv].ko}</span> ${LEVEL[lv].note}` : "";
+  const can = em.method !== "none" && em.method !== "unsupported" && state.mmPerPx > 0;
+  $("btnMake").disabled = !can;
+  $("btnMake").textContent = em.method === "unsupported" ? "이 부류는 만들 수 없습니다" : !state.mmPerPx ? "먼저 치수를 정해 주세요" : "부품 만들기";
+}
+$("btnMake").onclick = async () => {
+  const em = effectiveMethod(); if (!state.mmPerPx) return;
+  const steps = [{ text: "뷰마다 윤곽을 그 방향으로 밀어내기", state: "run" }, { text: "전부 교집합하기" }, { text: "각 뷰로 다시 투영해 도면과 대조" }];
+  showGen(true, "부품 만들기", "", steps); await sleep(60);
+  clearPart();
+  let mesh = null, result = null;
+  const mm = state.mmPerPx, A = assigned();
+  if (em.method === "ortho") {
+    const r = buildOrthoPart(A, mm, {});
+    if (!r.ok) { showGen(false); return toast(r.reason); }
+    steps[0].state = steps[1].state = "done"; steps[2].state = "run"; showGen(true, "부품 만들기", "", steps); await sleep(30);
+    const ious = A.filter((a) => isOrtho(a.role)).map((a) => ({ ...projectionIoU(r.geometry, a.view, a.role, mm, r.ext), viewId: a.view.id }));
+    r.geometry.center();
+    mesh = new THREE.Mesh(r.geometry, mats.plate.clone());
+    result = { kind: "ortho", size: r.size, volume: r.volume_cm3, ious, checks: r.checks, notes: r.notes };
+  } else if (em.method === "revolve") {
+    const a = A.find((x) => isOrtho(x.role)); if (!a) { showGen(false); return toast("회전체로 볼 뷰를 정해 주세요"); }
+    const prof = viewProfile(a.view, 420), rMm = Float64Array.from(prof, (p) => p * mm);
+    mesh = buildRevolvePart(rMm, a.view.part.W * mm, { material: mats.revolve.clone() });
+    const bb = new THREE.Box3().setFromObject(mesh), sz = bb.getSize(new THREE.Vector3());
+    result = { kind: "revolve", size: { X: sz.x, Y: sz.y, Z: sz.z }, volume: geometryVolume(mesh.geometry) / 1000, ious: [], checks: [], notes: ["뷰 하나를 축 둘레로 돌렸습니다"] };
+  } else if (em.method === "plate") {
+    const a = A.find((x) => isOrtho(x.role)); if (!a) { showGen(false); return toast("판으로 볼 뷰를 정해 주세요"); }
     const t = Math.max(0.2, Number($("thick").value) || 10);
-    const outer = v.contours.outer.map(([x, y]) => [x * mm, y * mm]);
-    const holes = v.contours.holes.map((h) => h.map(([x, y]) => [x * mm, y * mm]));
-    mesh = buildExtrudePart(outer, holes, t, { material: (kind === "plate" ? mats.plate : mats.extrude).clone() });
-    if (!mesh) return toast("윤곽으로 형상을 만들지 못했습니다");
-    meta = { 크기: `${fmt(v.W * mm, 1)} × ${fmt(v.H * mm, 1)} mm`, 두께: `${fmt(t, 1)} mm`, 구멍: `${holes.length}개` };
-  }
-  const part = { id: state.parts.length + 1, kind, view: v.id, mesh, meta, vol: meshVolumeCm3(mesh) };
-  mesh.name = `part${part.id}:${kind}`;
-  state.parts.push(part);
-  root.add(mesh);
-  placeNext(part);                   /* 이미 옮겨 둔 부품은 건드리지 않고 옆자리에 놓는다 */
-  v.used = (v.used || 0) + 1;
-  renderParts(); renderViewList(); drawBoxes();
-  showSheet(false); fitView();
-  selectPart(part);
-  $("exportBlock").style.display = ""; renderExport();
-  toast(`부품 ${part.id} (${KIND_KO[kind]}) 을 만들었습니다`, true);
+    const outer = a.view.contours.outer.map(([x, y]) => [x * mm, y * mm]), holes = a.view.contours.holes.map((h) => h.map(([x, y]) => [x * mm, y * mm]));
+    mesh = buildExtrudePart(outer, holes, t, { material: mats.plate.clone() });
+    if (!mesh) { showGen(false); return toast("윤곽으로 형상을 만들지 못했습니다"); }
+    const bb = new THREE.Box3().setFromObject(mesh), sz = bb.getSize(new THREE.Vector3());
+    result = { kind: "plate", size: { X: sz.x, Y: sz.y, Z: sz.z }, volume: geometryVolume(mesh.geometry) / 1000, ious: [], checks: [], notes: [`두께 ${t} mm 는 입력값입니다`] };
+  } else { showGen(false); return; }
+  mesh.castShadow = mesh.receiveShadow = true;
+  const bb0 = new THREE.Box3().setFromObject(mesh); mesh.position.y -= bb0.min.y;
+  root.add(mesh); state.part = { mesh, result };
+  steps.forEach((s) => (s.state = "done")); showGen(true, "부품 만들기", "", steps); await sleep(120); showGen(false);
+  showSheet(false); fitView(); renderResult(); renderExport();
+  toast("부품을 만들었습니다. 오른쪽에서 뷰 정합을 확인하세요", true);
 };
-
-/* 새 부품은 지금까지 놓인 것들의 오른쪽 옆에 (수동 배치를 흩뜨리지 않는다) */
-function placeNext(part) {
-  const others = state.parts.filter((p) => p !== part).map((p) => p.mesh);
-  const bb = new THREE.Box3().setFromObject(part.mesh);
-  const size = bb.getSize(new THREE.Vector3());
-  let x = 0;
-  if (others.length) { const ob = new THREE.Box3(); for (const m of others) ob.expandByObject(m); x = ob.max.x + 12 + size.x / 2; }
-  part.mesh.position.set(x, size.y / 2, 0);
+function renderResult() {
+  const p = state.part; if (!p) return $("resultBlock").style.display = "none";
+  const r = p.result;
+  $("resultBlock").style.display = "";
+  const lv = state.sample?.level || (r.kind === "ortho" ? 1 : 2);
+  $("lvlTag").className = `lvl ${LEVEL[lv].cls}`; $("lvlTag").textContent = LEVEL[lv].ko;
+  $("rSize").textContent = `${fmt(r.size.X)} × ${fmt(r.size.Y)} × ${fmt(r.size.Z)} mm`;
+  $("rVol").textContent = `${fmt(r.volume, 1)} cm³`;
+  $("rTris").textContent = `${(p.mesh.geometry.attributes.position.count / 3).toLocaleString()}개`;
+  const rows = r.ious.map((x) => { const pct = x.iou * 100; const cls = pct >= 95 ? "ok" : pct >= 85 ? "warn" : "bad"; return `<div class="r"><span>${ROLE_KO[x.role]} (뷰 ${x.viewId})</span><b class="${cls}">${pct.toFixed(1)}%</b></div>`; });
+  for (const c of r.checks) rows.push(`<div class="r"><span>${c.axis} 축 크기 · ${ROLE_KO[c.a.role]} ↔ ${ROLE_KO[c.b.role]}</span><b class="${c.ok ? "ok" : "warn"}">차이 ${c.diffPct}%</b></div>`);
+  $("rChecks").innerHTML = rows.join("") || `<div class="mini">대조할 정투상 뷰가 없습니다.</div>`;
+  const low = r.ious.filter((x) => x.iou < 0.9);
+  $("rNote").innerHTML = (r.notes || []).concat(low.length ? [`<b>${low.map((x) => ROLE_KO[x.role]).join(", ")}</b> 정합이 낮습니다. 그 뷰의 방향이 맞는지, 구멍이 빠졌는지 확인하세요.`] : []).join("<br/>");
 }
-function renderParts() {
-  $("partsBlock").style.display = state.parts.length ? "" : "none";
-  $("partCount").textContent = `${state.parts.length}개`;
-  $("partList").innerHTML = state.parts.map((p) => `
-    <div class="prow" data-p="${p.id}" style="${state.sel === p ? "background:rgba(91,107,240,.12)" : ""}">
-      <span class="k"><b>${p.id}. ${KIND_KO[p.kind]}</b><br/><span class="t">뷰 ${p.view} · ${Object.entries(p.meta).map(([k, v]) => `${k} ${v}`).join(" · ")}</span></span>
-      <button title="삭제">×</button></div>`).join("");
-  $("totVol").textContent = `${fmt(state.parts.reduce((a, p) => a + p.vol, 0), 1)} cm³`;
-}
-$("partList").onclick = (e) => {
-  const rowEl = e.target.closest("[data-p]"); if (!rowEl) return;
-  const b = e.target.closest("button");
-  if (!b) { const p = state.parts.find((x) => x.id === Number(rowEl.dataset.p)); return selectPart(p || null); }
-  const id = Number(rowEl.dataset.p);
-  const i = state.parts.findIndex((p) => p.id === id); if (i < 0) return;
-  if (state.sel === state.parts[i]) { gizmo.detach(); state.sel = null; $("asmBlock").style.display = "none"; }
-  root.remove(state.parts[i].mesh); state.parts[i].mesh.geometry.dispose();
-  const v = state.views.find((x) => x.id === state.parts[i].view); if (v) v.used = Math.max(0, (v.used || 1) - 1);
-  state.parts.splice(i, 1);
-  renderParts(); renderViewList(); drawBoxes(); fitView();
-  if (!state.parts.length) $("exportBlock").style.display = "none";
-};
 
 /* ================================================================ 내보내기 */
 function renderExport() {
-  const id = (state.name || "parts").replace(/\.[^.]+$/, "").replace(/[^A-Za-z0-9_-]+/g, "_") || "parts";
+  if (!state.part) return $("exportBlock").style.display = "none";
+  $("exportBlock").style.display = "";
+  const id = (state.name || "part").replace(/\.[^.]+$/, "").replace(/[^A-Za-z0-9_-]+/g, "_") || "part";
   const row = (f, n, fn) => { const d = document.createElement("div"); d.className = "exp"; d.innerHTML = `<span class="f">${f}</span><span class="n">${n}</span><button title="내려받기"><svg><use href="#i-dl"/></svg></button>`; d.querySelector("button").onclick = fn; return d; };
   const list = $("dlList"); list.innerHTML = "";
+  const spec = { part2: true, sheet: state.name, mm_per_px: state.mmPerPx, roles: Object.fromEntries(state.views.map((v) => [v.id, state.roles[v.id]])), result: state.part.result };
   list.appendChild(row("STEP·면", "삼각형 면 · 기계 CAD", () => downloadBlob(exportSTEP(root, id), `${id}.step`, "application/step")));
   list.appendChild(row("STL", "3D 프린팅", () => downloadBlob(exportSTL(root), `${id}.stl`, "model/stl")));
   list.appendChild(row("GLB", "재질 포함 · 웹 뷰어", async () => downloadBlob(await exportGLB(root), `${id}.glb`, "model/gltf-binary")));
   list.appendChild(row("OBJ", "메시 (mm)", () => downloadBlob(exportOBJ(root), `${id}.obj`, "text/plain")));
   list.appendChild(row("FBX", "Maya, 3ds Max, Unity, Unreal", () => downloadBlob(exportFBX(root), `${id}.fbx`, "application/octet-stream")));
-  list.appendChild(row("PLY", "정점과 면 (해석 도구)", () => downloadBlob(exportPLY(root), `${id}.ply`, "text/plain")));
-  list.appendChild(row("JSON", "부품 목록과 치수", () => downloadBlob(new Blob([JSON.stringify({
-    sheet: state.name, mm_per_px: state.mmPerPx,
-    parts: state.parts.map((p) => ({ id: p.id, kind: p.kind, view: p.view, ...p.meta, volume_cm3: +p.vol.toFixed(2) })),
-  }, null, 2)], { type: "application/json" }), `${id}.parts.json`)));
-  $("exportNote").textContent = `부품 ${state.parts.length}개를 한 파일로 내보냅니다. 배치는 보기용이며 조립 위치가 아닙니다.`;
+  list.appendChild(row("USD", "메시와 뷰·치수 정보를 함께", () => downloadBlob(exportUSDA(root, spec), `${id}.usda`, "text/plain")));
+  list.appendChild(row("USDZ", "AR 미리보기 패키지", async () => downloadBlob(await exportUSDZ(root), `${id}.usdz`, "model/vnd.usdz+zip")));
+  list.appendChild(row("PLY", "정점과 면", () => downloadBlob(exportPLY(root), `${id}.ply`, "text/plain")));
+  list.appendChild(row("JSON", "뷰 방향 · 축척 · 결과", () => downloadBlob(new Blob([JSON.stringify(spec, null, 2)], { type: "application/json" }), `${id}.part2.json`)));
+  $("exportNote").textContent = "면 STEP 입니다(삼각형 면). 정밀 곡면 STEP 은 회전체(Part 1)의 서버 모드에서만 만듭니다.";
 }
 
-/* ================================================================ 입력 */
+/* ================================================================ 입력 · 초기화 */
+function showGen(on, title, sub, steps) {
+  $("gen").classList.toggle("on", on);
+  if (title) $("genTitle").textContent = title;
+  if (sub !== undefined) $("genSub").textContent = sub;
+  $("genBar").style.width = `${((steps || []).filter((s) => s.state === "done").length / Math.max(1, (steps || []).length)) * 100}%`;
+  $("genSteps").innerHTML = (steps || []).map((s) => `<div class="gen-step ${s.state || ""}"><span class="dot"></span>${s.text}</div>`).join("");
+}
 function reset(full = true) {
-  for (const p of state.parts) { root.remove(p.mesh); p.mesh.geometry.dispose(); }
-  state.parts = []; state.views = []; state.pick = null; state.mmPerPx = 0;
-  $("viewBlock").style.display = "none"; $("scaleBlock").style.display = "none";
-  $("makeBlock").style.display = "none"; $("partsBlock").style.display = "none"; $("exportBlock").style.display = "none";
-  $("asmBlock").style.display = "none"; gizmo.detach(); state.sel = null;
-  $("ov").innerHTML = ""; $("scaleLen").value = "";
-  $("scaleNote").textContent = "한 번만 넣으면 도면 전체에 적용됩니다. 넣기 전에는 실제 치수를 알 수 없습니다.";
-  $("hintBox").innerHTML = "도면을 올리면 뷰를 자동으로 나눕니다. 뷰를 고르고 유형을 정한 뒤 <b>부품 만들기</b> 를 누르세요.";
+  clearPart();
+  state.views = []; state.pick = null; state.roles = {}; state.tokens = []; state.scale = null; state.mmPerPx = 0; state.sample = null;
+  for (const id of ["viewBlock", "dimBlock", "methodBlock", "resultBlock", "exportBlock"]) $(id).style.display = "none";
+  $("ov").innerHTML = ""; $("manualLen").value = ""; $("dimManual").style.display = "none";
+  renderCube(); $("pickTag").textContent = "뷰 없음";
   if (full) { state.image = null; state.raster = null; $("projName").textContent = "새 도면"; showSheet(false); $("stageEmpty").style.display = ""; }
 }
 $("btnNew").onclick = () => { reset(true); toast("처음으로 돌아왔습니다"); };
 const drop = $("drop"), fileInput = $("file");
-const SKIP_KEY = "vringon.part2.check.v1";
+const SKIP_KEY = "vringon.part2.check.v2";
 function openCheck() { $("checkModal").classList.add("show"); }
-function closeCheck(pick) {
-  $("checkModal").classList.remove("show");
-  if ($("chkSkip").checked) { try { localStorage.setItem(SKIP_KEY, "1"); } catch {} }
-  if (pick) fileInput.click();
-}
+function closeCheck(pick) { $("checkModal").classList.remove("show"); if ($("chkSkip").checked) { try { localStorage.setItem(SKIP_KEY, "1"); } catch {} } if (pick) fileInput.click(); }
 $("btnPickFile").onclick = () => closeCheck(true);
 $("checkModal").onclick = (e) => { if (e.target === $("checkModal")) closeCheck(false); };
 $("linkCheck").onclick = (e) => { e.preventDefault(); openCheck(); };
-drop.onclick = () => {
-  let skip = false;
-  try { skip = localStorage.getItem(SKIP_KEY) === "1"; } catch {}
-  if (skip) fileInput.click(); else openCheck();
-};
+drop.onclick = () => { let skip = false; try { skip = localStorage.getItem(SKIP_KEY) === "1"; } catch {} if (skip) fileInput.click(); else openCheck(); };
 fileInput.onchange = async () => { const f = fileInput.files[0]; if (f) await fromFile(f); fileInput.value = ""; };
 drop.ondragover = (e) => { e.preventDefault(); drop.classList.add("over"); };
 drop.ondragleave = () => drop.classList.remove("over");
@@ -396,11 +362,13 @@ $("chips").onclick = async (e) => {
   const b = e.target.closest(".sample"); if (!b) return;
   const s = SAMPLES.find((x) => x.id === b.dataset.id); if (!s) return;
   const svg = await fetch(`./${s.file}?v=${BUILD}`).then((r) => r.text());
-  await loadSheet({ name: s.name, svg });
+  await loadSheet({ name: s.name, svg, sample: s });
 };
+renderCube();
 initTour("part2");
+ensureOcr().catch(() => {});   /* 미리 불러 둔다 (첫 판독을 기다리지 않게) */
 
 /* qa:start */
-window.__vringon2 = { state, splitViews, viewContours, viewProfile, get scene() { return scene; }, get root() { return root; },
+window.__vringon2 = { state, splitViews, viewContours, suggestRoles, buildOrthoPart, get scene() { return scene; }, get root() { return root; }, setRole, pickView, readDims,
   forceRender() { controls.update(); renderer.render(scene, camera); } };
 /* qa:end */

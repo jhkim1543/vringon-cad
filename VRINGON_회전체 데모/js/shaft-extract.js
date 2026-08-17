@@ -74,7 +74,7 @@ export function measureSilhouette(img, opts = {}) {
   /* 외형선의 선폭(px)을 짧은 가로 런 길이의 중앙값으로 추정한다. 3px 이상이면 침식 1회로 가는선을 걷어내고,
      그보다 얇게 렌더된 이미지(브라우저 안티앨리어싱은 3px 선을 2px 로 만든다)는 침식하면 외형선까지 사라진다. */
   const strokePx = estimateStroke(mask, w, h);
-  const iters = Math.max(0, Math.round(strokePx / 2) - 1);   /* 2px→0, 3~5px→1, 6~7px→2 … */
+  const iters = erosionIters(strokePx);
   let thick = mask;
   for (let k = 0; k < iters; k++) thick = erode(thick, w, h);
   const big = iters > 0;
@@ -210,6 +210,9 @@ export function measureSilhouette(img, opts = {}) {
   return { ok: true, L_px: along, top, bottom, bore, sectioned: !!partner, axis, bbox: { x0: main.x0, y0: main.y0, x1: main.x1, y1: main.y1 }, vertical, hints, notes, flags, signals: sig, pxPerLen: along, imageSize: { w, h } };
 }
 function median(a) { const s = [...a].sort((p, q) => p - q); return s.length ? s[Math.floor(s.length / 2)] : 0; }
+/* 가는선(치수·보조선 ≈ 외형선의 1/3)만 걷어내는 침식 횟수. round(굵기/2)−1 은 4.8px 외형선을 0~1px 로 만들어
+   윤곽을 조각내고, 조각난 뷰는 크기 필터에 걸려 사라진다(곡관 도면에서 실제로 겪음). */
+export function erosionIters(strokePx) { return strokePx <= 2 ? 0 : strokePx <= 6 ? 1 : strokePx <= 9 ? 2 : 3; }
 export function estimateStroke(mask, w, h) {
   const hist = new Array(12).fill(0);
   for (let y = 0; y < h; y += 2) {
@@ -219,7 +222,7 @@ export function estimateStroke(mask, w, h) {
       else { if (run > 0 && run < 12) hist[run]++; run = 0; }
     }
   }
-  /* 가장 흔한 짧은 런(1~11px) 중 픽셀 수 가중 최빈값 */
+  /* 가장 흔한 짧은 런(1~11px) 중 픽셀 수 가중 최빈값 = 외형선 굵기 */
   let best = 1, bestN = -1;
   for (let k = 1; k < 12; k++) if (hist[k] * k > bestN) { bestN = hist[k] * k; best = k; }
   return best;

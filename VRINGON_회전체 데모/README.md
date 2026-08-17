@@ -7,8 +7,8 @@
 
 ## 두 갈래
 - **Part 1 (`revolve.html`)** — 단일 도면 회전체. 아래 설명이 전부 여기에 해당합니다.
-- **Part 2 (`assembly.html`)** — 다시점 도면에서 뷰를 나눠 **부품 단위**로 3D 를 만듭니다(회전체 · 판 · 윤곽 압출).
-  기하만으로는 뷰가 무엇인지 알 수 없으므로 사람이 유형을 정하는 반자동입니다. 진입 화면(`index.html`)에서 고릅니다.
+- **Part 2 (`assembly.html`)** — 다시점 도면에서 **부품 하나**를 복원합니다: 뷰 분할 → 방향(사람이 확정, 정육면체 UI) →
+  치수 OCR 로 축척 → 각 뷰 압출의 교집합 → 뷰 재투영 정합. 예시 3종(브래킷·하우징·곡관)과 `tools/test-multiview.mjs` 회귀.
 
 | | 주소 | 비고 |
 |---|---|---|
@@ -45,8 +45,11 @@ js/shaft-export.js, fbx-export.js  STEP(면분할)·STL·GLB·OBJ·FBX·USDA/USD
 js/tour.js                   첫 방문 사용법 안내 (Part 1·2 각각의 순서)
 index.html                   진입 화면 (Part 1 / Part 2 고르기)
 assembly.html, js/part2.js   ★ Part 2 워크스페이스
-js/views.js                  뷰 분할 + 뷰별 신호(대칭·평탄·원형) + 윤곽·구멍 추적
-js/part2-cad.js              뷰 → 부품 3D (회전 / 압출), 부피, 나란히 배치
+js/views.js                  뷰 분할 + 뷰별 신호 + 윤곽·구멍 추적(채운 영역·빈 공간 경계)
+js/ocr-dims.js               치수 문자 인식(vendor/tesseract) → 치수선 짝짓기 → 축척 다수결
+js/multiview.js              역할·좌표 약속·압출·교집합·뷰 재투영 정합 (정투상 복원의 핵심)
+js/part2-cad.js              단일 뷰 회전/압출 (Part 2 의 회전체·판 방법)
+tools/gen-part2-samples.mjs  예시 도면 3종 + 정답 생성 / tools/test-multiview.mjs 회귀
 deploy/, DEPLOY.md           외부 도메인 배포 한 벌 (컨테이너·자동 HTTPS·접근 코드) 와 안내
 guide.html, assets/guide/    업로드 안내 (되는/안 되는 도면 삽화 + 치수 기준 그림)
 js/shaft-standards.js        규격표 (재질 밀도 포함)
@@ -73,6 +76,7 @@ node tools/gen-dataset.mjs --n 5000 --out dataset --augment 0.3 --omit 0.15
 node tools/deploy-docs.mjs                  # ../docs/revolve/ 보호 빌드 갱신 → 커밋 (--raw 는 디버깅용 원본 복사)
 node tools/test-assembly.mjs && node tools/test-exports.mjs      # 조립·시뮬 / 내보내기 회귀
 node tools/test-input-guard.mjs             # 회전체가 아닌 도면을 판독 전에 막는지 (정상 60건 오거부 0)
+node tools/test-multiview.mjs               # Part 2: 뷰 분할·방향·OCR 축척·교집합·정합 (예시 3종)
 cd pipeline && PYTHONIOENCODING=utf-8 .venv/Scripts/python.exe tests/test_golden.py
 ```
 방법론·마일스톤 상태·수치·데이터 소스·다음 할 일은 [HANDOFF.md](HANDOFF.md), 외부 공유·도메인 배포·코드 보호는 [DEPLOY.md](DEPLOY.md) 에 있습니다.

@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>VRINGON CAD | Part 2 · 다시점 도면 부품</title>
-<meta name="description" content="한 장에 여러 투상도가 있는 도면에서 뷰를 나누고, 뷰마다 부품 유형을 정해 부품 단위로 3D 를 만듭니다." />
+<title>VRINGON CAD | Part 2 · 다시점 도면에서 부품 하나</title>
+<meta name="description" content="한 장에 여러 투상도가 있는 도면에서 뷰를 나누고, 뷰마다 방향을 정한 뒤, 치수를 읽어 부품 하나를 3D 로 복원합니다." />
 <link rel="icon" href="assets/favicon.svg" />
 <link rel="stylesheet" href="css/vringon.css" />
 <style>
@@ -13,51 +13,63 @@
   .sheet-paper { position: relative; max-width: 100%; max-height: 100%; background: #fff; border-radius: 6px; box-shadow: 0 20px 60px rgba(0,0,0,.55); overflow: hidden; }
   .sheet-paper img { display: block; max-width: 100%; max-height: calc(100vh - 190px); }
   .sheet-paper svg.ov { position: absolute; inset: 0; width: 100%; height: 100%; }
-  .vbox { fill: rgba(91,107,240,.10); stroke: #5B6BF0; stroke-width: 2; cursor: pointer; transition: fill .12s; }
-  .vbox:hover { fill: rgba(91,107,240,.22); }
-  .vbox.on { fill: rgba(61,214,160,.20); stroke: #3DD6A0; }
-  .vbox.used { fill: rgba(255,255,255,.04); stroke: #6E7480; stroke-dasharray: 7 5; }
+  .vbox { fill: rgba(91,107,240,.08); stroke: #5B6BF0; stroke-width: 2; cursor: pointer; transition: fill .12s; }
+  .vbox:hover { fill: rgba(91,107,240,.2); }
+  .vbox.on { fill: rgba(61,214,160,.18); stroke: #3DD6A0; }
+  .vbox.ref { fill: rgba(255,255,255,.03); stroke: #6E7480; stroke-dasharray: 7 5; }
   .vlab { font: 700 15px sans-serif; fill: #1B1D24; paint-order: stroke; stroke: #fff; stroke-width: 4px; pointer-events: none; }
+  .vlab.role { fill: #2E3BB3; }
+  .dimtok { fill: rgba(240,173,78,.18); stroke: #E8B84B; stroke-width: 1.2; pointer-events: none; }
+  .dimtok.used { fill: rgba(61,214,160,.2); stroke: #3DD6A0; }
   .drop.compact { padding: 16px 14px; margin-bottom: 12px; }
   .drop.compact svg { width: 18px; height: 18px; margin-bottom: 6px; }
   .vlist { display: flex; flex-direction: column; gap: 7px; }
-  .vrow { display: flex; align-items: center; gap: 9px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 9px;
+  .vrow { display: grid; grid-template-columns: 22px 1fr auto; align-items: center; gap: 8px; padding: 7px 9px; border: 1px solid var(--line); border-radius: 9px;
     background: var(--panel-2, #16161B); cursor: pointer; font-size: 12px; }
   .vrow:hover { border-color: #3A3A45; }
   .vrow.on { border-color: var(--accent); background: rgba(91,107,240,.10); }
-  .vrow.used { opacity: .5; }
-  .vrow .n { width: 20px; height: 20px; border-radius: 6px; background: #22222A; display: grid; place-items: center; font-weight: 700; font-size: 11px; flex: none; }
-  .vrow .m { flex: 1; color: var(--text-2); }
-  .vrow .s { font-variant-numeric: tabular-nums; color: var(--text-3); font-size: 11px; }
-  .prow { display: flex; align-items: center; gap: 8px; padding: 7px 9px; border-radius: 8px; font-size: 12px; }
-  .prow:hover { background: #1A1A20; }
-  .prow .k { flex: 1; }
-  .prow .t { font-size: 10.5px; color: var(--text-3); }
-  .prow button { width: 22px; height: 22px; border-radius: 6px; color: var(--text-3); }
-  .prow button:hover { background: #26262E; color: var(--danger); }
-  .seg.kinds button { font-size: 11.5px; }
+  .vrow .n { width: 22px; height: 22px; border-radius: 6px; background: #22222A; display: grid; place-items: center; font-weight: 700; font-size: 11px; }
+  .vrow .m { color: var(--text-2); line-height: 1.35; }
+  .vrow .m small { color: var(--text-3); font-size: 10.5px; }
+  .vrow select { background: #0F0F13; border: 1px solid var(--line-2); border-radius: 6px; color: var(--text); font-size: 11.5px; padding: 4px 6px; }
   .mini { font-size: 11.5px; color: var(--text-3); line-height: 1.6; }
   .kf label.inline { display: flex; align-items: center; gap: 7px; font-size: 11.5px; color: var(--text-2); }
-  .scope-note.ok { border-color: rgba(61,214,160,.35); background: rgba(61,214,160,.07); color: var(--ok); }
-  .cmp3 { display: grid; grid-template-columns: 14px 1fr 14px 1fr 14px 1fr; gap: 5px 4px; align-items: center; }
-  .cmp3 span { font-size: 11px; color: var(--text-3); }
-  .cmp3 input { width: 100%; background: #0F0F13; border: 1px solid var(--line-2); border-radius: 5px; color: var(--text);
-    font-size: 11.5px; padding: 4px 5px; font-variant-numeric: tabular-nums; }
-  .cmp3 input:focus { border-color: var(--accent); outline: none; }
-  /* 올리기 전 확인 */
+  .cube-wrap { display: flex; gap: 12px; align-items: flex-start; }
+  .cube { width: 150px; height: 140px; flex: none; }
+  .cube .f { cursor: pointer; transition: fill .12s; }
+  .cube .f:hover { filter: brightness(1.25); }
+  .cube .f.on { stroke: #3DD6A0; stroke-width: 2.5; }
+  .cube text { font: 700 11px sans-serif; fill: #E8E8ED; pointer-events: none; text-anchor: middle; }
+  .cube .assigned { fill: #5B6BF0; }
+  .cube .free { fill: #26262E; }
+  .rolebtns { display: flex; flex-wrap: wrap; gap: 5px; }
+  .rolebtns button { font-size: 11px; padding: 4px 8px; border-radius: 6px; border: 1px solid var(--line-2); background: transparent; color: var(--text-2); }
+  .rolebtns button:hover { border-color: #3A3A45; color: var(--text); }
+  .rolebtns button.on { border-color: var(--accent); color: var(--accent-hi); background: rgba(91,107,240,.12); }
+  .dimlist { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 6px; }
+  .dimlist span { font-size: 11px; padding: 3px 7px; border-radius: 6px; border: 1px solid var(--line-2); color: var(--text-2); font-variant-numeric: tabular-nums; }
+  .dimlist span.used { border-color: rgba(61,214,160,.4); color: var(--ok); }
+  .dimlist span.rej { text-decoration: line-through; opacity: .55; }
+  .lvl { display: inline-block; font-size: 10.5px; font-weight: 800; letter-spacing: .04em; padding: 2px 7px; border-radius: 999px; }
+  .lvl.l1 { background: rgba(61,214,160,.14); color: var(--ok); }
+  .lvl.l2 { background: rgba(232,184,75,.14); color: var(--warn); }
+  .lvl.l3 { background: rgba(240,113,107,.14); color: var(--danger); }
+  .checks .r { display: flex; justify-content: space-between; font-size: 12px; padding: 3px 0; }
+  .checks b.ok { color: var(--ok); } .checks b.warn { color: var(--warn); } .checks b.bad { color: var(--danger); }
   .modal { position: fixed; inset: 0; z-index: 70; display: none; place-items: center; background: rgba(6,6,10,.72); }
   .modal.show { display: grid; }
-  .modal-box { width: min(560px, calc(100vw - 40px)); background: var(--panel); border: 1px solid var(--line-2);
-    border-radius: 14px; padding: 22px 24px 18px; box-shadow: 0 22px 60px rgba(0,0,0,.6); }
+  .modal-box { width: min(600px, calc(100vw - 40px)); background: var(--panel); border: 1px solid var(--line-2); border-radius: 14px; padding: 22px 24px 18px; box-shadow: 0 22px 60px rgba(0,0,0,.6); }
   .modal-box h2 { font-size: 18px; margin-bottom: 4px; }
   .modal-box p { font-size: 13px; color: var(--text-2); line-height: 1.7; }
   .chk { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 18px; margin: 14px 0 4px; }
   .chk div { font-size: 12.5px; color: var(--text-2); display: flex; gap: 7px; align-items: flex-start; line-height: 1.55; }
   .chk i { font-style: normal; flex: none; }
-  .chk .y i { color: var(--ok); }
-  .chk .n i { color: var(--danger); }
+  .chk .y i { color: var(--ok); } .chk .n i { color: var(--danger); }
   .modal-row { display: flex; align-items: center; gap: 9px; margin-top: 16px; }
-  @media (max-width: 700px) { .chk { grid-template-columns: 1fr; } }
+  .lvls { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 12px; }
+  .lvls div { border: 1px solid var(--line); border-radius: 9px; padding: 8px 10px; font-size: 12px; color: var(--text-2); line-height: 1.5; }
+  .lvls b { display: block; margin-bottom: 3px; }
+  @media (max-width: 700px) { .chk, .lvls { grid-template-columns: 1fr; } }
 
   /* 첫 방문 사용법 안내 */
   .tour { position: fixed; inset: 0; z-index: 60; }
@@ -74,8 +86,7 @@
   .tour-b { font-size: 12.5px; line-height: 1.65; color: var(--text-2); }
   .tour-link { display: inline-block; margin-top: 7px; font-size: 12px; color: var(--accent-hi); }
   .tour-row { display: flex; align-items: center; gap: 7px; margin-top: 12px; }
-  .tour-row button { font-size: 12px; padding: 6px 12px; border-radius: 7px; border: 1px solid var(--line-2);
-    background: transparent; color: var(--text-2); }
+  .tour-row button { font-size: 12px; padding: 6px 12px; border-radius: 7px; border: 1px solid var(--line-2); background: transparent; color: var(--text-2); }
   .tour-row button:hover { border-color: #3A3A45; color: var(--text); }
   .tour-row .tour-next { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 650; }
   .tour-row .tour-skip { border: none; color: var(--text-3); padding-left: 0; }
@@ -94,16 +105,17 @@
       VRINGON CAD
     </a>
     <span style="color:var(--line-2)">/</span>
-    <span style="font-size:13.5px;color:var(--text-2)">Part 2 · 다시점 도면 부품</span>
+    <span style="font-size:13.5px;color:var(--text-2)">Part 2 · 다시점 도면에서 부품 하나</span>
     <span style="color:var(--line-2)">/</span>
     <span style="font-size:13.5px;color:var(--text-2)" id="projName">새 도면</span>
     <span class="sp"></span>
+    <span class="tag" id="ocrTag" title="치수 문자를 읽는 엔진 상태">문자 인식 준비 중…</span>
     <button class="btn btn-ghost btn-sm" id="btnTour" title="사용법 다시 보기">사용법</button>
     <a class="btn btn-ghost btn-sm" href="./revolve.html">Part 1</a>
   </div>
 
   <div class="ws-body" id="wsBody">
-    <!-- ============ 왼쪽: 입력 · 뷰 목록 ============ -->
+    <!-- ============ 왼쪽: 도면 · 뷰와 방향 ============ -->
     <aside class="side left">
       <div class="side-head">도면
         <span class="sp"></span>
@@ -113,7 +125,7 @@
         <div class="drop compact" id="drop">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M6 10l6-6 6 6M4 20h16"/></svg>
           <b>도면 이미지 올리기</b>
-          PNG · JPG · SVG · 여러 투상도가 있어도 됩니다<br/>
+          정면 · 윗면 · 측면이 한 장에 있는 부품 도면<br/>
           <a href="#" id="linkCheck" style="color:var(--accent-hi)" onclick="event.stopPropagation()">올리기 전에 확인</a>
           <input type="file" id="file" accept="image/png,image/jpeg,image/svg+xml,.svg,.png,.jpg,.jpeg" style="display:none" />
         </div>
@@ -121,41 +133,34 @@
         <div class="block">
           <h3>예시 도면</h3>
           <div class="samples drawings" id="chips" style="grid-template-columns:repeat(3,1fr)"></div>
-          <div class="mini" style="margin-top:6px">Part 1 이 읽지 못하는 부류입니다. 여기서는 뷰를 나눠 부품 단위로 만듭니다.</div>
+          <div class="mini" style="margin-top:6px">브래킷 · 하우징 · 곡관. 세 번째는 이 버전이 만들지 못하는 부류라, 왜 안 되는지를 보여 줍니다.</div>
         </div>
 
         <div class="block" id="viewBlock" style="display:none">
-          <h3>찾은 뷰 <span class="tag" id="viewCount"></span></h3>
-          <div class="vlist" id="viewList"></div>
-          <div class="mini" style="margin-top:7px">뷰를 고르면 오른쪽에서 부품 유형과 두께를 정합니다.
-          점수는 <b>회전 프로파일로 얼마나 그럴듯한지</b>일 뿐, 그 뷰가 무엇인지는 사람이 압니다.</div>
-        </div>
-
-        <div class="block" id="scaleBlock" style="display:none">
-          <h3>축척</h3>
-          <div class="kf">
-            <label>고른 뷰의 가로 실제 길이 (mm)</label>
-            <input class="input" id="scaleLen" type="number" min="1" step="0.5" placeholder="예: 120" style="padding:6px 9px" />
+          <h3>뷰와 방향 <span class="tag" id="viewCount"></span></h3>
+          <div class="kf" style="margin-bottom:8px">
+            <label style="font-size:11.5px;color:var(--text-3);margin-bottom:4px">투상법 (자동 추천에만 쓰입니다)</label>
+            <div class="seg" id="projSeg"><button data-p="third" class="on">3각법</button><button data-p="first">1각법</button></div>
           </div>
-          <div class="mini" style="margin-top:5px" id="scaleNote">한 번만 넣으면 도면 전체에 적용됩니다. 넣기 전에는 실제 치수를 알 수 없습니다.</div>
+          <div class="vlist" id="viewList"></div>
+          <div class="mini" style="margin-top:7px">뷰를 고르고 오른쪽 정육면체에서 방향을 누르거나, 여기서 바로 고릅니다.
+          등각·단면·상세는 참고로 두면 만들 때 쓰지 않습니다.</div>
         </div>
       </div>
     </aside>
 
-    <!-- ============ 가운데: 도면 · 3D ============ -->
+    <!-- ============ 가운데 ============ -->
     <div class="stage" id="stage">
       <div class="stage-empty" id="stageEmpty">
         <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.1" opacity=".5"><rect x="3" y="4" width="8" height="7" rx="1"/><rect x="13" y="4" width="8" height="7" rx="1"/><rect x="3" y="13" width="18" height="7" rx="1"/></svg>
-        <div>왼쪽에서 예시 도면을 고르거나 도면을 올리세요<br/>뷰를 나눈 뒤, 뷰마다 부품을 만들어 쌓습니다</div>
+        <div>왼쪽에서 예시 도면을 고르거나 도면을 올리세요<br/>뷰를 나누고 → 방향을 정하고 → 치수를 읽어 → 부품 하나를 만듭니다</div>
       </div>
-
       <div class="sheet" id="sheet">
         <div class="sheet-paper" id="paper">
           <img id="sheetImg" alt="도면" />
           <svg class="ov" id="ov"></svg>
         </div>
       </div>
-
       <div class="gen" id="gen">
         <div class="gen-box">
           <div class="gen-title" id="genTitle">진행 중</div>
@@ -164,69 +169,67 @@
           <div id="genSteps"></div>
         </div>
       </div>
-
       <div class="stage-actions" id="stageActions" style="top:16px">
         <button class="stage-btn show" id="btnSheet">도면 보기</button>
         <button class="stage-btn" id="btnFit">화면 맞춤</button>
+        <button class="stage-btn" id="btnDims" title="읽은 치수 문자를 도면 위에 표시">읽은 치수 표시</button>
       </div>
     </div>
 
-    <!-- ============ 오른쪽: 부품 만들기 · 목록 · 내보내기 ============ -->
+    <!-- ============ 오른쪽: 방향 정육면체 · 치수 · 방법 · 결과 · 내보내기 ============ -->
     <aside class="side right" id="sideRight">
-      <div class="side-head">부품</div>
+      <div class="side-head">부품 만들기</div>
       <div class="side-scroll">
-        <div class="scope-note" id="hintBox">도면을 올리면 뷰를 자동으로 나눕니다. 뷰를 고르고 유형을 정한 뒤 <b>부품 만들기</b> 를 누르세요.</div>
-
-        <div class="block" id="makeBlock" style="display:none">
-          <h3>고른 뷰 <span class="tag" id="pickTag"></span></h3>
-          <div class="kv"><span>크기 (도면)</span><b id="pickSize">—</b></div>
-          <div class="kv"><span>회전 프로파일 점수</span><b id="pickScore">—</b></div>
-          <div class="kv"><span>윤곽 · 구멍</span><b id="pickShape">—</b></div>
-
-          <label style="font-size:11.5px;color:var(--text-3);margin:12px 0 5px;display:block">부품 유형</label>
-          <div class="seg kinds" id="kindSeg">
-            <button data-k="revolve">회전체</button>
-            <button data-k="plate" class="on">판</button>
-            <button data-k="extrude">윤곽 압출</button>
+        <div class="block" id="cubeBlock">
+          <h3>이 뷰는 어느 방향에서 본 것인가요 <span class="tag" id="pickTag" style="margin-left:6px">뷰 없음</span></h3>
+          <div class="cube-wrap">
+            <svg class="cube" id="cube" viewBox="0 0 150 140"></svg>
+            <div style="flex:1">
+              <div class="rolebtns" id="roleBtns"></div>
+              <div class="mini" style="margin-top:8px" id="cubeHint">왼쪽 목록이나 도면 위 상자에서 뷰를 고른 뒤 면을 누르세요.
+              보이는 세 면(정면 · 윗면 · 우측면)이 가장 흔한 조합입니다.</div>
+            </div>
           </div>
-          <div class="mini" id="kindWhy" style="margin-top:6px"></div>
+        </div>
 
-          <div class="kf" id="thickRow" style="margin-top:10px">
+        <div class="block" id="dimBlock" style="display:none">
+          <h3>치수 <span class="tag" id="dimTag" style="margin-left:6px"></span></h3>
+          <div class="kv"><span>축척</span><b id="dimScale">—</b></div>
+          <div class="kv"><span>서로 맞는 치수</span><b id="dimAgree">—</b></div>
+          <div class="dimlist" id="dimList"></div>
+          <div class="mini" style="margin-top:6px" id="dimNote"></div>
+          <div class="kf" id="dimManual" style="display:none;margin-top:8px">
+            <label>대신 넣기: 고른 뷰의 가로 실제 길이 (mm)</label>
+            <input class="input" id="manualLen" type="number" min="1" step="0.5" placeholder="예: 120" style="padding:6px 9px" />
+          </div>
+          <button class="btn btn-ghost btn-sm" id="btnReadDims" style="margin-top:8px">치수 다시 읽기</button>
+        </div>
+
+        <div class="block" id="methodBlock" style="display:none">
+          <h3>부품 유형 · 방법</h3>
+          <div class="seg kinds" id="methodSeg">
+            <button data-m="auto" class="on">자동</button>
+            <button data-m="ortho">정투상 교집합</button>
+            <button data-m="revolve">회전체</button>
+            <button data-m="plate">판 (두께)</button>
+          </div>
+          <div class="mini" style="margin-top:6px" id="methodWhy"></div>
+          <div class="kf" id="thickRow" style="display:none;margin-top:8px">
             <label>두께 (mm)</label>
             <input class="input" id="thick" type="number" min="0.2" step="0.5" value="10" style="padding:6px 9px" />
-            <div class="mini" style="margin-top:4px">두께는 다른 뷰에서 재거나 직접 넣습니다. 한 뷰만으로는 알 수 없습니다.</div>
           </div>
-
+          <div class="mini" style="margin-top:8px" id="levelNote"></div>
           <button class="btn btn-primary" id="btnMake" style="width:100%;margin-top:12px">부품 만들기</button>
         </div>
 
-        <div class="block" id="asmBlock" style="display:none">
-          <h3>배치 · 조립 <span class="tag" id="selTag"></span></h3>
-          <div class="seg" id="gizmoSeg" style="margin-bottom:8px">
-            <button data-g="translate" class="on">이동</button>
-            <button data-g="rotate">회전</button>
-          </div>
-          <div class="cmp3" id="posRow"></div>
-          <div class="dl-group" style="margin-top:10px">맞추기</div>
-          <div class="kf">
-            <label>이 부품의 축을 다른 부품의 구멍에</label>
-            <select class="input" id="holeSel" style="padding:6px 9px"></select>
-          </div>
-          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">
-            <button class="btn btn-primary btn-sm" id="btnSnapHole">구멍에 맞추기</button>
-            <button class="btn btn-ghost btn-sm" id="btnFloor">바닥에 놓기</button>
-            <button class="btn btn-ghost btn-sm" id="btnCenter">원점으로</button>
-            <button class="btn btn-ghost btn-sm" id="btnRow">나란히 정렬</button>
-          </div>
-          <div class="mini" style="margin-top:7px">3D 에서 부품을 눌러 고르고, 화살표를 끌어 옮깁니다.
-          <b>구멍에 맞추기</b> 는 고른 부품의 축을 상대 부품의 구멍 중심·방향에 정렬합니다.</div>
-        </div>
-
-        <div class="block" id="partsBlock" style="display:none">
-          <h3>만든 부품 <span class="tag" id="partCount"></span></h3>
-          <div id="partList"></div>
-          <div class="kv" style="margin-top:8px"><span>합계 부피</span><b id="totVol">—</b></div>
-          <div class="mini" style="margin-top:6px">처음 배치는 보기 편하도록 나란히 놓은 것입니다. <b>도면에서 조립 위치를 읽지는 않습니다</b> — 위의 배치·조립에서 직접 맞춥니다.</div>
+        <div class="block" id="resultBlock" style="display:none">
+          <h3>결과 <span id="lvlTag" class="lvl" style="margin-left:6px"></span></h3>
+          <div class="kv"><span>크기 X × Y × Z</span><b id="rSize">—</b></div>
+          <div class="kv"><span>부피</span><b id="rVol">—</b></div>
+          <div class="kv"><span>삼각형</span><b id="rTris">—</b></div>
+          <div class="dl-group" style="margin-top:8px">뷰 정합 (만든 3D 를 각 뷰로 다시 투영해 도면과 겹침)</div>
+          <div class="checks" id="rChecks"></div>
+          <div class="mini" style="margin-top:6px" id="rNote"></div>
         </div>
 
         <div class="block" id="exportBlock" style="display:none">
@@ -249,18 +252,22 @@
   <div class="modal-box">
     <div class="eyebrow">올리기 전에</div>
     <h2>어떤 도면을 올리면 되나요</h2>
-    <p>여러 투상도가 한 장에 있어도 됩니다. 다만 <b>선으로 그린 도면</b>이어야 하고, 뷰끼리 떨어져 있어야 뷰를 나눌 수 있습니다.</p>
+    <p><b>한 부품</b>을 여러 방향에서 그린 도면 한 장입니다. 뷰마다 방향을 정해 주면, 치수 문자를 읽어 축척을 정하고, 각 뷰의 윤곽을 그 방향으로 밀어내 교집합해 부품을 만듭니다.</p>
     <div class="chk">
-      <div class="y"><i>✓</i><span>정면 · 평면 · 측면이 한 장에 있는 부품 도면</span></div>
-      <div class="n"><i>✕</i><span>사진 · 3D 렌더 · 손그림</span></div>
-      <div class="y"><i>✓</i><span>뷰 사이가 조금 떨어져 있는 배치</span></div>
-      <div class="n"><i>✕</i><span>뷰끼리 겹치거나 붙어 있는 배치</span></div>
-      <div class="y"><i>✓</i><span>외형선이 뚜렷한 PNG · SVG (가로 1,200px 이상)</span></div>
-      <div class="n"><i>✕</i><span>흐릿하거나 기울어진 저해상 스캔</span></div>
-      <div class="y"><i>✓</i><span>어딘가에 실제 치수 하나 (축척을 정합니다)</span></div>
+      <div class="y"><i>✓</i><span>정면 · 윗면 · 측면이 있는 <b>한 부품</b> 도면 (3각법·1각법 모두)</span></div>
+      <div class="n"><i>✕</i><span>조립도 · 여러 부품이 한 장 · 사진 · 3D 렌더</span></div>
+      <div class="y"><i>✓</i><span>뷰끼리 떨어져 있고, 외형선은 굵고 치수선은 가늘게</span></div>
+      <div class="n"><i>✕</i><span>뷰가 붙어 있거나 선 굵기 구분이 없는 도면</span></div>
+      <div class="y"><i>✓</i><span>치수 숫자가 치수선 바로 위·옆에 (보조선은 물체까지)</span></div>
       <div class="n"><i>✕</i><span>치수가 A · B · H 기호뿐인 카탈로그 도면</span></div>
+      <div class="y"><i>✓</i><span>가로 1,500px 이상, 반듯한 PNG · SVG · JPG</span></div>
+      <div class="n"><i>✕</i><span>흐리거나 기울어진 저해상 스캔, 손그림</span></div>
     </div>
-    <p style="margin-top:10px;font-size:12.5px;color:var(--text-3)">두께는 한 뷰만으로 알 수 없어 직접 넣습니다. 조립 위치도 도면에서 읽지 않고 화면에서 맞춥니다.</p>
+    <div class="lvls">
+      <div><b><span class="lvl l1">1단계</span> 브래킷 · 판금 · 각기둥</b>면이 축에 나란한 부품. 3뷰 교집합으로 정확히 나옵니다.</div>
+      <div><b><span class="lvl l2">2단계</span> 하우징 · 보스 있는 몸체</b>원통·구멍은 되지만 숨은선·단차의 안쪽 형상은 근사입니다.</div>
+      <div><b><span class="lvl l3">3단계</span> 곡관 · 스윕 · 자유곡면</b>단면도로만 정의되는 부품. 이 버전은 만들지 못하고 이유를 알려 줍니다.</div>
+    </div>
     <div class="modal-row">
       <a class="btn btn-ghost btn-sm" href="./guide.html#part2" target="_blank">자세한 안내</a>
       <span style="flex:1"></span>

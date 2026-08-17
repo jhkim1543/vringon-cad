@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="860" viewBox="0 0 1200 860">
+<rect width="1200" height="860" fill="#ffffff"/>
+<g stroke="#111111" stroke-width="2.6" fill="#f3f3f3">
+  <!-- 정면도 -->
+  <path d="M90 620 H540 V570 H140 V445 L140 420  H115 L90 445 Z"/>
+  <!-- 윗면도: 밑판 90×50, 세움판 자리 10×50, 구멍 ⌀20 (x=70,z=25), 세움판 구멍은 위에서 안 보임 -->
+  <rect x="90" y="110" width="450" height="250"/>
+  <path d="M140 110 V360"/>
+  <circle cx="440" cy="235" r="50" fill="#fff"/>
+  <!-- 우측면도: 폭 50 × 높이 40, 밑판 두께 10, 세움판 구멍 ⌀12 (z=25, y=25) -->
+  <path d="M610 620 h250 v-200 h-250 z"/>
+  <path d="M610 570 H860"/>
+  <circle cx="735" cy="495" r="30" fill="#fff"/>
+</g>
+<g stroke="#111111" stroke-width="1" fill="none">
+  <!-- 숨은선: 정면도에 세움판 구멍(⌀12)·밑판 구멍(⌀20) -->
+  <path d="M185 570 V445" stroke-dasharray="6 3"/>
+  <path d="M90 465 H140 M90 525 H140" stroke-dasharray="6 3"/>
+  <path d="M390 620 V570 M490 620 V570" stroke-dasharray="6 3"/>
+  <!-- 중심선 -->
+  <path d="M440 175 L440 295" stroke-dasharray="16 5 3 5" stroke-width="0.9"/><path d="M380 235 L500 235" stroke-dasharray="16 5 3 5" stroke-width="0.9"/>
+  <path d="M735 450 L735 540" stroke-dasharray="16 5 3 5" stroke-width="0.9"/><path d="M690 495 L780 495" stroke-dasharray="16 5 3 5" stroke-width="0.9"/>
+  <!-- 치수 -->
+  <path d="M90 623 V666 M540 623 V666"/><path d="M90 660 H540"/><path d="M90 660 l8 -1.5 v3 z M540 660 l-8 -1.5 v3 z" fill="#111111"/>
+    <text x="315" y="655" text-anchor="middle" font-size="15" font-family="Helvetica, Arial, sans-serif" fill="#111111">90</text>
+  <path d="M90 623 V644 M140 623 V644"/><path d="M90 638 H140"/><path d="M90 638 l8 -1.5 v3 z M140 638 l-8 -1.5 v3 z" fill="#111111"/>
+    <text x="115" y="633" text-anchor="middle" font-size="13" font-family="Helvetica, Arial, sans-serif" fill="#111111">10</text>
+  <path d="M90 623 V688 M440 623 V688"/><path d="M90 682 H440"/><path d="M90 682 l8 -1.5 v3 z M440 682 l-8 -1.5 v3 z" fill="#111111"/>
+    <text x="265" y="677" text-anchor="middle" font-size="15" font-family="Helvetica, Arial, sans-serif" fill="#111111">70</text>
+  <path d="M87 420 H50 M87 620 H50"/><path d="M56 420 V620"/><path d="M56 420 l-1.5 8 h3 z M56 620 l-1.5 -8 h3 z" fill="#111111"/>
+    <text x="62" y="525" font-size="15" font-family="Helvetica, Arial, sans-serif" fill="#111111">40</text>
+  <path d="M87 570 H68 M87 620 H68"/><path d="M74 570 V620"/><path d="M74 570 l-1.5 8 h3 z M74 620 l-1.5 -8 h3 z" fill="#111111"/>
+    <text x="80" y="600" font-size="13" font-family="Helvetica, Arial, sans-serif" fill="#111111">10</text>
+  <path d="M90 107 V82 M540 107 V82"/><path d="M90 88 H540"/><path d="M90 88 l8 -1.5 v3 z M540 88 l-8 -1.5 v3 z" fill="#111111"/>
+    <text x="315" y="83" text-anchor="middle" font-size="15" font-family="Helvetica, Arial, sans-serif" fill="#111111">90</text>
+  <path d="M543 110 H586 M543 360 H586"/><path d="M580 110 V360"/><path d="M580 110 l-1.5 8 h3 z M580 360 l-1.5 -8 h3 z" fill="#111111"/>
+    <text x="586" y="240" font-size="15" font-family="Helvetica, Arial, sans-serif" fill="#111111">50</text>
+  <path d="M543 110 H566 M543 235 H566"/><path d="M560 110 V235"/><path d="M560 110 l-1.5 8 h3 z M560 235 l-1.5 -8 h3 z" fill="#111111"/>
+    <text x="566" y="177.5" font-size="13" font-family="Helvetica, Arial, sans-serif" fill="#111111">25</text>
+  <path d="M610 623 V666 M860 623 V666"/><path d="M610 660 H860"/><path d="M610 660 l8 -1.5 v3 z M860 660 l-8 -1.5 v3 z" fill="#111111"/>
+    <text x="735" y="655" text-anchor="middle" font-size="15" font-family="Helvetica, Arial, sans-serif" fill="#111111">50</text>
+  <path d="M610 623 V644 M735 623 V644"/><path d="M610 638 H735"/><path d="M610 638 l8 -1.5 v3 z M735 638 l-8 -1.5 v3 z" fill="#111111"/>
+    <text x="672.5" y="633" text-anchor="middle" font-size="13" font-family="Helvetica, Arial, sans-serif" fill="#111111">25</text>
+  <path d="M863 420 H896 M863 620 H896"/><path d="M890 420 V620"/><path d="M890 420 l-1.5 8 h3 z M890 620 l-1.5 -8 h3 z" fill="#111111"/>
+    <text x="896" y="525" font-size="15" font-family="Helvetica, Arial, sans-serif" fill="#111111">40</text>
+  <path d="M863 495 H878 M863 620 H878"/><path d="M872 495 V620"/><path d="M872 495 l-1.5 8 h3 z M872 620 l-1.5 -8 h3 z" fill="#111111"/>
+    <text x="878" y="562.5" font-size="13" font-family="Helvetica, Arial, sans-serif" fill="#111111">25</text>
+</g>
+<g font-size="15" font-family="Helvetica, Arial, sans-serif" fill="#111111">
+  <text x="470" y="195">⌀20 관통</text>
+  <text x="771" y="461">⌀12 관통</text>
+  <text x="102" y="398">2-C5</text>
+  <text x="90" y="720" font-size="13">정면도</text><text x="90" y="70" font-size="13">윗면도</text><text x="610" y="720" font-size="13">우측면도</text>
+</g>
+<g transform="translate(880 100) scale(1.1)" stroke="#111111" stroke-width="1.6" fill="#f3f3f3" stroke-linejoin="round"><path d="M0 120 L120 60 L120 30 L30 75 L30 0 L0 0 Z"/><path d="M0 120 L120 60 L200 100 L80 160 Z" fill="#e6e6e6"/><path d="M80 160 L200 100 L200 70 L80 130 Z" fill="#dcdcdc"/><path d="M30 0 L120 30 L120 60 L30 75 Z" fill="#e6e6e6"/><ellipse cx="150" cy="105" rx="14" ry="7" fill="#fff"/><ellipse cx="72" cy="42" rx="5" ry="10" fill="#fff"/></g>
+<text x="900" y="330" font-size="12" font-family="Helvetica, Arial, sans-serif" fill="#111111">등각 (참고)</text>
+<g stroke="#111111" stroke-width="1" fill="none"><rect x="870" y="780" width="300" height="60"/><path d="M870 810 H1170 M1020 780 V840"/></g>
+  <g font-size="12" font-family="Helvetica, Arial, sans-serif" fill="#111111"><text x="876" y="800">부품명 L 브래킷</text><text x="1026" y="800">도번 P2-BRK-01</text><text x="876" y="830">척도 1:1</text><text x="1026" y="830">3각법 · 단위 mm</text></g>
+</svg>
