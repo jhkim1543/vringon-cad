@@ -13,6 +13,7 @@
 
 import { collectEvents, totalLength, maxDiameter, segmentSpans, segmentDiameters, outerDiameterAt, boreDiameterAt } from "./shaft-profile.js";
 import { parseThreadSpec, keywayFor, snapRingGroove } from "./shaft-standards.js";
+import { typeOf, inferPartType } from "./part-types.js";
 
 /* ISO 4032 육각 너트 근사: M → [대변 s, 높이 m] */
 const NUT_TABLE = { 3: [5.5, 2.4], 4: [7, 3.2], 5: [8, 4.7], 6: [10, 5.2], 8: [13, 6.8], 10: [16, 8.4], 12: [18, 10.8], 14: [21, 12.8], 16: [24, 14.8], 18: [27, 15.8], 20: [30, 18], 22: [34, 19.4], 24: [36, 21.5], 27: [41, 23.8], 30: [46, 25.6] };
@@ -21,7 +22,8 @@ const BEARING_TABLE = { 8: [22, 7], 10: [26, 8], 12: [28, 8], 15: [32, 9], 17: [
 const nearest = (v, keys) => keys.reduce((a, b) => (Math.abs(b - v) < Math.abs(a - v) ? b : a));
 const BEARING_TOL = /^(h5|h6|j5|j6|js5|js6|k5|k6|m5|m6)$/i;
 
-export function analyzeMates(dsl) {
+export function analyzeMates(dsl, opts = {}) {
+  const ptype = typeOf(opts.partType || inferPartType(dsl).id);
   const ev = collectEvents(dsl);
   const L = totalLength(dsl);
   const Dmax = maxDiameter(dsl);
@@ -47,9 +49,23 @@ export function analyzeMates(dsl) {
   if ((dsl.features || []).some((f) => f.type === "keyway")) { spinEvidence.push("키홈. 토크 전달(회전)"); spinConf = Math.max(spinConf, 0.85); }
   if (sleeveLike && dsl.bore) { spinEvidence.push("속이 빈 부시·슬리브. 부품 자체보다 안에 든 상대 축이 이 축선에서 회전한다"); spinConf = Math.max(spinConf, 0.7); }
   if (!spinEvidence.length) spinEvidence.push("회전체 형상 자체(축 대칭). 자전축은 축선과 일치");
+  /* 유형이 "스스로 돌지 않는" 부품(핀·부시·볼트)이면 자전은 낮은 신뢰로만 남긴다 */
+  if (!ptype.spins) { spinEvidence.unshift(`${ptype.ko}은(는) 스스로 돌지 않는 부품입니다. 축선만 참고`); spinConf = Math.min(spinConf, 0.3); }
   push({ kind: "spin", x: 0, x1: L, part: null, dir: [1, 0, 0], motion: { type: "spin", dir: [1, 0, 0] },
     params: { length: L, max_diameter: Dmax },
     evidence: spinEvidence, confidence: spinConf, approx: false });
+
+  /* ---------------------------------------------------------- ①-b 핀 → 요크(클레비스): 핀이 끼워지는 두 귀 */
+  if (ptype.id === "pin") {
+    const body = ev.segments.reduce((a, s) => ((s.x1 - s.x0) > (a.x1 - a.x0) ? s : a), ev.segments[0]);
+    const d = Math.min(body.ds, body.de), span = body.x1 - body.x0;
+    const ear = Math.max(4, Math.min(span * 0.28, d * 1.2));
+    push({ kind: "fit", x: body.x0, x1: body.x1, part: "clevis",
+      params: { bore: d, ear, gap: Math.max(2, span - 2 * ear - 2), outer: +(d * 2.2).toFixed(1), height: +(d * 2.6).toFixed(1), tolerance: body.tolerance || "" },
+      motion: { type: "axial", dir: [-1, 0, 0], distance: span + d },
+      evidence: [`⌀${d}${body.tolerance ? " " + body.tolerance : ""} 몸통. 요크(클레비스) 두 귀의 구멍에 끼워진다`, "핀은 축방향으로 넣고, 분할핀·멈춤링이 빠짐을 막는다"],
+      confidence: 0.75, approx: true });
+  }
 
   /* ---------------------------------------------------------- ② 베어링 자리 */
   for (const s of bearingSeats) {
@@ -174,7 +190,7 @@ export function analyzeMates(dsl) {
 
   const rotating = mates.some((m) => m.kind === "bearing") || spinConf >= 0.85;
   if (!mates.some((m) => m.part)) notes.push("도면에서 상대 부품과 결합하는 표기(멈춤링 홈·키홈·나사·보어·횡구멍)를 찾지 못했습니다. 단품 회전만 보여 줍니다.");
-  return { axis: [1, 0, 0], length: L, rotating, spin_confidence: spinConf, mates, order, notes };
+  return { axis: [1, 0, 0], length: L, rotating, spin_confidence: spinConf, mates, order, notes, partType: ptype.id };
 }
 
 function disassemblyText(m, L) {
@@ -195,6 +211,6 @@ function disassemblyText(m, L) {
 export function matesSummary(a) {
   const n = a.mates.filter((m) => m.part).length;
   const kinds = [...new Set(a.mates.filter((m) => m.part).map((m) => m.kind))];
-  const ko = { snap: "멈춤링", key: "키·허브", screw: "너트", bearing: "베어링", pin: "핀", wrench: "공구", fit: "끼워맞춤" };
+  const ko = { snap: "멈춤링", key: "키·허브", screw: "너트", bearing: "베어링", pin: "분할핀", wrench: "공구", fit: "끼워맞춤" };
   return n ? `상대 부품 ${n}개 · ${kinds.map((k) => ko[k] || k).join(" · ")}` : "상대 부품 없음 (단품 회전)";
 }

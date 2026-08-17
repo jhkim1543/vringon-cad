@@ -39,8 +39,9 @@ const f = (n) => { if (!isFinite(n)) n = 0; const s = n.toFixed(5); return s ===
 const sanitize = (s) => String(s).replace(/[^A-Za-z0-9_\- ]/g, "_");
 
 /* ------------------------------------------------------------ STEP AP214 (면분할 B-rep) */
-export function exportSTEP(root, modelName = "vringon_shaft") {
+export function exportSTEP(root, modelName = "vringon_shaft", stats = null) {
   const parts = collectTriangles(root);
+  if (stats) { stats.freeEdges = 0; stats.nonManifold = 0; stats.faces = 0; }
   const L = []; let id = 0;
   const E = (txt) => { id += 1; L.push(`#${id}=${txt};`); return id; };
   const appCtx = E(`APPLICATION_CONTEXT('core data for automotive mechanical design processes')`);
@@ -64,7 +65,8 @@ export function exportSTEP(root, modelName = "vringon_shaft") {
     const { tris, name } = part;
     const vidByKey = new Map(); const cpIds = [], vpIds = [], coords = []; const triIdx = [];
     for (let i = 0; i < tris.length; i += 3) {
-      const key = `${tris[i].toFixed(4)}_${tris[i + 1].toFixed(4)}_${tris[i + 2].toFixed(4)}`;
+      /* 용접 키는 정수로: toFixed 는 -2e-16 을 "-0.0000" 으로 써서 회전 이음매(θ=2π)의 점이 θ=0 과 붙지 않았다 → 고리마다 자유 변 2개 → 솔리드가 아닌 셸 */
+      const key = `${Math.round(tris[i] * 1e4)}_${Math.round(tris[i + 1] * 1e4)}_${Math.round(tris[i + 2] * 1e4)}`;
       let vi = vidByKey.get(key);
       if (vi === undefined) {
         vi = cpIds.length; vidByKey.set(key, vi);
@@ -74,9 +76,10 @@ export function exportSTEP(root, modelName = "vringon_shaft") {
       triIdx.push(vi);
     }
     const getV = (vi, c) => coords[vi * 3 + c];
-    const edgeMap = new Map();
+    const edgeMap = new Map(), edgeUse = new Map();
     const edgeFor = (a, b) => {
       const key = a < b ? `${a}_${b}` : `${b}_${a}`;
+      edgeUse.set(key, (edgeUse.get(key) || 0) + 1);
       let ec = edgeMap.get(key);
       if (!ec) {
         const lo = a < b ? a : b, hi = a < b ? b : a;
@@ -108,6 +111,8 @@ export function exportSTEP(root, modelName = "vringon_shaft") {
       faceIds.push(E(`ADVANCED_FACE('',(#${bound}),#${plane},.T.)`));
     }
     if (!faceIds.length) continue;
+    /* 셸이 닫혔는가: 모든 변이 정확히 두 면에 쓰여야 솔리드다. 국부 CSG 로 자른 부위는 T 접합이 생겨 열린다 */
+    if (stats) { for (const n of edgeUse.values()) { if (n === 1) stats.freeEdges++; else if (n > 2) stats.nonManifold++; } stats.faces += faceIds.length; }
     const shell = E(`CLOSED_SHELL('',(${faceIds.map((i) => "#" + i).join(",")}))`);
     solidIds.push(E(`MANIFOLD_SOLID_BREP('${sanitize(name)}',#${shell})`));
   }
@@ -152,7 +157,12 @@ function cleanGroup(root) {
   return g;
 }
 export function exportPLY(root) { return new PLYExporter().parse(cleanGroup(root), null, { binary: false }); }
-export function exportUSDZ(root) { return new USDZExporter().parseAsync(cleanGroup(root), { includeAnchoringProperties: false }); }
+/* USDZ 는 metersPerUnit=1 로 쓰이므로 mm 장면을 m 로 줄여 넘긴다 — 안 그러면 AR 미리보기에서 51mm 핀이 51m 가 된다(실측) */
+export function exportUSDZ(root) {
+  const g = cleanGroup(root);
+  const wrap = new THREE.Group(); wrap.name = "mm_to_m"; wrap.scale.setScalar(0.001); wrap.add(g); wrap.updateMatrixWorld(true);
+  return new USDZExporter().parseAsync(wrap, { includeAnchoringProperties: false });
+}
 export { exportFBX };
 
 /* ------------------------------------------------------------ USDA (OpenUSD ASCII)

@@ -31,7 +31,7 @@
   table.t th { color: var(--text-3); font-size: 12px; font-weight: 700; }
   table.t td { color: var(--text-2); }
   table.t td b { color: var(--text); }
-  .note { border: 1px solid rgba(240,173,78,.38); background: rgba(240,173,78,.08); border-radius: 10px; padding: 12px 14px; font-size: 13.5px; color: #E8BE56; margin-top: 14px; line-height: 1.6; }
+  .note { border: 1px solid rgba(143,161,255,.35); background: rgba(143,161,255,.08); border-radius: 10px; padding: 12px 14px; font-size: 13.5px; color: var(--accent-hi); margin-top: 14px; line-height: 1.6; }
   code { background: #0F0F13; border: 1px solid var(--line); border-radius: 4px; padding: 1px 5px; font-size: 12.5px; }
   @media (max-width: 760px) { .ex { grid-template-columns: 1fr; } .legend { grid-template-columns: 1fr; } .g-wrap { padding: 24px 18px 60px; } }
 </style>
@@ -53,6 +53,18 @@
   여러 투상도가 한 장에 있는 도면은 <a href="./assembly.html" style="color:var(--accent-hi)">Part 2</a> 에서 뷰를 나눠 부품 단위로 만듭니다.</p>
   <p class="lead">이 데모는 <b>선반에서 깎는 회전체 한 부품</b>(축·부시·핀·롤러·스페이서·플랜지·슬리브·볼트/나사류)의
   <b>정면도 한 장</b>을 읽어 치수 사양으로 옮깁니다. 조립체·판금·하우징이나 여러 부품이 한 장에 있는 도면은 읽지 못합니다.</p>
+
+  <h2>0. 어떤 부품인지 먼저</h2>
+  <p>Part 1 은 회전체만 읽습니다. 나사류도 회전체입니다(몸통은 회전, 머리·소켓은 국부 형상). 올리기 전에 왼쪽 <b>부품 유형</b>에서 골라 주면
+  그 유형에 맞는 시뮬레이션을 계획하고 해석에도 반영합니다. 모르면 비워 두세요. 판독 뒤 사양과 해석으로 추정합니다.</p>
+  <table class="t">
+    <tr><th>유형</th><th>예</th><th>시뮬레이션 계획</th></tr>
+    <tr><td>축 · 스핀들</td><td>단붙이 축, 모터 축, 테이퍼 축</td><td>자전(베어링 내륜·키·허브가 함께 돎), 분해</td></tr>
+    <tr><td>핀</td><td>클레비스 핀, 평행핀</td><td>요크(클레비스) 구멍에 끼우기, 분할핀 뽑기. 스스로 돌지 않음</td></tr>
+    <tr><td>부시 · 슬리브 · 스페이서</td><td>플랜지 부시, 정밀 슬리브</td><td>하우징에 압입, 상대 축이 안에서 돎</td></tr>
+    <tr><td>볼트 · 나사 · 스터드</td><td>육각 볼트, 캡 스크루, 세트 스크루</td><td>1회전 = 피치만큼 체결, 공구가 함께 돎</td></tr>
+    <tr><td>롤러 · 플랜지</td><td>컨베이어 롤러, 볼트 플랜지</td><td>자전 또는 맞대기</td></tr>
+  </table>
 
   <h2>1. 되는 도면 · 안 되는 도면</h2>
   <p>아래 삽화는 종류를 보여 주기 위해 이미지 모델이 그린 것이라 숫자·기호는 실제 도면과 다를 수 있습니다. 치수 기준은 2절의 실제 도면을 보세요.</p>
@@ -154,9 +166,9 @@
   <h2>10. 부품 복잡도에 따라 다릅니다</h2>
   <table class="t">
     <tr><th>단계</th><th>부품</th><th>방법</th><th>이 버전</th></tr>
-    <tr><td><span class="lvl l1" style="font-size:11px;font-weight:800;padding:2px 7px;border-radius:999px;background:rgba(61,214,160,.14);color:var(--ok)">1단계</span></td><td>브래킷 · 판금 · 각기둥 · 플레이트</td><td>3뷰 교집합 = 정확 (면이 축에 나란함)</td><td>지원. 예시: L 브래킷 — 크기 오차 0.7% 이내, 뷰 정합 99% 이상</td></tr>
-    <tr><td><span style="font-size:11px;font-weight:800;padding:2px 7px;border-radius:999px;background:rgba(232,184,75,.14);color:var(--warn)">2단계</span></td><td>하우징 · 보스 있는 몸체 · 베어링 블록</td><td>교집합 + 정면 원형 구멍 = 근사 (숨은선·단차 안쪽은 못 봄)</td><td>지원, "근사" 표시. 예시: 베어링 하우징 — 크기 오차 0.6%, 뷰 정합 97% 이상</td></tr>
-    <tr><td><span style="font-size:11px;font-weight:800;padding:2px 7px;border-radius:999px;background:rgba(240,113,107,.14);color:var(--danger)">3단계</span></td><td>곡관 · 스윕 · 자유곡면 · 나선</td><td>단면도의 경로와 단면을 읽어 스윕해야 함</td><td>미지원. 왜 안 되는지 알려 줍니다. 예시: 사각 플랜지 곡관</td></tr>
+    <tr><td><span class="lvl l1" style="font-size:11px;font-weight:800;padding:2px 7px;border-radius:999px;background:var(--ok-soft);color:var(--ok)">1단계</span></td><td>브래킷 · 판금 · 각기둥 · 플레이트</td><td>3뷰 교집합 = 정확 (면이 축에 나란함)</td><td>지원. 예시: L 브래킷 — 크기 오차 0.7% 이내, 뷰 정합 99% 이상</td></tr>
+    <tr><td><span style="font-size:11px;font-weight:800;padding:2px 7px;border-radius:999px;background:var(--warn-soft);color:var(--warn)">2단계</span></td><td>하우징 · 보스 있는 몸체 · 베어링 블록</td><td>교집합 + 정면 원형 구멍 = 근사 (숨은선·단차 안쪽은 못 봄)</td><td>지원, "근사" 표시. 예시: 베어링 하우징 — 크기 오차 0.6%, 뷰 정합 97% 이상</td></tr>
+    <tr><td><span style="font-size:11px;font-weight:800;padding:2px 7px;border-radius:999px;background:var(--danger-soft);color:var(--danger)">3단계</span></td><td>곡관 · 스윕 · 자유곡면 · 나선</td><td>단면도의 경로와 단면을 읽어 스윕해야 함</td><td>미지원. 왜 안 되는지 알려 줍니다. 예시: 사각 플랜지 곡관</td></tr>
   </table>
   <div class="note">
     회전체 한 부품은 <a href="./revolve.html" style="color:var(--accent-hi)">Part 1</a> 이 더 정확합니다(정면도 한 장으로 치수 사양까지 읽습니다).

@@ -1,0 +1,60 @@
+{
+  "part_type": "spacer",
+  "one_line": "내경 H8 공차가 적용된 원통형 알루미늄 스페이서",
+  "function": "부품 사이에 끼워 간격을 일정하게 유지한다. 축이나 하우징 결합 부위의 위치를 고정한다.",
+  "features": [
+    {
+      "what": "외경",
+      "value": "24 mm",
+      "evidence": "도면 문자 '⌀24'"
+    },
+    {
+      "what": "내경",
+      "value": "16 mm H8",
+      "evidence": "도면 문자 '⌀16 H8'"
+    },
+    {
+      "what": "전장",
+      "value": "12 mm",
+      "evidence": "도면 문자 '12'"
+    },
+    {
+      "what": "양단 모따기",
+      "value": "C0.5",
+      "evidence": "도면 문자 'C0.5'"
+    },
+    {
+      "what": "재질",
+      "value": "A6061",
+      "evidence": "도면 문자 '재질 A6061'"
+    }
+  ],
+  "manufacturing": [
+    "내경은 H8 정밀 공차를 적용하여 내면 가공한다.",
+    "지시 없는 일반 공차는 KS B ISO 2768-m을 준수한다."
+  ],
+  "standards": [
+    "KS B ISO 2768-m"
+  ],
+  "uncertain": [
+    "열처리 조건",
+    "표면 처리 사양",
+    "적용되는 세부 기계 장치"
+  ],
+  "confidence": 0.95,
+  "provider": "primary",
+  "elapsed_ms": 7413,
+  "part_type_inferred": "spacer",
+  "ocr_tokens": [
+    "224",
+    "C0.5",
+    "C0.5",
+    "2168",
+    "12",
+    "3",
+    "1.CC0.5",
+    "2.",
+    "2"
+  ],
+  "built_at": "2026-08-17T03:21:17.022Z"
+}

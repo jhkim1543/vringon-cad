@@ -24,7 +24,10 @@ for (const g of [GOLDENS[1], GOLDENS[9], GOLDENS[12], GOLDENS[13]]) {
   const stlGeo = new STLLoader().parse(stl.buffer);
   const stlTris = stlGeo.getAttribute("position").count / 3;
   const usda = exportUSDA(b.root, g);
-  const step = exportSTEP(b.root, g.id);
+  const stepStats = {};
+  const step = exportSTEP(b.root, g.id, stepStats);
+  /* 국부 가공이 없는 부품은 면 STEP 이 닫힌 셸(솔리드)이어야 한다. 이음매(θ=2π) 용접이 깨지면 여기서 잡힌다 */
+  if (!b.stats.csg && stepStats.freeEdges) { console.log(`  X ${g.id}: 면 STEP 셸이 열려 있다 (자유 변 ${stepStats.freeEdges})`); fails++; }
   const ply = exportPLY(b.root);
   const ok = fbxTris === tris && objTris === tris && stlTris === tris && usda.startsWith("#usda 1.0") && step.includes("MANIFOLD_SOLID_BREP") && ply.startsWith("ply");
   if (!ok) fails++;

@@ -155,6 +155,19 @@ export function buildAssembly(analysis, opts = {}) {
       mesh = new THREE.Mesh(latheXY(pts, 72, 30), mats.hub);
       home.set(m.x, 0, 0);
       spins = false;
+    } else if (m.kind === "fit" && m.part === "clevis") {
+      /* 요크: 구멍 뚫린 귀 두 장(고리)과 그 사이를 잇는 바닥. 핀 몸통 양 끝에 귀가 온다 */
+      const g = new THREE.Group();
+      const span = m.x1 - m.x;
+      const earA = ringMesh(p.bore / 2 + 0.05, p.outer / 2, p.ear, mats.hub), earB = ringMesh(p.bore / 2 + 0.05, p.outer / 2, p.ear, mats.hub);
+      earA.position.x = p.ear / 2; earB.position.x = span - p.ear / 2;
+      const web1 = new THREE.Mesh(new THREE.BoxGeometry(p.ear, p.height * 0.55, p.outer * 0.9), mats.hub), web2 = web1.clone();
+      web1.position.set(p.ear / 2, -p.height * 0.36, 0); web2.position.set(span - p.ear / 2, -p.height * 0.36, 0);
+      const base = new THREE.Mesh(new THREE.BoxGeometry(span, p.outer * 0.35, p.outer * 0.9), mats.hub);
+      base.position.set(span / 2, -p.height * 0.63 - p.outer * 0.17, 0);
+      g.add(earA, earB, web1, web2, base);
+      mesh = g; spins = false;
+      home.set(m.x, 0, 0);
     } else if (m.kind === "fit" && m.part === "taper_hub") {
       const big = Math.max(p.d_start, p.d_end);
       const pts = [{ x: 0, r: p.d_start / 2 }, { x: 0, r: p.hub_outer / 2 }, { x: p.length, r: p.hub_outer / 2 }, { x: p.length, r: p.d_end / 2 }, { x: 0, r: p.d_start / 2 }];
@@ -187,7 +200,7 @@ export function buildAssembly(analysis, opts = {}) {
 export function makeSpinMarker(dsl, opts = {}) {
   const L = opts.length || totalLength(dsl) || 100;
   const R = opts.radius || maxDiameter(dsl) / 2 || 10;
-  const mat = new THREE.MeshStandardMaterial({ color: 0xFF7A3D, emissive: 0x923417, emissiveIntensity: 0.6, metalness: 0.2, roughness: 0.5, side: THREE.DoubleSide, name: "spin_marker" });
+  const mat = new THREE.MeshStandardMaterial({ color: 0x8FA1FF, emissive: 0x2E3BB3, emissiveIntensity: 0.6, metalness: 0.2, roughness: 0.5, side: THREE.DoubleSide, name: "spin_marker" });
   const g = new THREE.Group();
   g.name = "marker:spin";
   const eps = Math.max(0.05, R * 0.004);   /* 표면 위로 살짝 띄워 z-fighting 회피 */

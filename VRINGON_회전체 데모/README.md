@@ -42,6 +42,8 @@ js/shaft-verify.js           검증기: 실루엣 IoU · 치수 정합 · 신뢰
 js/shaft-mates.js            도면 → 결합부·자전축·분해 순서 판정 (결정론, 근거·신뢰도 포함)
 js/shaft-assembly.js         상대 부품 3D 생성 + 분해·조립·자전·나사 체결 시뮬레이션
 js/shaft-export.js, fbx-export.js  STEP(면분할)·STL·GLB·OBJ·FBX·USDA/USDZ·PLY·DXF·SVG·JSON
+js/part-types.js             회전체 부품 유형과 유형별 시뮬레이션 계획 (핀=요크 끼우기, 볼트=체결 …)
+tools/describe-prompt.mjs    부품 해석 프롬프트 (이미지 + 사양 + OCR 토큰 → 근거 달린 해석) / tools/build-analysis.mjs 미리 계산
 js/tour.js                   첫 방문 사용법 안내 (Part 1·2 각각의 순서)
 index.html                   진입 화면 (Part 1 / Part 2 고르기)
 assembly.html, js/part2.js   ★ Part 2 워크스페이스

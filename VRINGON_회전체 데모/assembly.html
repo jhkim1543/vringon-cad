@@ -15,12 +15,12 @@
   .sheet-paper svg.ov { position: absolute; inset: 0; width: 100%; height: 100%; }
   .vbox { fill: rgba(91,107,240,.08); stroke: #5B6BF0; stroke-width: 2; cursor: pointer; transition: fill .12s; }
   .vbox:hover { fill: rgba(91,107,240,.2); }
-  .vbox.on { fill: rgba(61,214,160,.18); stroke: #3DD6A0; }
+  .vbox.on { fill: rgba(143,161,255,.2); stroke: #8FA1FF; }
   .vbox.ref { fill: rgba(255,255,255,.03); stroke: #6E7480; stroke-dasharray: 7 5; }
   .vlab { font: 700 15px sans-serif; fill: #1B1D24; paint-order: stroke; stroke: #fff; stroke-width: 4px; pointer-events: none; }
   .vlab.role { fill: #2E3BB3; }
-  .dimtok { fill: rgba(240,173,78,.18); stroke: #E8B84B; stroke-width: 1.2; pointer-events: none; }
-  .dimtok.used { fill: rgba(61,214,160,.2); stroke: #3DD6A0; }
+  .dimtok { fill: rgba(111,124,184,.16); stroke: #6F7CB8; stroke-width: 1.2; pointer-events: none; }
+  .dimtok.used { fill: rgba(143,161,255,.22); stroke: #8FA1FF; }
   .drop.compact { padding: 16px 14px; margin-bottom: 12px; }
   .drop.compact svg { width: 18px; height: 18px; margin-bottom: 6px; }
   .vlist { display: flex; flex-direction: column; gap: 7px; }
@@ -38,7 +38,7 @@
   .cube { width: 150px; height: 140px; flex: none; }
   .cube .f { cursor: pointer; transition: fill .12s; }
   .cube .f:hover { filter: brightness(1.25); }
-  .cube .f.on { stroke: #3DD6A0; stroke-width: 2.5; }
+  .cube .f.on { stroke: #C7CDEA; stroke-width: 2.5; }
   .cube text { font: 700 11px sans-serif; fill: #E8E8ED; pointer-events: none; text-anchor: middle; }
   .cube .assigned { fill: #5B6BF0; }
   .cube .free { fill: #26262E; }
@@ -48,12 +48,12 @@
   .rolebtns button.on { border-color: var(--accent); color: var(--accent-hi); background: rgba(91,107,240,.12); }
   .dimlist { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 6px; }
   .dimlist span { font-size: 11px; padding: 3px 7px; border-radius: 6px; border: 1px solid var(--line-2); color: var(--text-2); font-variant-numeric: tabular-nums; }
-  .dimlist span.used { border-color: rgba(61,214,160,.4); color: var(--ok); }
+  .dimlist span.used { border-color: rgba(143,161,255,.45); color: var(--ok); }
   .dimlist span.rej { text-decoration: line-through; opacity: .55; }
   .lvl { display: inline-block; font-size: 10.5px; font-weight: 800; letter-spacing: .04em; padding: 2px 7px; border-radius: 999px; }
-  .lvl.l1 { background: rgba(61,214,160,.14); color: var(--ok); }
-  .lvl.l2 { background: rgba(232,184,75,.14); color: var(--warn); }
-  .lvl.l3 { background: rgba(240,113,107,.14); color: var(--danger); }
+  .lvl.l1 { background: var(--ok-soft); color: var(--ok); }
+  .lvl.l2 { background: var(--warn-soft); color: var(--warn); }
+  .lvl.l3 { background: var(--danger-soft); color: var(--danger); }
   .checks .r { display: flex; justify-content: space-between; font-size: 12px; padding: 3px 0; }
   .checks b.ok { color: var(--ok); } .checks b.warn { color: var(--warn); } .checks b.bad { color: var(--danger); }
   .modal { position: fixed; inset: 0; z-index: 70; display: none; place-items: center; background: rgba(6,6,10,.72); }
@@ -125,26 +125,25 @@
         <div class="drop compact" id="drop">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M6 10l6-6 6 6M4 20h16"/></svg>
           <b>도면 이미지 올리기</b>
-          정면 · 윗면 · 측면이 한 장에 있는 부품 도면<br/>
-          <a href="#" id="linkCheck" style="color:var(--accent-hi)" onclick="event.stopPropagation()">올리기 전에 확인</a>
+          정면 · 윗면 · 측면이 있는 부품 도면 한 장<br/>
+          <a href="#" id="linkCheck" style="color:var(--accent-hi)" onclick="event.stopPropagation()">올리기 안내</a>
           <input type="file" id="file" accept="image/png,image/jpeg,image/svg+xml,.svg,.png,.jpg,.jpeg" style="display:none" />
         </div>
 
         <div class="block">
           <h3>예시 도면</h3>
           <div class="samples drawings" id="chips" style="grid-template-columns:repeat(3,1fr)"></div>
-          <div class="mini" style="margin-top:6px">브래킷 · 하우징 · 곡관. 세 번째는 이 버전이 만들지 못하는 부류라, 왜 안 되는지를 보여 줍니다.</div>
+          <div class="mini" style="margin-top:6px">곡관은 만들지 못하는 부류라 이유를 보여 줍니다.</div>
         </div>
 
         <div class="block" id="viewBlock" style="display:none">
           <h3>뷰와 방향 <span class="tag" id="viewCount"></span></h3>
           <div class="kf" style="margin-bottom:8px">
-            <label style="font-size:11.5px;color:var(--text-3);margin-bottom:4px">투상법 (자동 추천에만 쓰입니다)</label>
+            <label style="font-size:11.5px;color:var(--text-3);margin-bottom:4px">투상법</label>
             <div class="seg" id="projSeg"><button data-p="third" class="on">3각법</button><button data-p="first">1각법</button></div>
           </div>
           <div class="vlist" id="viewList"></div>
-          <div class="mini" style="margin-top:7px">뷰를 고르고 오른쪽 정육면체에서 방향을 누르거나, 여기서 바로 고릅니다.
-          등각·단면·상세는 참고로 두면 만들 때 쓰지 않습니다.</div>
+          <div class="mini" style="margin-top:7px">뷰를 고르고 오른쪽 정육면체에서 방향을 누릅니다. 참고 뷰는 만들 때 쓰지 않습니다.</div>
         </div>
       </div>
     </aside>
@@ -153,7 +152,7 @@
     <div class="stage" id="stage">
       <div class="stage-empty" id="stageEmpty">
         <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.1" opacity=".5"><rect x="3" y="4" width="8" height="7" rx="1"/><rect x="13" y="4" width="8" height="7" rx="1"/><rect x="3" y="13" width="18" height="7" rx="1"/></svg>
-        <div>왼쪽에서 예시 도면을 고르거나 도면을 올리세요<br/>뷰를 나누고 → 방향을 정하고 → 치수를 읽어 → 부품 하나를 만듭니다</div>
+        <div>왼쪽에서 예시를 고르거나 도면을 올리세요</div>
       </div>
       <div class="sheet" id="sheet">
         <div class="sheet-paper" id="paper">
@@ -181,13 +180,12 @@
       <div class="side-head">부품 만들기</div>
       <div class="side-scroll">
         <div class="block" id="cubeBlock">
-          <h3>이 뷰는 어느 방향에서 본 것인가요 <span class="tag" id="pickTag" style="margin-left:6px">뷰 없음</span></h3>
+          <h3>뷰 방향 <span class="tag" id="pickTag" style="margin-left:6px">뷰 없음</span></h3>
           <div class="cube-wrap">
             <svg class="cube" id="cube" viewBox="0 0 150 140"></svg>
             <div style="flex:1">
               <div class="rolebtns" id="roleBtns"></div>
-              <div class="mini" style="margin-top:8px" id="cubeHint">왼쪽 목록이나 도면 위 상자에서 뷰를 고른 뒤 면을 누르세요.
-              보이는 세 면(정면 · 윗면 · 우측면)이 가장 흔한 조합입니다.</div>
+              <div class="mini" style="margin-top:8px" id="cubeHint">뷰를 고른 뒤 면을 누르세요.</div>
             </div>
           </div>
         </div>
@@ -195,11 +193,11 @@
         <div class="block" id="dimBlock" style="display:none">
           <h3>치수 <span class="tag" id="dimTag" style="margin-left:6px"></span></h3>
           <div class="kv"><span>축척</span><b id="dimScale">—</b></div>
-          <div class="kv"><span>서로 맞는 치수</span><b id="dimAgree">—</b></div>
+          <div class="kv"><span>맞는 치수</span><b id="dimAgree">—</b></div>
           <div class="dimlist" id="dimList"></div>
           <div class="mini" style="margin-top:6px" id="dimNote"></div>
           <div class="kf" id="dimManual" style="display:none;margin-top:8px">
-            <label>대신 넣기: 고른 뷰의 가로 실제 길이 (mm)</label>
+            <label>고른 뷰의 가로 실제 길이 (mm)</label>
             <input class="input" id="manualLen" type="number" min="1" step="0.5" placeholder="예: 120" style="padding:6px 9px" />
           </div>
           <button class="btn btn-ghost btn-sm" id="btnReadDims" style="margin-top:8px">치수 다시 읽기</button>
@@ -227,7 +225,7 @@
           <div class="kv"><span>크기 X × Y × Z</span><b id="rSize">—</b></div>
           <div class="kv"><span>부피</span><b id="rVol">—</b></div>
           <div class="kv"><span>삼각형</span><b id="rTris">—</b></div>
-          <div class="dl-group" style="margin-top:8px">뷰 정합 (만든 3D 를 각 뷰로 다시 투영해 도면과 겹침)</div>
+          <div class="dl-group" style="margin-top:8px">뷰 정합</div>
           <div class="checks" id="rChecks"></div>
           <div class="mini" style="margin-top:6px" id="rNote"></div>
         </div>
@@ -252,21 +250,21 @@
   <div class="modal-box">
     <div class="eyebrow">올리기 전에</div>
     <h2>어떤 도면을 올리면 되나요</h2>
-    <p><b>한 부품</b>을 여러 방향에서 그린 도면 한 장입니다. 뷰마다 방향을 정해 주면, 치수 문자를 읽어 축척을 정하고, 각 뷰의 윤곽을 그 방향으로 밀어내 교집합해 부품을 만듭니다.</p>
+    <p>한 부품을 여러 방향에서 그린 도면 한 장입니다. 뷰마다 방향을 정하면 치수를 읽어 부품 하나를 만듭니다.</p>
     <div class="chk">
-      <div class="y"><i>✓</i><span>정면 · 윗면 · 측면이 있는 <b>한 부품</b> 도면 (3각법·1각법 모두)</span></div>
-      <div class="n"><i>✕</i><span>조립도 · 여러 부품이 한 장 · 사진 · 3D 렌더</span></div>
-      <div class="y"><i>✓</i><span>뷰끼리 떨어져 있고, 외형선은 굵고 치수선은 가늘게</span></div>
+      <div class="y"><i>✓</i><span>정면 · 윗면 · 측면이 있는 한 부품 도면</span></div>
+      <div class="n"><i>✕</i><span>조립도, 사진, 3D 렌더</span></div>
+      <div class="y"><i>✓</i><span>뷰끼리 떨어져 있고 외형선이 치수선보다 굵게</span></div>
       <div class="n"><i>✕</i><span>뷰가 붙어 있거나 선 굵기 구분이 없는 도면</span></div>
-      <div class="y"><i>✓</i><span>치수 숫자가 치수선 바로 위·옆에 (보조선은 물체까지)</span></div>
-      <div class="n"><i>✕</i><span>치수가 A · B · H 기호뿐인 카탈로그 도면</span></div>
-      <div class="y"><i>✓</i><span>가로 1,500px 이상, 반듯한 PNG · SVG · JPG</span></div>
-      <div class="n"><i>✕</i><span>흐리거나 기울어진 저해상 스캔, 손그림</span></div>
+      <div class="y"><i>✓</i><span>치수 숫자가 치수선 바로 위나 옆에</span></div>
+      <div class="n"><i>✕</i><span>치수가 기호(A, B, H)뿐인 카탈로그 도면</span></div>
+      <div class="y"><i>✓</i><span>가로 1,500px 이상, 반듯한 이미지</span></div>
+      <div class="n"><i>✕</i><span>흐리거나 기울어진 스캔, 손그림</span></div>
     </div>
     <div class="lvls">
-      <div><b><span class="lvl l1">1단계</span> 브래킷 · 판금 · 각기둥</b>면이 축에 나란한 부품. 3뷰 교집합으로 정확히 나옵니다.</div>
-      <div><b><span class="lvl l2">2단계</span> 하우징 · 보스 있는 몸체</b>원통·구멍은 되지만 숨은선·단차의 안쪽 형상은 근사입니다.</div>
-      <div><b><span class="lvl l3">3단계</span> 곡관 · 스윕 · 자유곡면</b>단면도로만 정의되는 부품. 이 버전은 만들지 못하고 이유를 알려 줍니다.</div>
+      <div><b><span class="lvl l1">1단계</span> 브래킷 · 판금 · 각기둥</b>정확히 나옵니다.</div>
+      <div><b><span class="lvl l2">2단계</span> 하우징 · 보스 있는 몸체</b>안쪽 형상은 근사입니다.</div>
+      <div><b><span class="lvl l3">3단계</span> 곡관 · 스윕 · 자유곡면</b>만들지 못합니다.</div>
     </div>
     <div class="modal-row">
       <a class="btn btn-ghost btn-sm" href="./guide.html#part2" target="_blank">자세한 안내</a>

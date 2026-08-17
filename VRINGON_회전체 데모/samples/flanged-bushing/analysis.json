@@ -1,0 +1,56 @@
+{
+  "part_type": "bushing",
+  "one_line": "H7 내경과 n6 외경을 지닌 청동 플랜지 부시",
+  "function": "회전축을 지지하고 플랜지면으로 축방향 위치를 고정한다. 마찰을 감소시키고 기계 구동부의 정밀한 결합을 돕는다.",
+  "features": [
+    {
+      "what": "플랜지 외경 및 두께",
+      "value": "외경 40 mm, 두께 5 mm",
+      "evidence": "도면 문자 '⌀40', '5'"
+    },
+    {
+      "what": "몸체 외경 및 공차",
+      "value": "⌀30 n6 mm",
+      "evidence": "도면 문자 '⌀30 n6'"
+    },
+    {
+      "what": "관통 내경 및 공차",
+      "value": "⌀22 H7 mm",
+      "evidence": "도면 문자 '⌀22 H7'"
+    },
+    {
+      "what": "전체 길이",
+      "value": "30 mm",
+      "evidence": "도면 문자 '30'"
+    }
+  ],
+  "manufacturing": [
+    "내경 H7 공차와 외경 n6 공차를 준수하여 정밀 가공 필요 (도면 문자 '⌀22 H7', '⌀30 n6')",
+    "PBC2 청동 재질에 맞춘 적절한 절삭 조건 적용 (도면 문자 '재질 PBC2')"
+  ],
+  "standards": [
+    "KS B ISO 2768-m"
+  ],
+  "uncertain": [
+    "열처리 여부 및 표면 거칠기 미표기"
+  ],
+  "confidence": 0.95,
+  "provider": "primary",
+  "elapsed_ms": 8219,
+  "part_type_inferred": "bushing",
+  "ocr_tokens": [
+    "C0.5",
+    "C0.5",
+    "2227",
+    "C0.5",
+    "2306",
+    "C44",
+    "4",
+    "30",
+    "3",
+    "24",
+    "1.C0.5",
+    "2.-2768-"
+  ],
+  "built_at": "2026-08-17T03:21:44.078Z"
+}

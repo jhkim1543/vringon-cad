@@ -254,12 +254,12 @@ function fillPoly(grid, N, pts, val) {
 export function suggestMethod(assigned) {
   const ortho = assigned.filter((a) => isOrtho(a.role));
   const hasSection = assigned.some((a) => a.role === "section");
-  if (ortho.length >= 2) return { method: "ortho", why: `정투상 뷰 ${ortho.length}개를 밀어내 교집합합니다` };
+  if (ortho.length >= 2) return { method: "ortho", why: `정투상 뷰 ${ortho.length}개로 만듭니다` };
   if (ortho.length === 1) {
     const v = ortho[0].view;
-    if (v.revolveScore >= 0.85 && v.signals.aspect > 1.2) return { method: "revolve", why: "뷰가 하나이고 축 대칭이라 회전체로 봅니다" };
+    if (v.revolveScore >= 0.85 && v.signals.aspect > 1.2) return { method: "revolve", why: "뷰가 하나라 회전체로 만듭니다" };
     return { method: "plate", why: "뷰가 하나라 두께를 넣어 판으로 만듭니다" };
   }
-  if (hasSection) return { method: "unsupported", why: "단면도로만 정의되는 부품(곡관·스윕)은 이 버전이 만들지 못합니다" };
-  return { method: "none", why: "정투상 뷰(정면·윗면·측면)를 하나 이상 지정해 주세요" };
+  if (hasSection) return { method: "unsupported", why: "단면도로만 정의되는 부품은 만들지 못합니다" };
+  return { method: "none", why: "정면, 윗면, 측면 중 하나 이상을 지정하세요" };
 }

@@ -16,6 +16,7 @@ import { extractHeuristic, extractViaServer } from "./shaft-extract.js";
 import { verifyExtraction, goldenMetrics } from "./shaft-verify.js";
 import { sampleShaft } from "./shaft-sampler.js";
 import { analyzeMates, matesSummary } from "./shaft-mates.js";
+import { PART_TYPES, typeOf, inferPartType } from "./part-types.js";
 import { buildAssembly, createAssemblySim, assemblyChecks, makeMateMaterials, makeSpinMarker } from "./shaft-assembly.js";
 import { initTour } from "./tour.js";
 import { exportSTEP, exportSTL, exportGLB, exportOBJ, exportUSDA, exportUSDZ, exportFBX, exportPLY, exportDrawingDXF, exportDrawingSVG, exportJSON, downloadBlob } from "./shaft-export.js";
@@ -38,7 +39,7 @@ const state = {
   raster: null,        /* ImageData 로 판독용 */
   extraction: null,    /* {method, dsl, dims_read, notes, silhouette, verify?, hints, ms} */
   dsl: null, pristine: null, gold: null,
-  built: null, verify: null, mates: null, assembly: null, sim: null, marker: null, simOn: false, forceRead: false, ratioOnly: false,
+  built: null, verify: null, mates: null, assembly: null, sim: null, marker: null, simOn: false, forceRead: false, ratioOnly: false, partType: "",
   section: false, showingDrawing: false, showingGolden: false,
 };
 /* PIPE[k] 는 k+1 단계. cta/note 는 그 단계를 "실행"하는 버튼의 말 — 다음 단계가 무엇을 하는지 미리 알린다 */
@@ -171,6 +172,7 @@ function renderStepper() {
     b.classList.toggle("on", n === pipe.done + 1 || n === pipe.running);
     b.classList.toggle("run", n === pipe.running);
     b.disabled = n > pipe.done + 1 || !!pipe.running;
+    b.title = n < pipe.done ? "이 단계로 돌아가기" : n === pipe.done ? "지금 단계" : n === pipe.done + 1 ? "다음 단계 실행" : "";
   }
   const next = PIPE[pipe.done];
   const cta = $("stageNext");
@@ -199,7 +201,25 @@ function showGen(on, title, sub, steps) {
   $("genSteps").innerHTML = (steps || []).map((s) => `<div class="gen-step ${s.state || ""}"><span class="dot"></span>${s.text}</div>`).join("");
 }
 $("stageNext").onclick = () => runStep(pipe.done + 1);
-for (const b of document.querySelectorAll("#stepper .st")) b.onclick = () => runStep(Number(b.dataset.step));
+/* 스텝퍼: 앞으로는 실행, 뒤로는 그 단계 상태로 되돌린다(뒤 단계의 결과를 걷어낸다). 검증에서 3D CAD 를 누르면 3D 만 남는다 */
+for (const b of document.querySelectorAll("#stepper .st")) b.onclick = () => { const n = Number(b.dataset.step); if (n <= pipe.done && n < pipe.done + 1) goBackTo(n); else runStep(n); };
+function goBackTo(n) {
+  if (pipe.running || n >= pipe.done) return;
+  if (n < 4) { state.verify = null; $("verifyBlock").style.display = "none"; showSheet(false); drawOverlay(); }
+  if (n < 3) {
+    if (state.simOn) setSimMode(false);
+    teardownAssembly(); clearModel(); state.built = null;
+    $("dock").style.display = "none"; $("exportBlock").style.display = "none"; $("mTris").textContent = "—"; $("mNote").textContent = "";
+    showSheet(true);
+  }
+  if (n < 2) {
+    state.extraction = null; state.dsl = null; state.pristine = null;
+    for (const id of ["extractBlock", "analysisBlock", "segBlock", "featBlock", "jsonBlock"]) $(id).style.display = "none";
+    $("overlay").innerHTML = "";
+  }
+  pipe.done = n; renderStepper();
+  toast(`${n}단계로 돌아왔습니다`);
+}
 
 /* ================================================================ 이미지 준비 */
 /* SVG 는 크게 그린다(≈10px/mm): 외형선(0.5mm)이 5px, 가는선(0.18~0.25mm)이 2px 이 되어야
@@ -310,6 +330,10 @@ async function stepExtract() {
   if (!v.ok && ex.draft) { ex.notes.push(`판독 결과가 형상 검증에 걸려(${v.errors[0]}) 외형 판독 결과로 대체했습니다.`); ex.dsl = ex.draft; }
   state.extraction = ex;
   setDsl(ex.dsl, { pristine: true });
+  /* 부품 유형: 사용자가 미리 골랐으면 그대로, 아니면 사양에서 추정 */
+  if (!state.partType) { const g = inferPartType(ex.dsl); state.partType = g.id; $("partType").value = g.id; state.typeWhy = g.why; }
+  renderTypeHint();
+  runAnalysis();   /* 부품 해석: 샘플은 미리 만든 것을, 서버 모드는 지금 판독+OCR 로 */
   steps[2].state = "done"; showGen(true, "2단계 · 판독", "", steps);
   renderExtractPanel();
   drawOverlay();
@@ -341,6 +365,46 @@ function showNeedLength() {
   $("btnRatioOnly").onclick = () => { state.ratioOnly = true; box.style.display = "none"; runStep(2); };
   toast("전체 길이를 넣어 주세요. 없으면 비율만 볼 수 있습니다");
 }
+/* ---- 부품 해석 (도면 문자 OCR + 사양 + 이미지 → 근거 달린 설명) */
+let ocrWorkerP = null;
+async function browserOcrTokens() {
+  if (!state.source?.image) return [];
+  try {
+    if (!ocrWorkerP) {
+      const [{ default: T }, { getOcrWorker }] = await Promise.all([import("../vendor/tesseract/tesseract.esm.min.js"), import("./ocr-dims.js")]);
+      ocrWorkerP = getOcrWorker({ workerPath: "./vendor/tesseract/worker.min.js", corePath: "./vendor/tesseract/", langPath: "./vendor/tesseract" }, T.createWorker);
+    }
+    const { readNumberTokens } = await import("./ocr-dims.js");
+    return await readNumberTokens(await ocrWorkerP, state.source.image);
+  } catch (e) { console.warn("OCR 없음:", e.message); return []; }
+}
+async function runAnalysis() {
+  const box = $("analysisBlock"); box.style.display = "";
+  $("anTag").textContent = "해석 중…"; $("anLine").textContent = "—"; ["anFunc", "anFeats", "anMfg", "anUnc", "anSrc"].forEach((id) => ($(id).innerHTML = ""));
+  let a = null, src = "";
+  try {
+    if (state.source?.kind === "sample" && state.sample && !(state.mode === "live" && state.extraction?.method === "server")) {
+      a = await fetch(`./samples/${state.sample.id}/analysis.json?v=${BUILD}`).then((r) => (r.ok ? r.json() : null));
+      src = a ? "미리 만든 해석 (도면 문자 인식 + 판독 사양 + 이미지)" : "";
+    }
+    if (!a && state.mode === "live" && state.dsl) {
+      const tokens = await browserOcrTokens();
+      const r = await fetch("./api/describe", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ imageB64: state.source.image, dsl: state.dsl, ocrTokens: tokens.map((t) => ({ text: t.text, value: t.value, kind: t.kind })), partType: state.partType, dims_read: state.extraction?.dims_read || [] }) });
+      if (r.ok) { a = await r.json(); src = `지금 해석 (도면 문자 ${tokens.length}개 + 사양 + 이미지, ${((a.elapsed_ms || 0) / 1000).toFixed(1)}초)`; }
+    }
+  } catch (e) { console.warn(e); }
+  if (!a) { $("anTag").textContent = "없음"; $("anLine").textContent = state.mode === "live" ? "해석을 받지 못했습니다" : "서버 모드에서 도면을 올리면 해석합니다"; return; }
+  state.analysis = a;
+  $("anTag").textContent = a.part_type ? (PART_TYPES.find((t) => t.id === a.part_type)?.ko || a.part_type) : "";
+  $("anLine").textContent = a.one_line || "—";
+  $("anFunc").textContent = a.function || "";
+  $("anFeats").innerHTML = (a.features || []).map((f) => `<div class="feat"><span class="k">${escapeHtml(f.what)}</span><span class="v">${escapeHtml(f.value)}<br/><span style="color:var(--text-3);font-size:11px">${escapeHtml(f.evidence)}</span></span></div>`).join("") || `<div class="hint">없음</div>`;
+  $("anMfg").innerHTML = (a.manufacturing || []).map(escapeHtml).join("<br/>") || "없음";
+  $("anUnc").innerHTML = (a.uncertain || []).map(escapeHtml).join("<br/>") || "없음";
+  $("anSrc").textContent = src + (a.confidence != null ? ` · 신뢰도 ${Math.round(a.confidence * 100)}%` : "");
+  /* 해석이 부품 유형을 더 잘 알면(사용자가 안 골랐을 때) 따른다 */
+  if (a.part_type && !$("partType").dataset.userSet && PART_TYPES.some((t) => t.id === a.part_type) && a.part_type !== state.partType) { state.partType = a.part_type; $("partType").value = a.part_type; state.typeWhy = "해석 결과"; renderTypeHint(); }
+}
 function renderExtractPanel() {
   const ex = state.extraction; if (!ex) return;
   $("extractBlock").style.display = "";
@@ -351,7 +415,7 @@ function renderExtractPanel() {
   $("exConfBar").style.width = conf == null ? "0" : `${Math.round(conf * 100)}%`;
   $("exDims").textContent = ex.dims_read?.length ? `${ex.dims_read.length}개` : "외형만 (문자 안 읽음)";
   $("exMs").textContent = ex.ms ? `${(ex.ms / 1000).toFixed(1)}초` : "—";
-  $("exNotes").innerHTML = (ex.notes || []).slice(0, 6).map((n) => `<div>· ${escapeHtml(n)}</div>`).join("");
+  $("exNotes").innerHTML = (ex.notes || []).slice(0, 3).map((n) => `<div>${escapeHtml(n)}</div>`).join("");
 }
 const escapeHtml = (s) => String(s).replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]));
 
@@ -496,7 +560,7 @@ async function stepBuild() {
   showSheet(false); $("dock").style.display = "";
   fitView();
   showExportPanel();
-  toast(`3D 완료 · 삼각형 ${state.built.stats.tris.toLocaleString()}개, ${state.built.stats.ms}ms. 오른쪽 패널에서 내려받고, 조립·시뮬은 위 버튼으로 켭니다`, true);
+  toast(`3D 완료. 오른쪽에서 내려받을 수 있습니다`, true);
 }
 function rebuild3D() {
   const dsl = state.dsl; const v = validateShaft(dsl); if (!v.ok) return;
@@ -512,7 +576,7 @@ function rebuild3D() {
   $("stageEmpty").style.display = "none";
   $("mTris").textContent = `${built.stats.tris.toLocaleString()} · ${built.stats.ms}ms`;
   if (hadAssembly) spawnAssembly();
-  $("mNote").textContent = built.notes.length ? built.notes.join(" · ") : "나사와 널링은 도면 관례대로 표현하고, 내려받는 파일에는 규격 값을 싣습니다.";
+  $("mNote").textContent = built.notes.length ? built.notes.join(" · ") : "";
   return built;
 }
 
@@ -616,7 +680,7 @@ function removeSpinMarker() {
 }
 function spawnAssembly() {
   if (!state.dsl || !model) return;
-  state.mates = analyzeMates(state.dsl);
+  state.mates = analyzeMates(state.dsl, { partType: state.partType || undefined });
   const asm = buildAssembly(state.mates, { materials: mateMaterials });
   /* 부품과 같은 좌표계에 놓는다 (model 은 화면 중앙으로 옮겨져 있다) */
   asm.group.position.copy(model.position);
@@ -643,12 +707,14 @@ async function setSimMode(on) {
     spawnAssembly();
     steps.forEach((x) => (x.state = "done"));
     renderMatePanel();
+    /* 유형의 기본 운동이 분해·끼우기면 처음부터 반쯤 분해해 보여 준다(핀·부시는 돌려 봐야 아무것도 안 보인다) */
+    if (state.sim && typeOf(state.mates?.partType || state.partType || "other").primary === "explode") { $("simExplode").value = 60; state.sim.applyExplode(0.6); }
     showSheet(false);
     $("mateBlock").style.display = "";
     $("mateBlock").scrollIntoView({ behavior: "smooth", block: "start" });
     showGen(false);
     const n = state.mates.mates.filter((m) => m.part).length;
-    toast(n ? `결합부 ${n}개 인식. 분해 막대와 회전으로 확인하세요` : "상대 부품이 없는 단품이라 회전만 보여 줍니다", true);
+    toast(n ? `결합부 ${n}개` : "결합부가 없어 회전만 보여 줍니다", true);
   } else {
     teardownAssembly();          /* 상대 부품·기준 표시·시뮬 상태를 모두 걷어낸다 */
     $("mateBlock").style.display = "none";
@@ -664,9 +730,19 @@ async function setSimMode(on) {
 }
 $("btnSim").onclick = () => setSimMode(!state.simOn);
 const MATE_KO = { spin: "자전축", snap: "멈춤링", key: "키·허브", screw: "나사 체결", bearing: "베어링", pin: "핀", wrench: "공구", fit: "끼워맞춤" };
+function renderTypeHint() {
+  const t = typeOf(state.partType || "other");
+  $("typeHint").innerHTML = state.partType ? `${t.what}${state.typeWhy ? ` <span style="color:var(--text-3)">(${state.typeWhy})</span>` : ""}` : "올리기 전에 알려 주면 그 유형에 맞는 시뮬레이션을 계획합니다.";
+}
 function renderMatePanel() {
   const a = state.mates; if (!a) return;
   $("mateMeta").textContent = matesSummary(a);
+  const t = typeOf(a.partType || state.partType || "other");
+  $("simPlan").innerHTML = `<b>${t.ko}</b> · ${t.what}<br/>` + t.plan.map((p) => `<span class="tag" style="margin:4px 4px 0 0">${p.ko}</span>${p.why ? `<span style="color:var(--text-3);font-size:11.5px"> ${p.why}</span>` : ""}`).join("<br/>");
+  /* 계획의 첫 운동을 앞세운다: 핀·부시·볼트는 회전 대신 분해·체결이 기본이다 */
+  $("btnSpin").classList.toggle("btn-primary", t.primary === "spin"); $("btnSpin").classList.toggle("btn-ghost", t.primary !== "spin");
+  $("btnScrewSim").classList.toggle("btn-primary", t.primary === "screw"); $("btnScrewSim").classList.toggle("btn-ghost", t.primary !== "screw");
+  $("btnAssemble").classList.toggle("btn-primary", t.primary === "explode"); $("btnAssemble").classList.toggle("btn-ghost", t.primary !== "explode");
   $("mateList").innerHTML = a.mates.map((m, i) => {
     const conf = Math.round(m.confidence * 100);
     const cls = conf >= 85 ? "ok" : conf >= 70 ? "warn" : "err";
@@ -704,7 +780,7 @@ function showAxisLine(on) {
   scene.add(axisLine);
 }
 $("btnSpin").onclick = () => { if (!state.sim) return; state.sim.spin(Number($("simRpm").value) || 300); $("btnSpin").classList.add("on"); renderSimGauge();
-  toast(`회전 ${$("simRpm").value} rpm. 주황색 기준선으로 회전이 보입니다. 축과 함께 도는 부품만 돕니다`, true); };
+  toast(`회전 ${$("simRpm").value} rpm. 기준선으로 회전이 보입니다`, true); };
 $("btnScrewSim").onclick = () => { if (!state.sim) return; const has = state.mates?.mates.some((m) => m.motion.type === "screw" && m.part); if (!has) return toast("이 부품에는 나사 체결부가 없습니다"); state.sim.screw(true); $("btnSpin").classList.remove("on"); renderSimGauge(); };
 $("btnAssemble").onclick = () => { if (!state.sim) return; $("simExplode").value = 0; state.sim.applyExplode(0); state.sim.stop(); $("btnSpin").classList.remove("on"); renderSimGauge(); };
 $("btnSimStop").onclick = () => { if (!state.sim) return; state.sim.stop(); $("btnSpin").classList.remove("on"); renderSimGauge(); };
@@ -744,7 +820,9 @@ function renderExportPanel() {
     if (!r.ok) { const j = await r.json().catch(() => ({})); return toast(`STEP 실패: ${j.error || r.status}`); }
     downloadBlob(await r.blob(), `${id}.step`); toast("STEP 내려받음", true);
   }));
-  l3.appendChild(row("STEP·면", "삼각형 면 · 편집한 사양도 바로", () => downloadBlob(exportSTEP(exportRoot(), id), `${id}_faceted.step`, "application/step")));
+  /* 면 STEP: 국부 가공(키홈·횡구멍·육각)을 자른 부위는 T 접합이 남아 셸이 닫히지 않는다 → 그때는 "셸" 이라고 말한다 */
+  const cut = (state.built?.stats?.csg || 0) > 0;
+  l3.appendChild(row("STEP·면", cut ? "삼각형 면 셸 · 가공 부위가 있어 솔리드로 닫히지 않음, 정밀 STEP 권장" : "삼각형 면 솔리드 · 편집한 사양도 바로", () => downloadBlob(exportSTEP(exportRoot(), id), `${id}_faceted.step`, "application/step")));
   l3.appendChild(row("STL", "3D 프린팅", () => downloadBlob(exportSTL(exportRoot()), `${id}.stl`, "model/stl")));
   l3.appendChild(row("GLB", "재질 포함 · 웹 뷰어", async () => downloadBlob(await exportGLB(exportRoot()), `${id}.glb`, "model/gltf-binary")));
   l3.appendChild(row("OBJ", "메시 (mm)", () => downloadBlob(exportOBJ(exportRoot()), `${id}.obj`, "text/plain")));
@@ -799,10 +877,11 @@ function resetWorkspace(full = true) {
   state.showingGolden = false; $("btnGolden").textContent = "정답 사양 보기"; $("btnGolden").classList.remove("on");
   state.sheetMode = "original"; $("btnRegen").textContent = "재생성 도면"; $("btnRegen").classList.remove("on");
   state.simOn = false; $("btnSim").textContent = "조립 · 시뮬 켜기"; $("btnSim").classList.remove("on");
-  state.forceRead = false; state.ratioOnly = false;
+  state.forceRead = false; state.ratioOnly = false; state.partType = $("partType")?.value || ""; state.typeWhy = "";
   pipe.done = 0; pipe.running = 0; pipe.active = false;
   showSheet(false); $("stageEmpty").style.display = ""; $("dock").style.display = "none";
-  for (const id of ["extractBlock", "segBlock", "featBlock", "jsonBlock", "verifyBlock", "mateBlock", "exportBlock"]) $(id).style.display = "none";
+  for (const id of ["extractBlock", "analysisBlock", "segBlock", "featBlock", "jsonBlock", "verifyBlock", "mateBlock", "exportBlock"]) $(id).style.display = "none";
+  state.analysis = null;
   ["mLen", "mDia", "mMass", "mMat", "mTris"].forEach((id) => ($(id).textContent = "—")); $("mNote").textContent = "";
   if (full) { $("projName").textContent = "새 프로젝트"; $("mName").textContent = "—"; $("lenBlock").style.display = "none"; $("overallLen").value = ""; }
   renderStepper();
@@ -869,5 +948,8 @@ window.__vringon = { state, pipe, runStep, extractHeuristic, verifyExtraction, g
   } catch (e) { $("chips").innerHTML = `<span class="hint">샘플 목록을 불러오지 못했습니다: ${e.message}</span>`; return; }
   $("chips").innerHTML = state.samples.map((s) => `<button class="sample" data-id="${s.id}" title="${s.name}"><img class="thumb" src="./samples/${s.id}/${s.files.thumb || s.files.svg}?v=${BUILD}" alt="" loading="lazy" /><span class="lb">${s.name_ko}</span></button>`).join("");
   renderStepper();
+  $("partType").innerHTML = `<option value="">모름 (판독 뒤 추정)</option>` + PART_TYPES.map((t) => `<option value="${t.id}">${t.ko}</option>`).join("");
+  $("partType").onchange = () => { state.partType = $("partType").value; $("partType").dataset.userSet = state.partType ? "1" : ""; renderTypeHint(); if (state.simOn) { teardownAssembly(); spawnAssembly(); renderMatePanel(); } };
+  renderTypeHint();
   initTour();   /* 처음 열었을 때 사용 순서대로 한 번 안내 (위쪽 "사용법" 으로 다시 보기) */
 })();

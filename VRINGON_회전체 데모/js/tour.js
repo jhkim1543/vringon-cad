@@ -9,7 +9,7 @@ const STEPS_P1 = [
   { el: "chips", place: "right", title: "샘플 도면으로 시작",
     body: "카드를 누르면 그 도면으로 바로 진행됩니다. 처음이라면 여기서 시작하세요." },
   { el: "drop", place: "right", title: "내 도면 올리기",
-    body: "PNG, JPG, SVG 한 장을 올립니다. 회전체 정면도만 읽으니 올리기 전에 안내를 한 번 보세요.",
+    body: "회전체 정면도 한 장을 올립니다. 아래에서 부품 유형을 먼저 골라 두면 그 유형에 맞게 시뮬레이션합니다.",
     link: { href: "./guide.html", text: "올리기 안내 열기" } },
   { el: "stepper", place: "bottom", title: "네 단계로 진행",
     body: "도면 입력, 판독, 3D CAD, 검증 순서입니다. 지금 단계가 위쪽에 표시됩니다." },

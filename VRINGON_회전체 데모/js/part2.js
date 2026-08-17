@@ -29,9 +29,9 @@ const SAMPLES = [
   { id: "housing", name: "베어링 하우징", file: "assets/part2/housing.svg", level: 2 },
   { id: "elbow", name: "사각 플랜지 곡관", file: "assets/part2/elbow.svg", level: 3 },
 ];
-const LEVEL = { 1: { cls: "l1", ko: "1단계 · 각기둥·브래킷", note: "면이 축에 나란한 부품입니다. 정투상 교집합이 정확합니다." },
-                2: { cls: "l2", ko: "2단계 · 원통·보스 근사", note: "원통과 구멍은 맞지만 숨은선·단차의 안쪽 형상은 근사입니다." },
-                3: { cls: "l3", ko: "3단계 · 곡면·스윕", note: "단면도로만 정의되는 부품은 이 버전이 만들지 못합니다." } };
+const LEVEL = { 1: { cls: "l1", ko: "1단계 · 각기둥", note: "정확히 나옵니다." },
+                2: { cls: "l2", ko: "2단계 · 원통 근사", note: "안쪽 형상은 근사입니다." },
+                3: { cls: "l3", ko: "3단계 · 곡면", note: "만들지 못하는 부류입니다." } };
 
 const state = { image: null, raster: null, png: null, views: [], pick: null, roles: {}, projection: "third",
   ocr: null, tokens: [], scale: null, mmPerPx: 0, part: null, name: "", sample: null, showDims: false };
@@ -114,7 +114,7 @@ async function detectViews() {
   $("viewBlock").style.display = ""; $("methodBlock").style.display = "";
   renderViewList(); drawOverlay(); renderCube(); renderMethod();
   pickView(state.views.find((v) => state.roles[v.id] === "front") || state.views[0]);
-  toast(`뷰 ${state.views.length}개 · 방향을 확인해 주세요`, true);
+  toast(`뷰 ${state.views.length}개. 방향을 확인하세요`, true);
 }
 $("projSeg").onclick = (e) => { const b = e.target.closest("button"); if (!b) return; document.querySelectorAll("#projSeg button").forEach((x) => x.classList.toggle("on", x === b)); state.projection = b.dataset.p; state.roles = suggestRoles(state.views, state.projection); renderAll(); };
 function renderViewList() {
@@ -209,7 +209,7 @@ async function readDims() {
     state.mmPerPx = sc.mmPerPx;
     $("dimScale").textContent = `1 px = ${sc.mmPerPx.toFixed(4)} mm`;
     $("dimAgree").textContent = `${sc.agree} / ${sc.total}`;
-    $("dimNote").innerHTML = `치수선 길이와 문자를 짝지어 서로 맞는 값을 골랐습니다(초록). ${sc.agree < 3 ? "<b>맞는 치수가 적어 축척이 불확실합니다.</b> 아래에 아는 치수 하나를 넣어 확인할 수 있습니다." : "여러 치수가 같은 축척을 가리키므로 믿을 만합니다."}`;
+    $("dimNote").innerHTML = sc.agree < 3 ? "맞는 치수가 적습니다. 아는 치수 하나를 넣어 확인할 수 있습니다." : "여러 치수가 같은 축척을 가리킵니다.";
     $("dimManual").style.display = sc.agree < 3 ? "" : "none";
   } else dimsFailed(sc.reason || "치수를 읽지 못했습니다.");
   drawOverlay(); renderMethod();
@@ -217,7 +217,7 @@ async function readDims() {
 function dimsFailed(msg) {
   state.mmPerPx = 0; state.scale = state.scale && state.scale.ok ? state.scale : { ok: false, used: [], rejected: [] };
   $("dimTag").textContent = "읽지 못함"; $("dimScale").textContent = "—"; $("dimAgree").textContent = "—";
-  $("dimNote").innerHTML = `${msg} 실제 치수를 지어내지 않습니다. 고른 뷰의 가로 실제 길이를 넣어 주세요.`;
+  $("dimNote").innerHTML = `${msg} 고른 뷰의 가로 실제 길이를 넣어 주세요.`;
   $("dimManual").style.display = "";
   renderMethod();
 }
@@ -241,7 +241,7 @@ function effectiveMethod() {
 }
 function renderMethod() {
   const em = effectiveMethod();
-  $("methodWhy").textContent = `${{ ortho: "정투상 교집합", revolve: "회전체", plate: "판 (두께)", unsupported: "미지원", none: "뷰 방향 필요" }[em.method] || em.method}: ${em.why}`;
+  $("methodWhy").textContent = em.why;
   $("thickRow").style.display = em.method === "plate" ? "" : "none";
   const lv = state.sample?.level;
   $("levelNote").innerHTML = lv ? `<span class="lvl ${LEVEL[lv].cls}">${LEVEL[lv].ko}</span> ${LEVEL[lv].note}` : "";
@@ -284,7 +284,7 @@ $("btnMake").onclick = async () => {
   root.add(mesh); state.part = { mesh, result };
   steps.forEach((s) => (s.state = "done")); showGen(true, "부품 만들기", "", steps); await sleep(120); showGen(false);
   showSheet(false); fitView(); renderResult(); renderExport();
-  toast("부품을 만들었습니다. 오른쪽에서 뷰 정합을 확인하세요", true);
+  toast("부품을 만들었습니다", true);
 };
 function renderResult() {
   const p = state.part; if (!p) return $("resultBlock").style.display = "none";
@@ -295,11 +295,11 @@ function renderResult() {
   $("rSize").textContent = `${fmt(r.size.X)} × ${fmt(r.size.Y)} × ${fmt(r.size.Z)} mm`;
   $("rVol").textContent = `${fmt(r.volume, 1)} cm³`;
   $("rTris").textContent = `${(p.mesh.geometry.attributes.position.count / 3).toLocaleString()}개`;
-  const rows = r.ious.map((x) => { const pct = x.iou * 100; const cls = pct >= 95 ? "ok" : pct >= 85 ? "warn" : "bad"; return `<div class="r"><span>${ROLE_KO[x.role]} (뷰 ${x.viewId})</span><b class="${cls}">${pct.toFixed(1)}%</b></div>`; });
-  for (const c of r.checks) rows.push(`<div class="r"><span>${c.axis} 축 크기 · ${ROLE_KO[c.a.role]} ↔ ${ROLE_KO[c.b.role]}</span><b class="${c.ok ? "ok" : "warn"}">차이 ${c.diffPct}%</b></div>`);
+  const rows = r.ious.map((x) => { const pct = x.iou * 100; const cls = pct >= 95 ? "ok" : pct >= 85 ? "warn" : "bad"; return `<div class="r"><span>${ROLE_KO[x.role]}</span><b class="${cls}">${pct.toFixed(1)}%</b></div>`; });
+  for (const c of r.checks) rows.push(`<div class="r"><span>${c.axis} 크기 · ${ROLE_KO[c.a.role]}와 ${ROLE_KO[c.b.role]}</span><b class="${c.ok ? "ok" : "warn"}">차이 ${c.diffPct}%</b></div>`);
   $("rChecks").innerHTML = rows.join("") || `<div class="mini">대조할 정투상 뷰가 없습니다.</div>`;
   const low = r.ious.filter((x) => x.iou < 0.9);
-  $("rNote").innerHTML = (r.notes || []).concat(low.length ? [`<b>${low.map((x) => ROLE_KO[x.role]).join(", ")}</b> 정합이 낮습니다. 그 뷰의 방향이 맞는지, 구멍이 빠졌는지 확인하세요.`] : []).join("<br/>");
+  $("rNote").innerHTML = (r.notes || []).concat(low.length ? [`${low.map((x) => ROLE_KO[x.role]).join(", ")} 정합이 낮습니다. 방향과 구멍을 확인하세요.`] : []).join("<br/>");
 }
 
 /* ================================================================ 내보내기 */
@@ -310,7 +310,7 @@ function renderExport() {
   const row = (f, n, fn) => { const d = document.createElement("div"); d.className = "exp"; d.innerHTML = `<span class="f">${f}</span><span class="n">${n}</span><button title="내려받기"><svg><use href="#i-dl"/></svg></button>`; d.querySelector("button").onclick = fn; return d; };
   const list = $("dlList"); list.innerHTML = "";
   const spec = { part2: true, sheet: state.name, mm_per_px: state.mmPerPx, roles: Object.fromEntries(state.views.map((v) => [v.id, state.roles[v.id]])), result: state.part.result };
-  list.appendChild(row("STEP·면", "삼각형 면 · 기계 CAD", () => downloadBlob(exportSTEP(root, id), `${id}.step`, "application/step")));
+  list.appendChild(row("STEP·면", "삼각형 면 셸 (교집합 결과는 솔리드로 닫히지 않음)", () => downloadBlob(exportSTEP(root, id), `${id}.step`, "application/step")));
   list.appendChild(row("STL", "3D 프린팅", () => downloadBlob(exportSTL(root), `${id}.stl`, "model/stl")));
   list.appendChild(row("GLB", "재질 포함 · 웹 뷰어", async () => downloadBlob(await exportGLB(root), `${id}.glb`, "model/gltf-binary")));
   list.appendChild(row("OBJ", "메시 (mm)", () => downloadBlob(exportOBJ(root), `${id}.obj`, "text/plain")));
@@ -319,7 +319,7 @@ function renderExport() {
   list.appendChild(row("USDZ", "AR 미리보기 패키지", async () => downloadBlob(await exportUSDZ(root), `${id}.usdz`, "model/vnd.usdz+zip")));
   list.appendChild(row("PLY", "정점과 면", () => downloadBlob(exportPLY(root), `${id}.ply`, "text/plain")));
   list.appendChild(row("JSON", "뷰 방향 · 축척 · 결과", () => downloadBlob(new Blob([JSON.stringify(spec, null, 2)], { type: "application/json" }), `${id}.part2.json`)));
-  $("exportNote").textContent = "면 STEP 입니다(삼각형 면). 정밀 곡면 STEP 은 회전체(Part 1)의 서버 모드에서만 만듭니다.";
+  $("exportNote").textContent = "";
 }
 
 /* ================================================================ 입력 · 초기화 */

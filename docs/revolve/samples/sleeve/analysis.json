@@ -1,0 +1,58 @@
+{
+  "part_type": "sleeve",
+  "one_line": "외경 h6 및 내경 H7 공차가 적용된 정밀 슬리브",
+  "function": "축을 감싸 마모를 방지하고 위치를 정밀하게 고정하는 역할을 한다.",
+  "features": [
+    {
+      "what": "전체 길이",
+      "value": "60 mm",
+      "evidence": "도면 문자 '60'"
+    },
+    {
+      "what": "외경 치수",
+      "value": "ø40 h6",
+      "evidence": "도면 문자 'ø40 h6'"
+    },
+    {
+      "what": "주요 내경",
+      "value": "ø30 H7",
+      "evidence": "도면 문자 'ø30 H7'"
+    },
+    {
+      "what": "내부 홈",
+      "value": "폭 2.4 mm, ø36.2",
+      "evidence": "도면 문자 '2.4', 'ø36.2'"
+    },
+    {
+      "what": "단부 모따기",
+      "value": "C0.5",
+      "evidence": "도면 문자 'C0.5'"
+    }
+  ],
+  "manufacturing": [
+    "외경 ø40 h6 및 내경 ø30 H7 정밀 정합을 위한 공차 관리가 요구된다.",
+    "재질 SUJ2에 맞춘 열처리 및 정밀 연삭 가공이 필요하다.",
+    "주석에 따라 지시 없는 일반 공차는 KS B ISO 2768-m을 적용한다."
+  ],
+  "standards": [
+    "KS B ISO 2768-m"
+  ],
+  "uncertain": [
+    "구체적인 열처리 사양 및 경도",
+    "표면 거칠기 지정값"
+  ],
+  "confidence": 0.95,
+  "provider": "primary",
+  "elapsed_ms": 7824,
+  "part_type_inferred": "sleeve",
+  "ocr_tokens": [
+    "2.4",
+    "C0.5",
+    "C0.5",
+    "0222,",
+    "60",
+    "1.C0.5",
+    "2.-2768-"
+  ],
+  "built_at": "2026-08-17T03:22:23.701Z"
+}

@@ -41,7 +41,7 @@ for (const g of GOLDENS) {
   const spinOk = Math.abs(theta - (600 / 60) * Math.PI * 2 * 0.5) < 1e-6;
   const rotSplit = asm.items.every(({ wrap, mate }) => {
     if (mate.kind === "bearing") return Math.abs(wrap.rotation.x) < 1e-9 && Math.abs(wrap.children[0].children[0].rotation.x - theta) < 1e-9;
-    if (mate.part === "wrench" || mate.part === "housing") return Math.abs(wrap.rotation.x) < 1e-9;
+    if (mate.part === "wrench" || mate.part === "housing" || mate.part === "clevis") return Math.abs(wrap.rotation.x) < 1e-9;
     return Math.abs(wrap.rotation.x - theta) < 1e-9;
   });
   sim.reset();

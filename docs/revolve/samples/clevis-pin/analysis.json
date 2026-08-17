@@ -1,0 +1,58 @@
+{
+  "part_type": "pin",
+  "one_line": "분할핀 구멍이 있는 h11 공차의 클레비스 핀",
+  "function": "연결 부위의 회전축 역할을 수행하며 관통 구멍에 핀을 결합하여 축 방향 이탈을 방지한다.",
+  "features": [
+    {
+      "what": "머리부 외경",
+      "value": "16 mm",
+      "evidence": "도면 문자 ⌀16"
+    },
+    {
+      "what": "몸통 외경 및 공차",
+      "value": "12 mm h11",
+      "evidence": "도면 문자 ⌀12 h11"
+    },
+    {
+      "what": "머리 아래 길이",
+      "value": "51 mm",
+      "evidence": "도면 문자 51"
+    },
+    {
+      "what": "관통 구멍",
+      "value": "직경 3.2 mm",
+      "evidence": "도면 문자 ⌀3.2 관통"
+    },
+    {
+      "what": "구멍 위치",
+      "value": "끝단에서 7 mm",
+      "evidence": "도면 문자 7"
+    }
+  ],
+  "manufacturing": [
+    "몸통 외경은 h11 공차를 만족하도록 정밀 가공한다.",
+    "재질은 S45C를 사용하며 지시 없는 모따기는 C0.5를 적용한다."
+  ],
+  "standards": [
+    "KS B ISO 2768-m"
+  ],
+  "uncertain": [
+    "열처리 여부 및 표면 처리 사양",
+    "상대 부품과의 결합 조건"
+  ],
+  "confidence": 0.98,
+  "provider": "primary",
+  "elapsed_ms": 7335,
+  "part_type_inferred": "pin",
+  "ocr_tokens": [
+    "16",
+    "C0.5",
+    "93.2",
+    "51",
+    "1R",
+    "7C0.5",
+    "2",
+    "2.214"
+  ],
+  "built_at": "2026-08-17T03:21:24.960Z"
+}

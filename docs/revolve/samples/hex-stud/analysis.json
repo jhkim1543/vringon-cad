@@ -1,0 +1,60 @@
+{
+  "part_type": "shaft",
+  "one_line": "육각 머리와 M10 나사를 갖춘 단붙이 축",
+  "function": "육각 머리를 통해 축을 고정하거나 회전력을 전달한다. 정밀 축부와 M10 나사부로 부품을 결합하고 지지한다.",
+  "features": [
+    {
+      "what": "전체 길이",
+      "value": "57mm",
+      "evidence": "도면 문자 '57'"
+    },
+    {
+      "what": "머리부 형상",
+      "value": "외경 20mm, 육각 대변 17mm",
+      "evidence": "도면 문자 '⌀20', '17'"
+    },
+    {
+      "what": "축부 외경 및 공차",
+      "value": "파이 12mm h6",
+      "evidence": "도면 문자 '⌀12 h6'"
+    },
+    {
+      "what": "체결용 나사",
+      "value": "M10",
+      "evidence": "도면 문자 'M10'"
+    },
+    {
+      "what": "재질",
+      "value": "SUS303",
+      "evidence": "도면 문자 '재질 SUS303'"
+    }
+  ],
+  "manufacturing": [
+    "축부 파이 12mm 구간은 h6 공차를 준수하여 정밀 가공해야 한다.",
+    "지시 없는 일반 공차는 KS B ISO 2768-m 기준을 적용한다."
+  ],
+  "standards": [
+    "KS B ISO 2768-m"
+  ],
+  "uncertain": [
+    "열처리 여부 및 세부 조건",
+    "각 면의 표면 거칠기 요구사항"
+  ],
+  "confidence": 0.95,
+  "provider": "primary",
+  "elapsed_ms": 8032,
+  "part_type_inferred": "shaft",
+  "ocr_tokens": [
+    "12",
+    "220",
+    "2126",
+    "C1.5",
+    "C1",
+    "10",
+    "12",
+    "57",
+    "1.C0.5",
+    "2.-2768-"
+  ],
+  "built_at": "2026-08-17T03:22:03.766Z"
+}

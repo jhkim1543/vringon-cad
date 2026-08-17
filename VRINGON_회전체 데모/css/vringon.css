@@ -23,9 +23,13 @@
   --accent: #5B6BF0;
   --accent-hi: #7C89FF;
   --accent-soft: rgba(91, 107, 240, 0.13);
-  --ok: #3DD6A0;
-  --warn: #E8B84B;
-  --danger: #F0716B;
+  /* 상태색도 한 계열로: 좋음은 밝은 파랑, 주의는 회청, 나쁨은 옅은 파랑에 취소선 대신 텍스트로 말한다 */
+  --ok: #8FA1FF;
+  --warn: #6F7CB8;
+  --danger: #C7CDEA;
+  --ok-soft: rgba(143,161,255,.14);
+  --warn-soft: rgba(111,124,184,.16);
+  --danger-soft: rgba(199,205,234,.12);
   --r: 12px;
   --r-sm: 8px;
   --font: "Pretendard", -apple-system, "Segoe UI", "Malgun Gothic", sans-serif;
@@ -79,7 +83,7 @@ svg { display: block; }
   background: #1E1E24; color: var(--text-2); border: 1px solid var(--line);
 }
 .tag-accent { background: var(--accent-soft); color: var(--accent-hi); border-color: rgba(91,107,240,.3); }
-.tag-ok { background: rgba(61,214,160,.1); color: var(--ok); border-color: rgba(61,214,160,.26); }
+.tag-ok { background: var(--ok-soft); color: var(--ok); border-color: rgba(143,161,255,.3); }
 
 .input {
   width: 100%; background: #0E0E12; border: 1px solid var(--line-2);

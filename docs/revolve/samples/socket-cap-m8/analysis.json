@@ -1,0 +1,62 @@
+{
+  "part_type": "bolt",
+  "one_line": "육각 소켓과 M8 나사산이 있는 육각구멍붙이 볼트",
+  "function": "부품 간 체결 및 고정에 사용된다. 육각 렌치를 이용하여 체결력을 전달한다.",
+  "features": [
+    {
+      "what": "머리 외경",
+      "value": "13 mm",
+      "evidence": "도면 문자 '⌀13'"
+    },
+    {
+      "what": "육각 소켓",
+      "value": "너비 6 mm, 깊이 4 mm",
+      "evidence": "도면 문자 '육각 소켓 S6 깊이 4'"
+    },
+    {
+      "what": "체결 나사부",
+      "value": "M8, 길이 22 mm",
+      "evidence": "도면 문자 'M8', '22'"
+    },
+    {
+      "what": "원통부",
+      "value": "외경 8 mm, 길이 8 mm",
+      "evidence": "도면 문자 '⌀8', '8'"
+    },
+    {
+      "what": "전체 길이",
+      "value": "38 mm",
+      "evidence": "도면 문자 '38'"
+    }
+  ],
+  "manufacturing": [
+    "지시 없는 공차는 KS B ISO 2768-m 표준을 적용한다.",
+    "재질은 SCM435 합금강을 사용한다.",
+    "머리 아래 턱 부분은 R0.5 라운드 가공하여 응력 집중을 피한다."
+  ],
+  "standards": [
+    "KS B ISO 2768-m"
+  ],
+  "uncertain": [
+    "열처리 경도 조건",
+    "표면 처리 및 도금 종류"
+  ],
+  "confidence": 0.95,
+  "provider": "primary",
+  "elapsed_ms": 9902,
+  "part_type_inferred": "bolt",
+  "ocr_tokens": [
+    "213",
+    "C0.5",
+    "28",
+    "R0.5",
+    "8",
+    "C1",
+    "22",
+    "38",
+    "1.CC0.5",
+    "2.",
+    "2"
+  ],
+  "built_at": "2026-08-17T03:23:34.343Z"
+}

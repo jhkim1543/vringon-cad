@@ -17,6 +17,7 @@ import { createHash } from "node:crypto";
 import { SHAFT_SCHEMA, validateShaft, normalizeShaft } from "./js/shaft-schema.js";
 import { silhouetteIoU2, dimensionConsistency, confidenceScore, dslSilhouette, silhouetteIoU } from "./js/shaft-verify.js";
 import { EXTRACT_SYSTEM, buildExtractMessages, EXTRACT_RESPONSE_SCHEMA, loadFewShot, postprocessExtracted } from "./tools/extract-prompt.mjs";
+import { DESCRIBE_RESPONSE_SCHEMA, buildDescribeMessages } from "./tools/describe-prompt.mjs";
 
 const rootDir = fileURLToPath(new URL("./", import.meta.url));
 const port = Number(process.argv[2] || process.env.PORT || 8349);
@@ -270,6 +271,18 @@ const server = createServer(async (req, res) => {
     }
     if (path === "/api/status") return json(res, 200, { ok: true, mode: "live", extract: HAS_PRIMARY || HAS_FALLBACK, extract_provider: HAS_PRIMARY ? "primary" : HAS_FALLBACK ? "fallback" : null, step: HAS_STEP, fewshot: fewShot.length, version: "1.0" });
     if (path === "/api/schema") return json(res, 200, SHAFT_SCHEMA);
+    /* 부품 해석: 이미지 + 사양 + OCR 토큰 → 근거 달린 해석 */
+    if (req.method === "POST" && path === "/api/describe") {
+      const ip = req.headers["x-forwarded-for"]?.split(",")[0].trim() || req.socket.remoteAddress || "?";
+      if (!rateOk(ip)) return json(res, 429, { error: `요청이 시간당 ${RATE}회를 넘었습니다.` });
+      const body = await readBody(req);
+      if (!body.imageB64 || !body.dsl) return json(res, 400, { error: "imageB64 와 dsl 이 필요합니다" });
+      const t0 = Date.now();
+      const msgs = buildDescribeMessages({ image: body.imageB64, dsl: body.dsl, ocrTokens: body.ocrTokens || [], partType: body.partType || "", dims_read: body.dims_read || [] });
+      const out = await callVision(msgs, DESCRIBE_RESPONSE_SCHEMA, "text");
+      const j = out.json || out;
+      return json(res, 200, { ...j, provider: out.provider, elapsed_ms: Date.now() - t0 });
+    }
     if (req.method === "POST" && path === "/api/extract") {
       const ip = req.headers["x-forwarded-for"]?.split(",")[0].trim() || req.socket.remoteAddress || "?";
       if (!rateOk(ip)) return json(res, 429, { error: `판독 요청이 시간당 ${RATE}회를 넘었습니다. 잠시 후 다시 시도해 주세요.` });
@@ -289,11 +302,13 @@ const server = createServer(async (req, res) => {
     if (req.method === "POST" && path === "/__save") {
       const ra = req.socket.remoteAddress || "";
       if (!/^(::1|::ffff:127\.0\.0\.1|127\.0\.0\.1)$/.test(ra)) return json(res, 403, { error: "loopback only" });
-      const body = await readBody(req, 32e6);
-      const m = /^data:image\/(png|jpeg|webp);base64,(.+)$/.exec(String(body.dataUrl || ""));
-      if (!m) return json(res, 400, { error: "dataUrl 이 필요합니다" });
+      const body = await readBody(req, 64e6);
       const name = String(body.name || "shot").replace(/[^A-Za-z0-9_.-]/g, "_");
       await mkdir(join(rootDir, "data/shots"), { recursive: true });
+      /* QA: 화면(dataURL) 또는 임의 파일(base64) — 브라우저에서 만든 내보내기 파일을 외부 판독기로 검사할 때 쓴다 */
+      if (body.base64) { const file = join(rootDir, "data/shots", name); await writeFile(file, Buffer.from(String(body.base64), "base64")); return json(res, 200, { ok: true, file: `data/shots/${name}` }); }
+      const m = /^data:image\/(png|jpeg|webp);base64,(.+)$/.exec(String(body.dataUrl || ""));
+      if (!m) return json(res, 400, { error: "dataUrl 또는 base64 가 필요합니다" });
       const file = join(rootDir, "data/shots", `${name}.${m[1] === "jpeg" ? "jpg" : m[1]}`);
       await writeFile(file, Buffer.from(m[2], "base64"));
       return json(res, 200, { ok: true, file: `data/shots/${name}.${m[1] === "jpeg" ? "jpg" : m[1]}` });
