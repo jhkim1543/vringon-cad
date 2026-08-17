@@ -1,0 +1,57 @@
+{
+  "part_type": "bolt",
+  "one_line": "M10 hex bolt with 46.4mm length",
+  "function": "It secures mechanical assemblies together using an M10 thread and a hex head.",
+  "features": [
+    {
+      "what": "Thread Specification",
+      "value": "M10 with 26 mm thread length",
+      "evidence": "Drawing text M10 and 26"
+    },
+    {
+      "what": "Hexagon Head",
+      "value": "16 mm width across flats, 6.4 mm thickness",
+      "evidence": "Drawing text 16 on section A-A and 6.4"
+    },
+    {
+      "what": "Under-head Fillet",
+      "value": "R0.6 mm",
+      "evidence": "Drawing text R0.6"
+    },
+    {
+      "what": "Overall Length",
+      "value": "46.4 mm",
+      "evidence": "Drawing text 46.4"
+    }
+  ],
+  "manufacturing": [
+    "General tolerances follow KS B ISO 2768-m.",
+    "Part material is specified as SCM435 steel.",
+    "Unspecified chamfers are C0.5."
+  ],
+  "standards": [
+    "KS B ISO 2768-m"
+  ],
+  "uncertain": [
+    "Heat treatment details",
+    "Surface plating or coating specifications"
+  ],
+  "confidence": 0.98,
+  "provider": "primary",
+  "elapsed_ms": 8811,
+  "part_type_inferred": "bolt",
+  "ocr_tokens": [
+    "218.48",
+    "1x309",
+    "210",
+    "R0.6",
+    "10",
+    "C1.5",
+    "4",
+    "26",
+    "46.4",
+    "1.C0.5",
+    "2.-2768-"
+  ],
+  "built_at": "2026-08-17T10:34:16.842Z"
+}

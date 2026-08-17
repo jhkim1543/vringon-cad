@@ -1,0 +1,74 @@
+{
+  "part_type": "roller",
+  "one_line": "SUS304 roller shaft with Ø20 h6 journal steps and snap ring grooves",
+  "function": "This roller supports rotary motion across a central Ø45 section while mounted via precision Ø20 h6 journal ends. Retaining ring grooves on both shaft ends maintain axial positioning in assembly.",
+  "features": [
+    {
+      "what": "Main body diameter and overall length",
+      "value": "Ø45 mm diameter with 110 mm total length",
+      "evidence": "Drawing dimension tokens 'ø45' and '110'"
+    },
+    {
+      "what": "Journal shaft diameter and tolerance",
+      "value": "Ø20 h6",
+      "evidence": "Drawing dimension text 'ø20 h6' on both shaft steps"
+    },
+    {
+      "what": "Snap ring grooves",
+      "value": "1.3 mm width, Ø19 mm groove diameter, 6 mm from end",
+      "evidence": "Drawing dimension tokens '1.3', 'ø19', and '6'"
+    },
+    {
+      "what": "Center holes",
+      "value": "Form A2 per DIN 332 on both ends",
+      "evidence": "Drawing text '센터구멍 A2 (DIN 332)'"
+    },
+    {
+      "what": "Transition fillets and chamfers",
+      "value": "R1.5 fillets, C1 shoulder chamfers, and C1.5 end chamfers",
+      "evidence": "Drawing dimension tokens 'R1.5', 'C1', and 'C1.5'"
+    }
+  ],
+  "manufacturing": [
+    "Machined from SUS304 stainless steel based on title block note '재질 SUS304'.",
+    "Precision turning required on both Ø20 mm journal steps to maintain h6 limits.",
+    "Unspecified dimensions follow KS B ISO 2768-m and untoleranced chamfers C0.5 per general notes."
+  ],
+  "standards": [
+    "DIN 332",
+    "KS B ISO 2768-m"
+  ],
+  "uncertain": [
+    "Surface roughness values are not specified on the drawing.",
+    "Heat treatment specifications are not indicated.",
+    "Specific operating loads, speeds, and mating component details are absent."
+  ],
+  "confidence": 0.95,
+  "provider": "primary",
+  "elapsed_ms": 10284,
+  "part_type_inferred": "roller",
+  "ocr_tokens": [
+    "1.3",
+    "C1",
+    "C1",
+    "1.36",
+    "245",
+    "R1.5",
+    "R1.5",
+    "2332,",
+    "C1.5",
+    "C15",
+    "1",
+    "1",
+    "20",
+    "20",
+    "110",
+    "38",
+    "2",
+    "4.2",
+    "7C0.5",
+    "2.",
+    "2"
+  ],
+  "built_at": "2026-08-17T10:32:59.442Z"
+}

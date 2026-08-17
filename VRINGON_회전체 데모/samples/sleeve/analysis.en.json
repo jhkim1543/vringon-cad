@@ -1,0 +1,63 @@
+{
+  "part_type": "sleeve",
+  "one_line": "Stepped sleeve with 40 h6 outer diameter and 30 H7 bore",
+  "function": "Functions as a positioning or bearing sleeve for rotational or linear movement. It locates internal and external mating parts with precise fits.",
+  "features": [
+    {
+      "what": "Outer diameter fit",
+      "value": "40 h6",
+      "evidence": "Drawing dimension 'ø40 h6'"
+    },
+    {
+      "what": "Internal fit bore",
+      "value": "30 H7",
+      "evidence": "Drawing dimension 'ø30 H7'"
+    },
+    {
+      "what": "Internal recessed groove",
+      "value": "Diameter 36.2 mm, width 2.4 mm",
+      "evidence": "Drawing dimensions 'ø36.2' and '2.4'"
+    },
+    {
+      "what": "Through bore step",
+      "value": "28 mm diameter",
+      "evidence": "Drawing dimension 'ø28'"
+    },
+    {
+      "what": "Overall length",
+      "value": "60 mm",
+      "evidence": "Drawing dimension '60'"
+    },
+    {
+      "what": "End chamfers",
+      "value": "C0.5",
+      "evidence": "Drawing text 'C0.5'"
+    }
+  ],
+  "manufacturing": [
+    "Precise grinding required for outer diameter h6 and bore H7 tolerances.",
+    "Material SUJ2 requires appropriate hardening heat treatment and post-grinding inspection.",
+    "Unspecified dimensions must conform to general tolerances KS B ISO 2768-m."
+  ],
+  "standards": [
+    "KS B ISO 2768-m"
+  ],
+  "uncertain": [
+    "Required heat treatment hardness (HRC range) not specified on drawing.",
+    "Surface roughness specifications for precision fits are not explicitly shown."
+  ],
+  "confidence": 0.95,
+  "provider": "primary",
+  "elapsed_ms": 7609,
+  "part_type_inferred": "sleeve",
+  "ocr_tokens": [
+    "2.4",
+    "C0.5",
+    "C0.5",
+    "0222,",
+    "60",
+    "1.C0.5",
+    "2.-2768-"
+  ],
+  "built_at": "2026-08-17T10:33:28.343Z"
+}

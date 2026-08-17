@@ -1,0 +1,68 @@
+{
+  "part_type": "bushing",
+  "one_line": "Flanged bronze bushing with ø22 H7 bore and ø30 n6 shaft fit",
+  "function": "This flanged sleeve bushing guides a rotating or sliding shaft while providing axial support. The bronze material reduces friction and wear between moving mechanical components.",
+  "features": [
+    {
+      "what": "Bore diameter",
+      "value": "ø22 H7",
+      "evidence": "Drawing text 'ø22 H7' and spec bore"
+    },
+    {
+      "what": "Outer diameter",
+      "value": "ø30 n6",
+      "evidence": "Drawing text 'ø30 n6' and spec segment"
+    },
+    {
+      "what": "Flange diameter",
+      "value": "ø40 mm",
+      "evidence": "Drawing text 'ø40' and spec segment"
+    },
+    {
+      "what": "Flange length",
+      "value": "5 mm",
+      "evidence": "Drawing text '5' and spec segment"
+    },
+    {
+      "what": "Total length",
+      "value": "30 mm",
+      "evidence": "Drawing text '30' and spec length"
+    },
+    {
+      "what": "Chamfers",
+      "value": "C0.5",
+      "evidence": "Drawing text 'C0.5' and note '1. 지시 없는 모따기 C0.5'"
+    }
+  ],
+  "manufacturing": [
+    "Precision boring and turning are required to achieve H7 internal and n6 external press-fit tolerances.",
+    "Phosphor bronze casting (PBC2) material requires appropriate cutting parameters to avoid burrs on chamfered edges."
+  ],
+  "standards": [
+    "KS B ISO 2768-m"
+  ],
+  "uncertain": [
+    "Surface roughness requirements for bore and outer diameter",
+    "Lubrication grooves or oil hole specifications",
+    "Heat treatment or surface hardening requirements"
+  ],
+  "confidence": 0.95,
+  "provider": "primary",
+  "elapsed_ms": 8043,
+  "part_type_inferred": "bushing",
+  "ocr_tokens": [
+    "C0.5",
+    "C0.5",
+    "2227",
+    "C0.5",
+    "2306",
+    "C44",
+    "4",
+    "30",
+    "3",
+    "24",
+    "1.C0.5",
+    "2.-2768-"
+  ],
+  "built_at": "2026-08-17T10:32:48.661Z"
+}

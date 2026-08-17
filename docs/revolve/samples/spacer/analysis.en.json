@@ -1,0 +1,55 @@
+{
+  "part_type": "spacer",
+  "one_line": "A6061 aluminum spacer ring with Ø16 H8 bore",
+  "function": "Maintains accurate axial spacing between components. Mounts onto a shaft or pin with an H8 tolerance fit.",
+  "features": [
+    {
+      "what": "Outer diameter",
+      "value": "24 mm",
+      "evidence": "Dimension text ⌀24"
+    },
+    {
+      "what": "Inner bore diameter and tolerance",
+      "value": "16 mm H8",
+      "evidence": "Dimension text ⌀16 H8"
+    },
+    {
+      "what": "Total length",
+      "value": "12 mm",
+      "evidence": "Dimension text 12"
+    },
+    {
+      "what": "Edge chamfers",
+      "value": "C0.5",
+      "evidence": "Drawing callout C0.5"
+    }
+  ],
+  "manufacturing": [
+    "Precision boring required for Ø16 H8 internal fit.",
+    "Use A6061 aluminum alloy material as designated in the title block.",
+    "Apply general tolerance standard KS B ISO 2768-m for untoleranced dimensions."
+  ],
+  "standards": [
+    "KS B ISO 2768-m"
+  ],
+  "uncertain": [
+    "Surface finish or anodizing specifications are not indicated.",
+    "Specific assembly mating details and operating loads are unknown."
+  ],
+  "confidence": 0.98,
+  "provider": "primary",
+  "elapsed_ms": 8070,
+  "part_type_inferred": "spacer",
+  "ocr_tokens": [
+    "224",
+    "C0.5",
+    "C0.5",
+    "2168",
+    "12",
+    "3",
+    "1.CC0.5",
+    "2.",
+    "2"
+  ],
+  "built_at": "2026-08-17T10:32:22.623Z"
+}

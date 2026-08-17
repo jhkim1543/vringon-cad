@@ -1,0 +1,70 @@
+{
+  "part_type": "shaft",
+  "one_line": "Double-ended threaded stepped shaft with cross hole",
+  "function": "Transmits torque or positions components along its axis while securing mating parts with threaded ends and a cross pin.",
+  "features": [
+    {
+      "what": "Left Thread",
+      "value": "M12 coarse thread, 20 mm length",
+      "evidence": "Drawing text 'M12' and length dimension '20'"
+    },
+    {
+      "what": "Central Precision Shaft Segment",
+      "value": "⌀16 h7 diameter",
+      "evidence": "Drawing text '⌀16 h7'"
+    },
+    {
+      "what": "Cross Hole Segment",
+      "value": "⌀14 mm diameter with ⌀3 mm through hole",
+      "evidence": "Drawing text '⌀14' and '⌀3 관통'"
+    },
+    {
+      "what": "Right Thread",
+      "value": "M12x1.25 fine thread, 18 mm length",
+      "evidence": "Drawing text 'M12x1.25' and length dimension '18'"
+    },
+    {
+      "what": "Overall Length",
+      "value": "118 mm",
+      "evidence": "Drawing text '118'"
+    }
+  ],
+  "manufacturing": [
+    "Machine the ⌀16 h7 central journal to precise tolerance.",
+    "Cut M12 standard thread and M12x1.25 fine thread with DIN 76-A undercuts.",
+    "Drill the ⌀3 mm cross hole through the ⌀14 mm section perpendicular to the axis."
+  ],
+  "standards": [
+    "DIN 76-A",
+    "KS B ISO 2768-m"
+  ],
+  "uncertain": [
+    "Heat treatment requirement is not specified on the drawing.",
+    "Surface roughness symbols are missing for individual machined surfaces."
+  ],
+  "confidence": 0.95,
+  "provider": "primary",
+  "elapsed_ms": 8465,
+  "part_type_inferred": "stud",
+  "ocr_tokens": [
+    "23",
+    "R0.5",
+    "C1.5",
+    "5.25x29.47878210.12",
+    "76-",
+    "12",
+    "28",
+    "12x1.25",
+    "C15",
+    "2167",
+    "7",
+    "1",
+    "20",
+    "20",
+    "18",
+    "118",
+    "1.C0.5",
+    "2.-2768-"
+  ],
+  "built_at": "2026-08-17T10:33:20.304Z"
+}

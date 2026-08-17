@@ -65,7 +65,8 @@ if (RAW) {
     },
   };
   mkdirSync(join(DST, "js"), { recursive: true });
-  for (const entry of ["app.js", "part2.js"]) {
+  /* i18n.js 는 진입 화면(index.html)이 직접 부르므로 따로 묶는다 */
+  for (const entry of ["app.js", "part2.js", "i18n.js", "guide-boot.js"]) {
     const out = await esbuild.build({
       entryPoints: [join(SRC, "js", entry)],
       bundle: true, format: "esm", minify: true, legalComments: "none", target: ["es2022"],

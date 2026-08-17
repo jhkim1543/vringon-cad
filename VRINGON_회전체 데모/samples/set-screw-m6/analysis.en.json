@@ -1,0 +1,58 @@
+{
+  "part_type": "bolt",
+  "one_line": "M6x12 hex socket set screw made of S45C steel",
+  "function": "It secures a machine component onto a shaft by tightening through an internal hex socket without an exposed head.",
+  "features": [
+    {
+      "what": "Thread specification",
+      "value": "M6",
+      "evidence": "drawing text 'M6'"
+    },
+    {
+      "what": "Overall length",
+      "value": "12 mm",
+      "evidence": "drawing text '12'"
+    },
+    {
+      "what": "Internal drive socket",
+      "value": "Hex socket S3, depth 3 mm",
+      "evidence": "drawing text '육각 소켓 S3 깊이 3'"
+    },
+    {
+      "what": "Drive side chamfer",
+      "value": "C0.5",
+      "evidence": "drawing text 'C0.5'"
+    },
+    {
+      "what": "Tip chamfer",
+      "value": "C1",
+      "evidence": "drawing text 'C1'"
+    }
+  ],
+  "manufacturing": [
+    "Machine M6 external threads along the body length using S45C material.",
+    "Form the internal hex socket drive S3 to a depth of 3 mm.",
+    "Maintain general machining tolerances according to KS B ISO 2768-m."
+  ],
+  "standards": [
+    "KS B ISO 2768-m"
+  ],
+  "uncertain": [
+    "Heat treatment requirements are not specified on the drawing.",
+    "Surface coating or plating details are not specified."
+  ],
+  "confidence": 0.98,
+  "provider": "primary",
+  "elapsed_ms": 7278,
+  "part_type_inferred": "bolt",
+  "ocr_tokens": [
+    "6",
+    "C0.5",
+    "C1",
+    "12",
+    "1.CC0.5",
+    "2.",
+    "2"
+  ],
+  "built_at": "2026-08-17T10:34:32.423Z"
+}

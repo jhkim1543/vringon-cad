@@ -1,0 +1,62 @@
+{
+  "part_type": "bushing",
+  "one_line": "Precision brass bushing with m6 outer diameter and H7 bore",
+  "function": "This part acts as a sleeve bearing or guide bushing to support relative motion between mechanical components. The radial hole enables oil lubrication or retention pin insertion.",
+  "features": [
+    {
+      "what": "Outer diameter",
+      "value": "30 mm (m6 tolerance)",
+      "evidence": "Drawing dimension ⌀30 m6"
+    },
+    {
+      "what": "Inner bore diameter",
+      "value": "25 mm (H7 tolerance)",
+      "evidence": "Drawing dimension ⌀25 H7"
+    },
+    {
+      "what": "Overall length",
+      "value": "25 mm",
+      "evidence": "Drawing dimension 25"
+    },
+    {
+      "what": "Radial blind hole",
+      "value": "Diameter 2.5 mm, depth 3.5 mm at 12.5 mm position",
+      "evidence": "Drawing text ⌀2.5 깊이 3.5 and 12.5"
+    },
+    {
+      "what": "End chamfers",
+      "value": "C0.5 on both outer edges",
+      "evidence": "Drawing text C0.5 and general note 1"
+    }
+  ],
+  "manufacturing": [
+    "Machined from free-cutting brass material C3604 as specified in the title block.",
+    "Outer diameter m6 and bore diameter H7 demand precise turning or reaming.",
+    "Unspecified general dimensions must satisfy KS B ISO 2768-m."
+  ],
+  "standards": [
+    "KS B ISO 2768-m"
+  ],
+  "uncertain": [
+    "Heat treatment requirement is not stated.",
+    "Surface roughness specifications are not indicated.",
+    "Exact lubrication or mounting system assembly details are unknown."
+  ],
+  "confidence": 0.98,
+  "provider": "primary",
+  "elapsed_ms": 9199,
+  "part_type_inferred": "bushing",
+  "ocr_tokens": [
+    "22.5203.5",
+    "C0.5",
+    "12.5230",
+    "C0.5",
+    "24",
+    "25",
+    "4.2",
+    "7C0.5",
+    "2.",
+    "2"
+  ],
+  "built_at": "2026-08-17T10:32:40.241Z"
+}

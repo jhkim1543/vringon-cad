@@ -1,0 +1,62 @@
+{
+  "part_type": "bolt",
+  "one_line": "M8x30 hexagon socket head cap screw",
+  "function": "Fastens components together using an M8 threaded section and a hex socket drive.",
+  "features": [
+    {
+      "what": "Drive type",
+      "value": "S6 hex socket, 4 mm depth",
+      "evidence": "drawing text '육각 소켓 S6 깊이 4'"
+    },
+    {
+      "what": "Head size",
+      "value": "13 mm diameter, 8 mm length",
+      "evidence": "drawing text '⌀13' and total length '38' minus shaft length '30'"
+    },
+    {
+      "what": "Unthreaded shank",
+      "value": "8 mm diameter, 8 mm length",
+      "evidence": "drawing text '⌀8' and '8'"
+    },
+    {
+      "what": "Threaded section",
+      "value": "M8 x 1.25, 22 mm length",
+      "evidence": "drawing text 'M8' and '22'"
+    },
+    {
+      "what": "Transitions",
+      "value": "R0.5 fillet under head, C1 lead-in chamfer",
+      "evidence": "drawing text 'R0.5' and 'C1'"
+    }
+  ],
+  "manufacturing": [
+    "Machine from SCM435 alloy steel as indicated in title block '재질 SCM435'.",
+    "Apply general tolerances according to KS B ISO 2768-m from note 2.",
+    "Apply C0.5 chamfer on unspecified edges per note 1."
+  ],
+  "standards": [
+    "KS B ISO 2768-m"
+  ],
+  "uncertain": [
+    "Heat treatment specifications or surface hardness.",
+    "Surface coating or plating requirements."
+  ],
+  "confidence": 0.98,
+  "provider": "primary",
+  "elapsed_ms": 7466,
+  "part_type_inferred": "bolt",
+  "ocr_tokens": [
+    "213",
+    "C0.5",
+    "28",
+    "R0.5",
+    "8",
+    "C1",
+    "22",
+    "38",
+    "1.CC0.5",
+    "2.",
+    "2"
+  ],
+  "built_at": "2026-08-17T10:34:24.784Z"
+}

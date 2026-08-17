@@ -1,0 +1,82 @@
+{
+  "part_type": "spindle",
+  "one_line": "Stepped spindle shaft with M12 thread, keyway, and j5 bearing fits",
+  "function": "Transmits rotational torque via a parallel keyway while rotating on precision bearing seats. Retains components axially using an M12x1 thread and a snap ring groove.",
+  "features": [
+    {
+      "what": "Overall length",
+      "value": "119 mm",
+      "evidence": "Drawing dimension text '119'"
+    },
+    {
+      "what": "Threaded end",
+      "value": "M12x1, length 14 mm",
+      "evidence": "Drawing text 'M12x1' and '14'"
+    },
+    {
+      "what": "Bearing fits",
+      "value": "Diameter 15 j5 (2 places)",
+      "evidence": "Drawing text '⌀15 j5'"
+    },
+    {
+      "what": "Parallel keyway",
+      "value": "Width 6 mm, length 20 mm, height to flat 14.5 mm",
+      "evidence": "Drawing text '6', '20', and section view '14.5'"
+    },
+    {
+      "what": "Retaining ring groove",
+      "value": "Width 1.1 mm, groove diameter 13.3 mm",
+      "evidence": "Drawing text '1.1' and '⌀13.3'"
+    },
+    {
+      "what": "Center holes",
+      "value": "Type A2 center hole on end faces",
+      "evidence": "Drawing text '센터구멍 A2 (DIN 332)'"
+    }
+  ],
+  "manufacturing": [
+    "Precision grinding required on diameter 15 j5 bearing journals and diameter 14 h6 fit.",
+    "Material specified is SCM415 alloy steel, suitable for carburizing and case hardening.",
+    "Unspecified chamfers C0.5 and general tolerances per KS B ISO 2768-m as noted."
+  ],
+  "standards": [
+    "DIN 76-A",
+    "DIN 332",
+    "KS B ISO 2768-m"
+  ],
+  "uncertain": [
+    "Heat treatment details such as case depth or surface hardness are not specified on drawing.",
+    "Specific surface finish (Ra/Rz) values are missing from feature callouts."
+  ],
+  "confidence": 0.95,
+  "provider": "primary",
+  "elapsed_ms": 9476,
+  "part_type_inferred": "spindle",
+  "ocr_tokens": [
+    "3x210.576-",
+    "20",
+    "R0.5",
+    "213.3",
+    "218",
+    "11",
+    "214",
+    "R0.5",
+    "12",
+    "R0.5",
+    "R0.5",
+    "C1",
+    "1x1",
+    "C0.5",
+    "2155",
+    "46",
+    "2155",
+    "20",
+    "14",
+    "20",
+    "12",
+    "119",
+    "1.C0.5",
+    "2.-2768-"
+  ],
+  "built_at": "2026-08-17T10:34:07.640Z"
+}

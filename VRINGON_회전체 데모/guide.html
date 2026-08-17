@@ -190,5 +190,6 @@ fetch("assets/guide/dim-guide.json").then((r) => r.json()).then((j) => {
   document.getElementById("legend").innerHTML = j.legend.map((l) => `<div><i>${l.n}</i><span>${l.text}</span></div>`).join("");
 }).catch(() => {});
 </script>
+<script type="module" src="./js/guide-boot.js"></script>
 </body>
 </html>

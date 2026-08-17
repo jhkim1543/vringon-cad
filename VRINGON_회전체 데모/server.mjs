@@ -278,7 +278,7 @@ const server = createServer(async (req, res) => {
       const body = await readBody(req);
       if (!body.imageB64 || !body.dsl) return json(res, 400, { error: "imageB64 와 dsl 이 필요합니다" });
       const t0 = Date.now();
-      const msgs = buildDescribeMessages({ image: body.imageB64, dsl: body.dsl, ocrTokens: body.ocrTokens || [], partType: body.partType || "", dims_read: body.dims_read || [] });
+      const msgs = buildDescribeMessages({ image: body.imageB64, dsl: body.dsl, ocrTokens: body.ocrTokens || [], partType: body.partType || "", dims_read: body.dims_read || [], lang: body.lang === "en" ? "en" : "ko" });
       const out = await callVision(msgs, DESCRIBE_RESPONSE_SCHEMA, "text");
       const j = out.json || out;
       return json(res, 200, { ...j, provider: out.provider, elapsed_ms: Date.now() - t0 });

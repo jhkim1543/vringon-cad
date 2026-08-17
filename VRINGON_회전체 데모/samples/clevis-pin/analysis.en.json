@@ -1,0 +1,54 @@
+{
+  "part_type": "pin",
+  "one_line": "Clevis pin with a cross hole and h11 shaft",
+  "function": "Serves as a pivotal hinge pin in a clevis joint assembly. Holds linked parts together with a retaining split pin through the cross hole.",
+  "features": [
+    {
+      "what": "Pin head",
+      "value": "Diameter 16 mm, thickness 3 mm",
+      "evidence": "Drawing text '⌀16' and '3'"
+    },
+    {
+      "what": "Shaft diameter",
+      "value": "12 mm with h11 tolerance",
+      "evidence": "Drawing text '⌀12 h11'"
+    },
+    {
+      "what": "Overall length",
+      "value": "51 mm",
+      "evidence": "Drawing text '51'"
+    },
+    {
+      "what": "Cross hole",
+      "value": "Diameter 3.2 mm through, 7 mm from end",
+      "evidence": "Drawing text '⌀3.2 관통' and '7'"
+    }
+  ],
+  "manufacturing": [
+    "Maintain shaft precision to h11 tolerance class during turning.",
+    "Drill ⌀3.2 mm cross hole accurately 7 mm from the end.",
+    "Apply general tolerances per KS B ISO 2768-m."
+  ],
+  "standards": [
+    "KS B ISO 2768-m"
+  ],
+  "uncertain": [
+    "Heat treatment specification is missing.",
+    "Specific surface roughness requirements are not provided."
+  ],
+  "confidence": 0.98,
+  "provider": "primary",
+  "elapsed_ms": 7546,
+  "part_type_inferred": "pin",
+  "ocr_tokens": [
+    "16",
+    "C0.5",
+    "93.2",
+    "51",
+    "1R",
+    "7C0.5",
+    "2",
+    "2.214"
+  ],
+  "built_at": "2026-08-17T10:32:30.532Z"
+}

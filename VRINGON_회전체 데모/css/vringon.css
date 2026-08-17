@@ -84,6 +84,11 @@ svg { display: block; }
 }
 .tag-accent { background: var(--accent-soft); color: var(--accent-hi); border-color: rgba(91,107,240,.3); }
 .tag-ok { background: var(--ok-soft); color: var(--ok); border-color: rgba(143,161,255,.3); }
+/* 언어 토글 */
+.lang-seg { display: inline-flex; gap: 2px; padding: 2px; border: 1px solid var(--line-2); border-radius: 8px; background: var(--panel); }
+.lang-seg button { font-size: 11.5px; font-weight: 600; padding: 4px 9px; border: 0; border-radius: 6px; background: transparent; color: var(--text-3); cursor: pointer; }
+.lang-seg button:hover { color: var(--text-2); }
+.lang-seg button.on { background: var(--accent-soft); color: var(--accent-hi); }
 
 .input {
   width: 100%; background: #0E0E12; border: 1px solid var(--line-2);

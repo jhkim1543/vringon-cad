@@ -14,6 +14,8 @@ import { ROLES, ROLE_KO, isOrtho, suggestRoles, suggestMethod, buildOrthoPart, p
 import { makePartMaterials, buildRevolvePart, buildExtrudePart } from "./part2-cad.js";
 import { exportSTEP, exportSTL, exportGLB, exportOBJ, exportPLY, exportFBX, exportUSDA, exportUSDZ, downloadBlob } from "./shaft-export.js";
 import { initTour } from "./tour.js";
+import { initI18n, t } from "./i18n.js";
+const roleName = (id) => t(ROLE_KO[id] || id || "");
 
 const BUILD = "dev";
 const $ = (id) => document.getElementById(id);
@@ -122,8 +124,8 @@ function renderViewList() {
   $("viewList").innerHTML = state.views.map((v) => `
     <div class="vrow ${state.pick === v ? "on" : ""}" data-v="${v.id}">
       <span class="n">${v.id}</span>
-      <span class="m">${v.part.W}×${v.part.H} px<br/><small>구멍 ${v.contours.holes.length}${v.contours.ignored.length ? ` · 안쪽 모서리 ${v.contours.ignored.length}` : ""} · 회전 ${v.revolveScore.toFixed(2)}</small></span>
-      <select data-role="${v.id}">${ROLES.map((r) => `<option value="${r.id}" ${state.roles[v.id] === r.id ? "selected" : ""}>${r.ko}</option>`).join("")}</select>
+      <span class="m">${v.part.W}×${v.part.H} px<br/><small>${t("구멍")} ${v.contours.holes.length}${v.contours.ignored.length ? ` · ${t("안쪽 모서리")} ${v.contours.ignored.length}` : ""} · ${t("회전체 점수")} ${v.revolveScore.toFixed(2)}</small></span>
+      <select data-role="${v.id}">${ROLES.map((r) => `<option value="${r.id}" ${state.roles[v.id] === r.id ? "selected" : ""}>${t(r.ko)}</option>`).join("")}</select>
     </div>`).join("");
 }
 $("viewList").addEventListener("click", (e) => { if (e.target.tagName === "SELECT") return; const r = e.target.closest("[data-v]"); if (r) pickView(state.views.find((v) => v.id === Number(r.dataset.v))); });
@@ -135,7 +137,7 @@ function setRole(vid, role) {
   renderAll();
 }
 function renderAll() { renderViewList(); drawOverlay(); renderCube(); renderMethod(); }
-function pickView(v) { state.pick = v || null; $("pickTag").textContent = v ? `뷰 ${v.id}` : "뷰 없음"; renderAll(); }
+function pickView(v) { state.pick = v || null; $("pickTag").textContent = v ? `${t("뷰")} ${v.id}` : t("뷰 없음"); renderAll(); }
 
 function drawOverlay() {
   const ov = $("ov"); if (!state.image) return;
@@ -144,7 +146,7 @@ function drawOverlay() {
   let s = state.views.map((v) => {
     const role = state.roles[v.id], ref = !isOrtho(role);
     return `<rect class="vbox ${state.pick === v ? "on" : ""} ${ref ? "ref" : ""}" data-v="${v.id}" x="${v.part.x0 - 8}" y="${v.part.y0 - 8}" width="${v.part.W + 16}" height="${v.part.H + 16}" rx="6"/>
-      <text class="vlab" x="${v.part.x0 - 2}" y="${v.part.y0 - 14}">${v.id}</text><text class="vlab role" x="${v.part.x0 + 16}" y="${v.part.y0 - 14}">${ROLE_KO[role] || ""}</text>`;
+      <text class="vlab" x="${v.part.x0 - 2}" y="${v.part.y0 - 14}">${v.id}</text><text class="vlab role" x="${v.part.x0 + 16}" y="${v.part.y0 - 14}">${roleName(role)}</text>`;
   }).join("");
   if (state.showDims && state.scale) {
     const used = new Set((state.scale.used || []).map((u) => u.text));
@@ -166,16 +168,16 @@ function renderCube() {
   $("cube").innerHTML = FACES.map((f) => {
     const vid = assigned.get(f.id);
     return `<polygon class="f ${vid ? "assigned" : "free"} ${pickRole === f.id ? "on" : ""}" data-face="${f.id}" points="${f.pts}" stroke="#0C0C10" stroke-width="1.5"/>
-      <text x="${f.tx}" y="${f.ty}">${ROLE_KO[f.id]}${vid ? ` · 뷰 ${vid}` : ""}</text>`;
+      <text x="${f.tx}" y="${f.ty}">${roleName(f.id)}${vid ? ` · ${t("뷰")} ${vid}` : ""}</text>`;
   }).join("");
   $("cube").querySelectorAll(".f").forEach((el) => (el.onclick = () => { if (!state.pick) return toast("먼저 뷰를 고르세요"); setRole(state.pick.id, el.dataset.face); }));
   $("roleBtns").innerHTML = ROLES.filter((r) => !FACES.some((f) => f.id === r.id)).map((r) => {
     const vid = assigned.get(r.id);
-    return `<button data-role="${r.id}" class="${pickRole === r.id ? "on" : ""}">${r.ko}${vid && isOrtho(r.id) ? ` · 뷰 ${vid}` : ""}</button>`;
+    return `<button data-role="${r.id}" class="${pickRole === r.id ? "on" : ""}">${t(r.ko)}${vid && isOrtho(r.id) ? ` · ${t("뷰")} ${vid}` : ""}</button>`;
   }).join("");
   $("roleBtns").querySelectorAll("button").forEach((b) => (b.onclick = () => { if (!state.pick) return toast("먼저 뷰를 고르세요"); setRole(state.pick.id, b.dataset.role); }));
   $("cubeHint").innerHTML = state.pick
-    ? `<b>뷰 ${state.pick.id}</b> 은 지금 <b>${ROLE_KO[state.roles[state.pick.id]]}</b>. 다른 면을 누르면 바뀝니다. 정투상 방향은 뷰 하나에만 줄 수 있습니다.`
+    ? `<b>${t("뷰")} ${state.pick.id}</b>: <b>${roleName(state.roles[state.pick.id])}</b>`
     : "왼쪽 목록이나 도면 위 상자에서 뷰를 고른 뒤 면을 누르세요.";
 }
 
@@ -295,11 +297,11 @@ function renderResult() {
   $("rSize").textContent = `${fmt(r.size.X)} × ${fmt(r.size.Y)} × ${fmt(r.size.Z)} mm`;
   $("rVol").textContent = `${fmt(r.volume, 1)} cm³`;
   $("rTris").textContent = `${(p.mesh.geometry.attributes.position.count / 3).toLocaleString()}개`;
-  const rows = r.ious.map((x) => { const pct = x.iou * 100; const cls = pct >= 95 ? "ok" : pct >= 85 ? "warn" : "bad"; return `<div class="r"><span>${ROLE_KO[x.role]}</span><b class="${cls}">${pct.toFixed(1)}%</b></div>`; });
-  for (const c of r.checks) rows.push(`<div class="r"><span>${c.axis} 크기 · ${ROLE_KO[c.a.role]}와 ${ROLE_KO[c.b.role]}</span><b class="${c.ok ? "ok" : "warn"}">차이 ${c.diffPct}%</b></div>`);
+  const rows = r.ious.map((x) => { const pct = x.iou * 100; const cls = pct >= 95 ? "ok" : pct >= 85 ? "warn" : "bad"; return `<div class="r"><span>${roleName(x.role)}</span><b class="${cls}">${pct.toFixed(1)}%</b></div>`; });
+  for (const c of r.checks) rows.push(`<div class="r"><span>${c.axis} ${t("크기")} · ${roleName(c.a.role)} ${t("와")} ${roleName(c.b.role)}</span><b class="${c.ok ? "ok" : "warn"}">차이 ${c.diffPct}%</b></div>`);
   $("rChecks").innerHTML = rows.join("") || `<div class="mini">대조할 정투상 뷰가 없습니다.</div>`;
   const low = r.ious.filter((x) => x.iou < 0.9);
-  $("rNote").innerHTML = (r.notes || []).concat(low.length ? [`${low.map((x) => ROLE_KO[x.role]).join(", ")} 정합이 낮습니다. 방향과 구멍을 확인하세요.`] : []).join("<br/>");
+  $("rNote").innerHTML = (r.notes || []).concat(low.length ? [t("{} 정합이 낮습니다. 방향과 구멍을 확인하세요.", { "": low.map((x) => roleName(x.role)).join(", ") })] : []).join("<br/>");
 }
 
 /* ================================================================ 내보내기 */
@@ -365,6 +367,7 @@ $("chips").onclick = async (e) => {
   await loadSheet({ name: s.name, svg, sample: s });
 };
 renderCube();
+initI18n();
 initTour("part2");
 ensureOcr().catch(() => {});   /* 미리 불러 둔다 (첫 판독을 기다리지 않게) */
 

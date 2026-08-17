@@ -19,6 +19,7 @@ import { analyzeMates, matesSummary } from "./shaft-mates.js";
 import { PART_TYPES, typeOf, inferPartType } from "./part-types.js";
 import { buildAssembly, createAssemblySim, assemblyChecks, makeMateMaterials, makeSpinMarker } from "./shaft-assembly.js";
 import { initTour } from "./tour.js";
+import { initI18n, t, lang } from "./i18n.js";
 import { exportSTEP, exportSTL, exportGLB, exportOBJ, exportUSDA, exportUSDZ, exportFBX, exportPLY, exportDrawingDXF, exportDrawingSVG, exportJSON, downloadBlob } from "./shaft-export.js";
 
 const BUILD = "dev";
@@ -136,7 +137,7 @@ function refreshSheet() {
     setSheetImage(svgToDataUrl(svg), `재생성 도면 · 지금 사양으로 다시 그림 (원본 아님)`);
     $("overlay").innerHTML = "";
   } else {
-    setSheetImage(state.source.svg ? svgToDataUrl(state.source.svg) : state.source.image, state.source.kind === "sample" ? `샘플 도면 · ${state.source.name}` : state.source.kind === "synthetic" ? `합성 도면 · ${state.source.name}` : `업로드 · ${state.source.name}`);
+    setSheetImage(state.source.svg ? svgToDataUrl(state.source.svg) : state.source.image, state.source.kind === "sample" ? `샘플 도면 · ${t(state.source.name)}` : state.source.kind === "synthetic" ? `합성 도면 · ${t(state.source.name)}` : `업로드 · ${state.source.name}`);
     drawOverlay();
   }
   $("btnRegen").classList.toggle("on", state.sheetMode === "regen");
@@ -246,7 +247,7 @@ async function loadSource(src) {
   state.raster = r.imageData;
   state.gold = src.gold || null;
   state.sample = src.sample || null;
-  setSheetImage(dataUrl, src.kind === "sample" ? `샘플 도면 · ${src.name}` : src.kind === "synthetic" ? `만든 도면 · ${src.name}` : `업로드 · ${src.name}`);
+  setSheetImage(dataUrl, src.kind === "sample" ? `샘플 도면 · ${t(src.name)}` : src.kind === "synthetic" ? `만든 도면 · ${t(src.name)}` : `업로드 · ${src.name}`);
 }
 
 /* ================================================================ 파이프라인 */
@@ -384,12 +385,14 @@ async function runAnalysis() {
   let a = null, src = "";
   try {
     if (state.source?.kind === "sample" && state.sample && !(state.mode === "live" && state.extraction?.method === "server")) {
-      a = await fetch(`./samples/${state.sample.id}/analysis.json?v=${BUILD}`).then((r) => (r.ok ? r.json() : null));
+      const file = lang === "en" ? "analysis.en.json" : "analysis.json";
+      a = await fetch(`./samples/${state.sample.id}/${file}?v=${BUILD}`).then((r) => (r.ok ? r.json() : null));
+      if (!a && lang === "en") a = await fetch(`./samples/${state.sample.id}/analysis.json?v=${BUILD}`).then((r) => (r.ok ? r.json() : null));
       src = a ? "미리 만든 해석 (도면 문자 인식 + 판독 사양 + 이미지)" : "";
     }
     if (!a && state.mode === "live" && state.dsl) {
       const tokens = await browserOcrTokens();
-      const r = await fetch("./api/describe", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ imageB64: state.source.image, dsl: state.dsl, ocrTokens: tokens.map((t) => ({ text: t.text, value: t.value, kind: t.kind })), partType: state.partType, dims_read: state.extraction?.dims_read || [] }) });
+      const r = await fetch("./api/describe", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ imageB64: state.source.image, dsl: state.dsl, ocrTokens: tokens.map((t) => ({ text: t.text, value: t.value, kind: t.kind })), partType: state.partType, dims_read: state.extraction?.dims_read || [], lang }) });
       if (r.ok) { a = await r.json(); src = `지금 해석 (도면 문자 ${tokens.length}개 + 사양 + 이미지, ${((a.elapsed_ms || 0) / 1000).toFixed(1)}초)`; }
     }
   } catch (e) { console.warn(e); }
@@ -415,7 +418,8 @@ function renderExtractPanel() {
   $("exConfBar").style.width = conf == null ? "0" : `${Math.round(conf * 100)}%`;
   $("exDims").textContent = ex.dims_read?.length ? `${ex.dims_read.length}개` : "외형만 (문자 안 읽음)";
   $("exMs").textContent = ex.ms ? `${(ex.ms / 1000).toFixed(1)}초` : "—";
-  $("exNotes").innerHTML = (ex.notes || []).slice(0, 3).map((n) => `<div>${escapeHtml(n)}</div>`).join("");
+  /* 판독 노트는 모델이 한국어로 쓴 계산 메모다. 영어 화면에서는 해석 패널이 그 역할을 하므로 감춘다 */
+  $("exNotes").innerHTML = lang === "ko" ? (ex.notes || []).slice(0, 3).map((n) => `<div>${escapeHtml(n)}</div>`).join("") : "";
 }
 const escapeHtml = (s) => String(s).replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]));
 
@@ -426,7 +430,7 @@ function setDsl(dsl, { pristine = false } = {}) {
   const ta = $("jsonText"); ta.value = JSON.stringify(dsl, null, 2); ta.classList.remove("bad");
   $("jsonBlock").style.display = ""; $("segBlock").style.display = ""; $("featBlock").style.display = "";
   const v = validateShaft(dsl);
-  $("jsonMeta").textContent = `${dsl.name_ko || dsl.id || "회전체"} · 세그먼트 ${dsl.segments.length}`;
+  $("jsonMeta").textContent = `${t(dsl.name_ko || dsl.id || "회전체")} · ${t("세그먼트")} ${dsl.segments.length}`;
   const msg = $("jsonMsg"); msg.classList.toggle("bad", !v.ok);
   msg.textContent = v.ok ? (v.warnings.length ? `주의: ${v.warnings.join(" / ")}` : "형상 검증 통과. 값을 고치면 3D, 도면, 검증이 다시 계산됩니다.") : `형상 오류: ${v.errors.join(" / ")}`;
   renderSegTable(); renderFeatList(); renderModelInfo();
@@ -541,7 +545,7 @@ function highlightSegment(i) {
 function renderModelInfo() {
   const dsl = state.dsl; if (!dsl) return;
   const v = validateShaft(dsl);
-  $("mName").textContent = dsl.name_ko || dsl.name || dsl.id || "회전체";
+  $("mName").textContent = t(dsl.name_ko || dsl.name || dsl.id || "회전체");
   const assumed = dsl.meta?.scale === "assumed";
   $("mLen").textContent = `${fmt(totalLength(dsl), 2)} mm${assumed ? " (비율)" : ""}`;
   $("mDia").textContent = `⌀${fmt(maxDiameter(dsl), 2)} mm${assumed ? " (비율)" : ""}`;
@@ -729,6 +733,7 @@ async function setSimMode(on) {
   if ($("asmExportRow")) $("asmExportRow").style.display = on && state.assembly ? "flex" : "none";
 }
 $("btnSim").onclick = () => setSimMode(!state.simOn);
+const FEATURE_KO = { keyway: "키홈", center_hole: "센터구멍", cross_hole: "횡구멍", flat: "평면", hex: "육각", knurl: "널링", hex_socket: "육각 소켓" };
 const MATE_KO = { spin: "자전축", snap: "멈춤링", key: "키·허브", screw: "나사 체결", bearing: "베어링", pin: "핀", wrench: "공구", fit: "끼워맞춤" };
 function renderTypeHint() {
   const t = typeOf(state.partType || "other");
@@ -906,7 +911,7 @@ function renderLibrary() {
     <button class="item" data-id="${s.id}">
       <img class="thumb" src="./samples/${s.id}/${s.files.thumb || s.files.svg}?v=${BUILD}" alt="" loading="lazy" />
       <div class="meta"><div class="t">${s.name_ko} <span style="color:var(--text-3);font-weight:500">· ${s.name}</span></div>
-      <div class="d">L${s.L} · ⌀${s.Dmax} · ${s.material} · 세그먼트 ${s.segments}${s.features.length ? ` · ${[...new Set(s.features)].join("/")}` : ""}${s.bore ? " · 보어" : ""} · 난이도 ${"●".repeat(s.difficulty)}${"○".repeat(5 - s.difficulty)}</div></div>
+      <div class="d">L${s.L} · ⌀${s.Dmax} · ${s.material} · ${t("세그먼트")} ${s.segments}${s.features.length ? ` · ${[...new Set(s.features)].map((f) => t(FEATURE_KO[f] || f)).join("/")}` : ""}${s.bore ? ` · ${t("보어")}` : ""} · ${t("난이도")} ${"●".repeat(s.difficulty)}${"○".repeat(5 - s.difficulty)}</div></div>
     </button>`).join("");
 }
 $("libGrid").onclick = (e) => { const b = e.target.closest(".item"); if (!b) return; closeLib(); const s = state.samples.find((x) => x.id === b.dataset.id); if (s) startFromSample(s); };
@@ -947,6 +952,7 @@ window.__vringon = { state, pipe, runStep, extractHeuristic, verifyExtraction, g
     state.samples = idx.samples || [];
   } catch (e) { $("chips").innerHTML = `<span class="hint">샘플 목록을 불러오지 못했습니다: ${e.message}</span>`; return; }
   $("chips").innerHTML = state.samples.map((s) => `<button class="sample" data-id="${s.id}" title="${s.name}"><img class="thumb" src="./samples/${s.id}/${s.files.thumb || s.files.svg}?v=${BUILD}" alt="" loading="lazy" /><span class="lb">${s.name_ko}</span></button>`).join("");
+  initI18n();   /* 언어 토글: 화면에 그려진 한국어를 사전으로 바꾸고, 이후 생기는 내용도 따라간다 */
   renderStepper();
   $("partType").innerHTML = `<option value="">모름 (판독 뒤 추정)</option>` + PART_TYPES.map((t) => `<option value="${t.id}">${t.ko}</option>`).join("");
   $("partType").onchange = () => { state.partType = $("partType").value; $("partType").dataset.userSet = state.partType ? "1" : ""; renderTypeHint(); if (state.simOn) { teardownAssembly(); spawnAssembly(); renderMatePanel(); } };

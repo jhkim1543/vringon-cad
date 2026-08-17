@@ -1,0 +1,59 @@
+{
+  "part_type": "stud",
+  "one_line": "Double-ended M12 stud bolt with overall length 60 mm.",
+  "function": "This part functions as a stud fastener to join components together. One threaded end screws into a tapped body while the other end secures an mating part with a nut.",
+  "features": [
+    {
+      "what": "Overall length",
+      "value": "60 mm",
+      "evidence": "Drawing dimension 60"
+    },
+    {
+      "what": "Outer diameter",
+      "value": "12 mm",
+      "evidence": "Drawing dimension ⌀12"
+    },
+    {
+      "what": "Left thread",
+      "value": "M12 x 15 mm length",
+      "evidence": "Drawing text M12 and dimension 15"
+    },
+    {
+      "what": "Right thread",
+      "value": "M12 x 22 mm length",
+      "evidence": "Drawing text M12 and dimension 22"
+    },
+    {
+      "what": "End chamfer",
+      "value": "C1.5",
+      "evidence": "Drawing text C1.5"
+    }
+  ],
+  "manufacturing": [
+    "Machine threads on SCM435 alloy steel specified in title block 재질 SCM435.",
+    "Apply general tolerance per drawing note 2 KS B ISO 2768-m."
+  ],
+  "standards": [
+    "KS B ISO 2768-m"
+  ],
+  "uncertain": [
+    "Thread pitch and tolerance grade are not explicitly written on the drawing text.",
+    "Heat treatment and surface finish specifications are not provided on the drawing."
+  ],
+  "confidence": 0.95,
+  "provider": "primary",
+  "elapsed_ms": 10027,
+  "part_type_inferred": "stud",
+  "ocr_tokens": [
+    "12",
+    "212",
+    "12",
+    "C15",
+    "C1.5",
+    "32R12x60",
+    "1.CC0.5",
+    "2.",
+    "2"
+  ],
+  "built_at": "2026-08-17T10:34:52.813Z"
+}

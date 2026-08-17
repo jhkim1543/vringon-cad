@@ -1,0 +1,72 @@
+{
+  "part_type": "shaft",
+  "one_line": "Taper shaft with keyway and M16 thread",
+  "function": "Transmits torque via a parallel key and locates components along a tapered section clamped by a thread.",
+  "features": [
+    {
+      "what": "Fitting cylinder",
+      "value": "Ø25 k6",
+      "evidence": "Drawing text '⌀25 k6'"
+    },
+    {
+      "what": "Tapered segment",
+      "value": "Ø25 to Ø20 over 40 mm",
+      "evidence": "Drawing text '⌀25', '⌀20', '40'"
+    },
+    {
+      "what": "Parallel keyway",
+      "value": "Width 8 mm, Depth 4 mm, Length 20 mm",
+      "evidence": "Drawing text '8', '21' and spec"
+    },
+    {
+      "what": "Metric thread",
+      "value": "M16x1.5",
+      "evidence": "Drawing text 'M16×1.5'"
+    },
+    {
+      "what": "Thread undercut",
+      "value": "4.5 x Ø13.8 (DIN 76-A)",
+      "evidence": "Drawing text '4.5×⌀13.8 (DIN 76-A)'"
+    },
+    {
+      "what": "Center hole",
+      "value": "Type A2.5",
+      "evidence": "Drawing text '센터구멍 A2.5 (DIN 332)'"
+    }
+  ],
+  "manufacturing": [
+    "Machine SCM440 alloy steel and grind the Ø25 k6 section to fit specified precision tolerances.",
+    "Apply DIN 76-A thread undercut and maintain general tolerances per KS B ISO 2768-m."
+  ],
+  "standards": [
+    "DIN 332",
+    "DIN 76-A",
+    "KS B ISO 2768-m"
+  ],
+  "uncertain": [
+    "Heat treatment process and surface hardness specifications are not indicated on the drawing.",
+    "Specific mating component and operating environment are not specified."
+  ],
+  "confidence": 0.98,
+  "provider": "primary",
+  "elapsed_ms": 7812,
+  "part_type_inferred": "shaft",
+  "ocr_tokens": [
+    "20",
+    "2256",
+    "72.5332",
+    "C15",
+    "C1",
+    "48x013.876-",
+    "225",
+    "16x1.5",
+    "22",
+    "1",
+    "40",
+    "20",
+    "95",
+    "1.C0.5",
+    "2.-2768-"
+  ],
+  "built_at": "2026-08-17T10:33:36.491Z"
+}
