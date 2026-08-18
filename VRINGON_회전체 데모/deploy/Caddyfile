@@ -1,5 +1,5 @@
 # 도메인만 바꾸면 인증서(Let's Encrypt)는 자동으로 발급·갱신된다.
-cad.rebuilder.ai {
+3dcad.rebuilder.ai {
 	encode zstd gzip
 
 	# 판독은 이미지 한 장을 통째로 올린다 (본문 크기·시간 여유)
@@ -18,6 +18,9 @@ cad.rebuilder.ai {
 		X-Robots-Tag "noindex, nofollow"
 		Referrer-Policy "no-referrer"
 		X-Content-Type-Options "nosniff"
+		X-Frame-Options "SAMEORIGIN"
+		# HTTPS 로만 오게 (1년, 서브도메인 제외) / HTTPS only, one year, this host only
+		Strict-Transport-Security "max-age=31536000"
 		-Server
 	}
 

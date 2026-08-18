@@ -13,7 +13,7 @@ import { existsSync } from "node:fs";
 import { spawn } from "node:child_process";
 import { extname, join, normalize } from "node:path";
 import { fileURLToPath } from "node:url";
-import { createHash } from "node:crypto";
+import { createHash, timingSafeEqual } from "node:crypto";
 import { SHAFT_SCHEMA, validateShaft, normalizeShaft } from "./js/shaft-schema.js";
 import { silhouetteIoU2, dimensionConsistency, confidenceScore, dslSilhouette, silhouetteIoU } from "./js/shaft-verify.js";
 import { EXTRACT_SYSTEM, buildExtractMessages, EXTRACT_RESPONSE_SCHEMA, loadFewShot, postprocessExtracted } from "./tools/extract-prompt.mjs";
@@ -45,6 +45,16 @@ const HAS_FALLBACK = !!(FALLBACK.url && FALLBACK.keys.length && FALLBACK.text);
 const STATIC = env.VRINGON_STATIC ? join(normalize(join(rootDir, env.VRINGON_STATIC)), "/") : rootDir;
 /* 링크를 아는 사람만 쓰게 하려면 VRINGON_ACCESS_CODE 를 준다(빈 값이면 공개). */
 const ACCESS = env.VRINGON_ACCESS_CODE || "";
+/* 외부 도메인 뒤에서 돌 때 켠다(deploy/.env 에서 VRINGON_PUBLIC=1).
+   · 개발용 /__save 를 끈다 — 리버스 프록시 뒤에서는 remoteAddress 가 늘 프록시라 "루프백 전용" 검사가 통하지 않는다
+   · 접근 코드 쿠키에 Secure 를 붙인다 (HTTPS 에서만 보낸다)
+   · 보안 헤더를 붙인다 (프록시가 붙이지 않을 때를 대비해 앱에서도)
+   Set VRINGON_PUBLIC=1 when running behind the public domain.
+   · Disables the dev-only /__save: behind a reverse proxy remoteAddress is always the proxy, so the loopback check is void
+   · Marks the access cookie Secure (HTTPS only)
+   · Adds security headers at the app too, in case the proxy does not */
+const PUBLIC = /^(1|true|yes)$/i.test(env.VRINGON_PUBLIC || "");
+const SEC_HEADERS = { "X-Content-Type-Options": "nosniff", "X-Frame-Options": "SAMEORIGIN", "Referrer-Policy": "no-referrer", "Permissions-Policy": "camera=(), microphone=(), geolocation=()" };
 const ACCESS_HASH = ACCESS ? createHash("sha256").update(`vringon:${ACCESS}`).digest("hex").slice(0, 32) : "";
 /* AI 판독은 호출당 비용이 든다: 주소당 시간 제한 (0 이면 무제한) */
 const RATE = Number(env.VRINGON_RATE_PER_HOUR ?? 30);
@@ -259,13 +269,16 @@ const server = createServer(async (req, res) => {
       const ok = (req.headers.cookie || "").includes(`vr_access=${ACCESS_HASH}`);
       if (req.method === "POST" && path === "/api/access") {
         const body = await readBody(req);
-        if (String(body.code || "") !== ACCESS) return json(res, 401, { error: "코드가 맞지 않습니다" });
-        res.writeHead(200, { "Content-Type": "application/json; charset=utf-8", "Set-Cookie": `vr_access=${ACCESS_HASH}; Path=/; Max-Age=604800; HttpOnly; SameSite=Lax`, "Cache-Control": "no-store" });
+        /* 길이가 다르면 timingSafeEqual 이 던지므로 같은 길이로 맞춰 비교한다. 틀리면 잠깐 기다리게 해 추측을 늦춘다.
+           timingSafeEqual throws on unequal lengths, so compare at a fixed length; a short wait on failure slows guessing. */
+        const given = createHash("sha256").update(String(body.code || "")).digest(), want = createHash("sha256").update(ACCESS).digest();
+        if (!timingSafeEqual(given, want)) { await new Promise((r) => setTimeout(r, 600)); return json(res, 401, { error: "코드가 맞지 않습니다" }); }
+        res.writeHead(200, { "Content-Type": "application/json; charset=utf-8", "Set-Cookie": `vr_access=${ACCESS_HASH}; Path=/; Max-Age=604800; HttpOnly; SameSite=Lax${PUBLIC ? "; Secure" : ""}`, "Cache-Control": "no-store", ...SEC_HEADERS });
         return res.end(JSON.stringify({ ok: true }));
       }
       if (!ok) {
         if (path.startsWith("/api/")) return json(res, 401, { error: "접근 코드가 필요합니다" });
-        res.writeHead(401, { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store" });
+        res.writeHead(401, { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store", ...SEC_HEADERS });
         return res.end(GATE_HTML);
       }
     }
@@ -300,6 +313,7 @@ const server = createServer(async (req, res) => {
     /* 개발용 화면 저장 (루프백 전용): 브라우저가 캔버스 dataURL 을 보내면 data/shots/ 에 쓴다.
        QA 스크린샷 말고는 쓰지 않으며, 외부 주소에서 오면 거부한다. */
     if (req.method === "POST" && path === "/__save") {
+      if (PUBLIC) return json(res, 404, { error: "not found" });
       const ra = req.socket.remoteAddress || "";
       if (!/^(::1|::ffff:127\.0\.0\.1|127\.0\.0\.1)$/.test(ra)) return json(res, 403, { error: "loopback only" });
       const body = await readBody(req, 64e6);
@@ -318,6 +332,8 @@ const server = createServer(async (req, res) => {
     /* 정적 */
     let file = normalize(join(STATIC, path === "/" ? "index.html" : path));
     if (!file.startsWith(STATIC)) return json(res, 403, { error: "forbidden" });
+    /* 점으로 시작하는 파일·폴더(.env, .git …)는 어떤 경우에도 내보내지 않는다 / never serve dotfiles */
+    if (path.split("/").some((seg) => seg.startsWith(".") && seg !== "." && seg !== "..")) return json(res, 404, { error: "not found" });
     let st = null;
     try { st = await stat(file); } catch {}
     if (st?.isDirectory()) { file = join(file, "index.html"); try { st = await stat(file); } catch { st = null; } }
@@ -325,7 +341,7 @@ const server = createServer(async (req, res) => {
     const ext = extname(file).toLowerCase();
     /* 데모 서버는 항상 최신을 준다 — 브라우저가 옛 app.js 를 들고 있으면 판독 결과가 옛 UI 로 읽힌다 */
     const cache = [".html", ".json", ".js", ".mjs", ".css", ".svg"].includes(ext) ? "no-cache" : "public, max-age=3600";
-    res.writeHead(200, { "Content-Type": MIME[ext] || "application/octet-stream", "Cache-Control": cache, "Content-Length": st.size });
+    res.writeHead(200, { "Content-Type": MIME[ext] || "application/octet-stream", "Cache-Control": cache, "Content-Length": st.size, ...SEC_HEADERS });
     return res.end(await readFile(file));
   } catch (e) {
     console.error(`[${req.method} ${path}]`, e.message);
