@@ -427,7 +427,6 @@ export const EN = {
   "정확히 나옵니다.": "Comes out accurate.",
   "안쪽 형상은 근사입니다.": "Inner shapes are approximate.",
   "만들지 못하는 부류입니다.": "This kind can't be built.",
-  "결과": "Result",
   "크기 X × Y × Z": "Size X × Y × Z",
   "부피": "Volume",
   "삼각형": "Triangles",
@@ -756,4 +755,7 @@ export const EN = {
   /* 라이브러리 안내 / library copy */
   "회전체 도면 라이브러리": "Turned-part drawing library",
   "라이브러리": "Library",
+  /* 좁은 화면 칸 탭 / narrow-screen pane tabs */
+  "설정": "Setup",
+  "결과": "Result",
 };

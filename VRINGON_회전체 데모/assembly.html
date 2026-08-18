@@ -11,6 +11,8 @@
   /* 라이브러리: Part 1 과 같은 짜임새 / library: same layout as Part 1 */
   .lib { flex: 1; min-height: 0; overflow-y: auto; }
   .lib-main { padding: 22px 30px 60px; }
+  @media (max-width: 1023px) { .lib-main { padding: 16px 14px 44px; } .grid { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 11px; } }
+  @media (max-width: 620px) { .grid { grid-template-columns: 1fr; } }
   .lib-head { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
   .lib-head h1 { font-size: 19px; }
   .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
@@ -124,9 +126,9 @@
       <svg width="24" height="16" viewBox="0 0 46 30" fill="none"><path d="M2 3 12 27 21 3" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="33" cy="15" r="11.5" stroke="currentColor" stroke-width="5"/></svg>
       VRINGON CAD
     </a>
-    <span style="color:var(--line-2)">/</span>
-    <span style="font-size:13.5px;color:var(--text-2)">Part 2 · 다시점 도면에서 부품 하나</span>
-    <span style="color:var(--line-2)">/</span>
+    <span class="hide-narrow" style="color:var(--line-2)">/</span>
+    <span class="hide-narrow" style="font-size:13.5px;color:var(--text-2)">Part 2 · 다시점 도면에서 부품 하나</span>
+    <span class="hide-narrow" style="color:var(--line-2)">/</span>
     <span style="font-size:13.5px;color:var(--text-2)" id="projName">새 도면</span>
     <span class="sp"></span>
     <span class="tag" id="ocrTag" title="치수 문자를 읽는 엔진 상태">문자 인식 준비 중…</span>

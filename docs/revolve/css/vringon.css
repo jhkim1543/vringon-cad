@@ -85,7 +85,8 @@ svg { display: block; }
 .tag-accent { background: var(--accent-soft); color: var(--accent-hi); border-color: rgba(91,107,240,.3); }
 .tag-ok { background: var(--ok-soft); color: var(--ok); border-color: rgba(143,161,255,.3); }
 /* 언어 토글 */
-.lang-seg { display: inline-flex; gap: 2px; padding: 2px; border: 1px solid var(--line-2); border-radius: 8px; background: var(--panel); }
+.lang-seg { display: inline-flex; flex: none; width: max-content; gap: 2px; padding: 2px; border: 1px solid var(--line-2); border-radius: 8px; background: var(--panel); }
+.lang-seg button { flex: none; white-space: nowrap; }
 .lang-seg button { font-size: 11.5px; font-weight: 600; padding: 4px 9px; border: 0; border-radius: 6px; background: transparent; color: var(--text-3); cursor: pointer; }
 .lang-seg button:hover { color: var(--text-2); }
 .lang-seg button.on { background: var(--accent-soft); color: var(--accent-hi); }
@@ -230,6 +231,9 @@ svg { display: block; }
   padding: 11px 18px; border-bottom: 1px solid var(--line); background: var(--bg-2);
 }
 .ws-top .sp { flex: 1; }
+.ws-top { flex-wrap: nowrap; }
+.ws-top > * { flex-shrink: 0; }
+.ws-top > .sp { flex-shrink: 1; min-width: 6px; }
 .ws-body { display: flex; flex: 1; min-height: 0; }
 
 .side {
@@ -729,8 +733,125 @@ select.input { appearance: none; padding-right: 30px;
   .cform .row2 { grid-template-columns: 1fr; }
   .contact-info h1 { font-size: 30px; }
   .footer { flex-direction: column; align-items: flex-start; gap: 8px; }
-  /* the workspace needs a real pointer and screen — steer phones to the landing */
-  .ws-body { flex-direction: column; }
-  .side.left, .side.right { width: 100%; max-height: 210px; }
-  .stage { min-height: 300px; }
+}
+
+/* ==========================================================
+   좁은 화면의 작업 화면 / THE WORKSPACE ON NARROW SCREENS
+   ==========================================================
+   폰으로 데모 링크를 열어 본 사람이 하는 일은 정해져 있다. 샘플을 고르고 · 3D 가 되는 것을 보고 ·
+   돌려 보고 · 판독과 해석을 훑고 · 내려받는다. 세 칸을 그대로 두면 3D 가 240px 로 찌그러지고,
+   위아래로 쌓으면 칸마다 210px 라 아무것도 못 읽는다.
+   그래서 좁은 화면에서는 한 번에 한 칸(도면 · 3D · 결과)만 꽉 채워 보여 주고, 아래 탭으로 옮긴다.
+   탭은 흐름을 따라 저절로도 넘어간다(샘플을 고르면 3D 로, 판독하면 결과로 — js/panes.js).
+
+   Someone opening the demo link on a phone does a fixed set of things: pick a sample, watch it
+   become 3D, spin it, skim the reading and analysis, download. Keeping three columns squeezes the
+   3D to 240px; stacking them leaves 210px per pane and nothing readable. So on narrow screens one
+   pane (drawing, 3D, result) fills the screen and a bottom tab bar moves between them. The tabs
+   also advance with the flow (pick a sample and you land on 3D; read and you land on result).
+
+     1280 이하 / under 1280 : 칸만 좁힌다 / just narrow the columns
+     1024 이하 / under 1024 : 한 칸씩 + 아래 탭 / one pane at a time plus the bottom tabs
+   ========================================================== */
+@media (max-width: 1280px) {
+  .side { width: 272px; }
+  .side.right { width: 258px; }
+  .side-scroll { padding: 0 11px 16px; }
+}
+
+.pane-tabs { display: none; }
+
+@media (max-width: 1023px) {
+  /* 아래 탭 막대. 엄지가 닿는 자리에 둔다 / the bottom tab bar, within thumb reach */
+  .pane-tabs {
+    display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 6px;
+    flex-shrink: 0; padding: 8px 12px calc(8px + env(safe-area-inset-bottom, 0px));
+    background: var(--bg-2); border-top: 1px solid var(--line); order: 9;
+  }
+  .pane-tabs button {
+    height: 40px; border-radius: 9px; border: 1px solid transparent;
+    background: transparent; color: var(--text-3); font-size: 13px; font-weight: 650;
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  }
+  .pane-tabs button .k { display: inline-grid; place-content: center; width: 18px; height: 18px;
+    border-radius: 50%; font-size: 10.5px; border: 1px solid var(--line-2); }
+  .pane-tabs button.on { background: var(--accent-soft, rgba(91,107,240,.14)); border-color: rgba(91,107,240,.4); color: var(--accent-hi); }
+  .pane-tabs button.on .k { border-color: var(--accent); background: var(--accent); color: #fff; }
+  .pane-tabs button.ready .k { border-color: rgba(91,107,240,.5); color: var(--accent-hi); }
+
+  /* 한 번에 한 칸 / one pane at a time */
+  .ws { height: 100dvh; }
+  .side, .side.left, .side.right { width: 100%; border: none; }
+  .ws-body > .side, .ws-body > .stage { display: none; }
+  .ws-body.only-left > .side.left,
+  .ws-body.only-right > .side.right { display: flex; }
+  .ws-body.only-stage > .stage { display: block; }
+  .ws-body:not(.only-left):not(.only-stage):not(.only-right) > .stage { display: block; }
+  .side-head { padding: 12px 14px 10px; }
+  .side-scroll { padding: 0 14px 20px; }
+
+  /* 위 막대: 줄바꿈 대신 가로로 밀어 본다. 세 줄로 접히면 화면을 다 잡아먹었다.
+     Top bar scrolls sideways instead of wrapping; wrapping ate three rows of the screen. */
+  .ws-top { gap: 10px; padding: 9px 12px; overflow-x: auto; scrollbar-width: none; align-items: center; }
+  /* 언어 토글이 58px 로 눌려 '한국어' 가 세 줄이 되었다. 글자 폭만큼은 반드시 차지하게 한다.
+     The language toggle got squeezed to 58px and '한국어' wrapped onto three lines; it must keep its text width. */
+  .ws-top .lang-seg { display: inline-flex; flex: none; flex-wrap: nowrap; width: max-content; }
+  .ws-top .lang-seg button { flex: none; white-space: nowrap; min-height: 0; padding: 4px 9px; }
+  .ws-top::-webkit-scrollbar { display: none; }
+  .ws-top > * { flex-shrink: 0; }
+  .ws-top .sp { min-width: 8px; }
+  .ws-top .hide-narrow { display: none; }
+
+  /* 3D 위에 떠 있는 것들: 좁은 곳에서는 겹치지 않게 자리를 다시 잡는다
+     Things floating over the 3D get re-anchored so they stop overlapping */
+  /* 단계 표시는 왼쪽 위에 붙인다. 넓은 화면의 "가운데 정렬 + translate" 를 두면 좁은 곳에서 왼쪽 밖으로 나간다.
+     The stepper pins to the top left; the wide-screen "centre + translate" pushed it off the left edge here. */
+  .stepper { top: 8px; left: 8px; right: auto; transform: none; max-width: calc(100% - 16px); padding: 4px; gap: 2px; }
+  .stepper .st { padding: 4px 6px; }
+  .stepper .st .lb { display: none; }
+  .stepper-note { display: none; }
+  /* 보기 버튼 다섯 개는 한 줄로 두고 가로로 밀어 본다. 두 줄로 접히면 3D 의 위 1/4 을 덮었다.
+     The five view buttons stay on one row and scroll sideways; wrapped, they covered the top quarter of the 3D. */
+  .stage-actions { top: 52px !important; left: 8px; right: 8px; max-width: none; justify-content: flex-start; gap: 5px;
+    flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; pointer-events: auto; }
+  .stage-actions::-webkit-scrollbar { display: none; }
+  .stage-actions .stage-btn { flex: none; height: 30px; padding: 0 9px; font-size: 12px; white-space: nowrap; }
+  .dock { bottom: 10px; max-width: calc(100% - 16px); flex-wrap: wrap; justify-content: center; }
+  /* 시뮬 조작판: 화면 폭을 다 쓰는 두 줄. 버튼 넷이 윗줄, 분해·rpm·계기가 아랫줄.
+     한 줄씩 세로로 쌓이면 187px 라 3D 의 아래 1/4 을 덮었다.
+     Simulation dock: two full-width rows, four buttons above, explode/rpm/gauge below.
+     Stacked one per row it was 187px tall and covered the bottom quarter of the 3D. */
+  .simdock { left: 8px; right: 8px; bottom: 60px; transform: none; max-width: none;
+    display: none; grid-template-columns: repeat(4, 1fr); gap: 5px; padding: 6px; }
+  .simdock.show, .simdock[style*="display: flex"] { display: grid !important; }
+  .simdock > .btn { min-width: 0; padding: 0 4px; font-size: 12px; }
+  .simdock > span { grid-column: span 2; justify-content: center; }
+  .simdock > .simgauge { grid-column: span 4; justify-content: center; }
+  .simgauge { min-width: 0; }
+  .sheet { inset: 52px 6px 60px 6px; }
+  .sheet-paper img { max-height: calc(100dvh - 200px); }
+  .gen { padding: 18px; }
+  .stage-empty { font-size: 13px; padding: 0 22px; }
+
+  /* 라이브러리 / library */
+  .lib-main { padding: 18px 16px 48px; }
+  .grid { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 11px; }
+}
+
+@media (max-width: 620px) {
+  .ws-top { padding: 8px 10px; gap: 8px; }
+  .ws-top .brand { font-size: 13px; }
+  .lib-head h1 { font-size: 16px; }
+  .grid { grid-template-columns: 1fr; }
+  .kf2 { grid-template-columns: 1fr; }
+  .samples { grid-template-columns: repeat(2, 1fr); }
+  .btn, .stage-btn, .icon-btn, .side .seg button { min-height: 36px; }   /* 손가락 크기 / finger-sized targets */
+
+  /* 표는 잘라 내지 말고 가로로 밀어 본다 / tables scroll sideways rather than being cut off */
+  .side-scroll table, .lib-main table { display: block; overflow-x: auto; }
+  /* 샘플 칩 25장이 두 줄로 2,000px 을 차지해 올리기 상자가 밀려났다. 여섯 장까지만 보이고
+     나머지는 위 "라이브러리" 에서 본다(그쪽이 도면과 결과를 짝으로 보여 준다).
+     25 sample chips in two columns took 2,000px and pushed the upload box away. Show six; the rest live
+     in the Library above, which shows drawing and result as a pair anyway. */
+  #chips.samples > .sample:nth-child(n+7) { display: none; }
 }

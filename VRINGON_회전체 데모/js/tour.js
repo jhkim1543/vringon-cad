@@ -15,7 +15,7 @@ const STEPS_P1 = [
     body: "도면 입력, 판독, 3D CAD, 검증 순서입니다. 지금 단계가 위쪽에 표시됩니다." },
   { el: "stageNext", fallback: "stage", fallbackBox: { right: 18, bottom: 84, w: 150, h: 42 }, place: "top",
     title: "다음 단계 버튼", body: "오른쪽 아래 버튼을 누르면 다음 단계가 실행됩니다. 버튼 위 한 줄이 그 단계가 하는 일입니다." },
-  { el: "stageActions", fallback: "stage", fallbackBox: { right: 14, top: 122, w: 210, h: 34 }, place: "left",
+  { el: "stageActions", fallback: "stage", fallbackBox: { right: 14, top: 122, w: 210, h: 34 }, narrowBox: { left: 8, top: 52, w: 300, h: 34 }, place: "left",
     title: "보기 전환과 조립 · 시뮬", body: "단면과 도면을 번갈아 보고, 조립 · 시뮬을 켜면 상대 부품과 회전이 붙습니다. 끄면 부품만 남습니다." },
   { el: "sideRight", place: "left", title: "결과와 내려받기",
     body: "판독한 치수를 고치면 3D와 도면이 함께 바뀝니다. 3D가 만들어지면 맨 아래 내보내기에서 STEP, STL, GLB 등으로 받습니다." },
@@ -40,13 +40,30 @@ let STEPS = STEPS_P1;
 
 let i = 0, root = null, onKey = null, KEY = KEYS.part1;
 
+/* 좁은 화면에서는 대상이 다른 칸에 숨어 있을 수 있다. 그 칸으로 먼저 옮긴다(아래 탭을 흉내 낸다).
+   On narrow screens the target may sit in a hidden pane; switch to that pane first (by clicking its tab). */
+function revealPane(step) {
+  /* 대상 자체가 아직 안 보이더라도(단계 표시는 판독을 시작해야 뜬다) 그 대상이 사는 칸으로는 옮긴다.
+     그래야 대체 영역(fallback)이 보이는 칸 위에 그려진다.
+     Even when the target itself is hidden by its own state (the stepper appears only once a run starts),
+     switch to the pane it lives in, so the fallback box is drawn over a visible pane. */
+  const el = $(step.el) || $(step.fallback || "stage");
+  if (!el) return;
+  const pane = el.closest(".side.left") ? "left" : el.closest(".side.right") ? "right" : el.closest(".stage") || el.id === "stage" ? "stage" : null;
+  const tab = pane && document.querySelector(`.pane-tabs [data-pane="${pane}"]`);
+  if (tab && tab.offsetParent !== null && !tab.classList.contains("on")) tab.click();
+}
+
 function rectOf(step) {
+  revealPane(step);
   const el = $(step.el);
   const r = el && el.getBoundingClientRect();
   if (r && r.width > 4 && r.height > 4 && el.offsetParent !== null) return r;
   const host = $(step.fallback || "stage");
   if (!host) return null;
-  const h = host.getBoundingClientRect(), b = step.fallbackBox || {};
+  /* 좁은 화면에서는 떠 있는 것들의 자리가 다르다(위 왼쪽에 붙는다) / floating things sit elsewhere on narrow screens */
+  const narrow = matchMedia("(max-width: 1023px)").matches;
+  const h = host.getBoundingClientRect(), b = (narrow && step.narrowBox) || step.fallbackBox || {};
   const w = b.w || 200, hh = b.h || 40;
   const x = b.right !== undefined ? h.right - b.right - w : h.left + (b.left || 0);
   const y = b.bottom !== undefined ? h.bottom - b.bottom - hh : h.top + (b.top || 0);
@@ -83,7 +100,9 @@ function render() {
   if (step.link) { a.style.display = ""; a.href = step.link.href; a.textContent = step.link.text; } else a.style.display = "none";
   root.querySelector(".tour-next").textContent = i === STEPS.length - 1 ? "시작하기" : "다음";
   root.querySelector(".tour-prev").style.visibility = i ? "" : "hidden";
-  requestAnimationFrame(() => place(step));
+  /* 배치는 다음 틱에: 카드 글자가 들어간 뒤 크기를 재야 한다. rAF 는 가려진 탭에서 멈추므로 타이머를 쓴다.
+     Place on the next tick so the card is measured after its text lands; a timer, since rAF stalls in hidden tabs. */
+  setTimeout(() => place(step), 0);
 }
 
 function close() {

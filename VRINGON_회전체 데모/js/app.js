@@ -20,6 +20,9 @@ import { PART_TYPES, typeOf, inferPartType } from "./part-types.js";
 import { buildAssembly, createAssemblySim, assemblyChecks, makeMateMaterials, makeSpinMarker } from "./shaft-assembly.js";
 import { initTour } from "./tour.js";
 import { initI18n, t, lang } from "./i18n.js";
+import { initPanes } from "./panes.js";
+/* 좁은 화면의 칸 전환. 넓은 화면에서는 아무 일도 하지 않는다 / pane switching on narrow screens; a no-op when wide */
+let panes = null;
 import { exportSTEP, exportSTL, exportGLB, exportOBJ, exportUSDA, exportUSDZ, exportFBX, exportPLY, exportDrawingDXF, exportDrawingSVG, exportJSON, downloadBlob } from "./shaft-export.js";
 
 const BUILD = "dev";
@@ -256,12 +259,18 @@ async function runStep(n) {
   const step = PIPE[n - 1]; if (!step) return;
   pipe.running = n; renderStepper();
   showGen(true, `${n}단계 · ${step.label}`, step.note);
+  /* 좁은 화면: 도면을 열면 3D 칸(도면 시트가 그 위에 뜬다)으로, 판독·3D 뒤에는 결과에 볼 것이 생겼다고 알린다.
+     Narrow screens: opening a drawing moves to the 3D pane (the sheet floats over it); after reading
+     and building, the result pane is flagged as having something new. */
+  if (n === 1) panes?.show("stage");
   try {
     if (n === 1) { showSheet(true); $("stageEmpty").style.display = "none"; await sleep(300); }
     else if (n === 2) await stepExtract();
     else if (n === 3) await stepBuild();
     else if (n === 4) await stepVerify();
     pipe.done = Math.max(pipe.done, n);
+    if (n === 2 || n === 3 || n === 4) panes?.ready("right", true);
+    if (n === 3) panes?.show("stage");
   } catch (e) {
     console.error(e); toast(`${n}단계 실패: ${e.message}`);
   } finally { pipe.running = 0; showGen(false); renderStepper(); }
@@ -924,6 +933,8 @@ function renderLibrary() {
 $("libGrid").onclick = (e) => { const b = e.target.closest(".item"); if (!b) return; closeLib(); const s = state.samples.find((x) => x.id === b.dataset.id); if (s) startFromSample(s); };
 function openLib() { $("lib").style.display = ""; $("wsBody").style.display = "none"; renderLibrary(); }
 function closeLib() { $("lib").style.display = "none"; $("wsBody").style.display = ""; resize(); }
+/* 라이브러리는 작업 화면 전체를 덮으므로 좁은 화면에서도 그대로 쓴다. 닫으면 칸은 그대로 남는다.
+   The library covers the whole workspace, so it works as is on narrow screens; the pane stays where it was. */
 $("btnLib").onclick = () => ($("lib").style.display === "none" ? openLib() : closeLib());
 $("btnLibClose").onclick = closeLib;
 
@@ -960,6 +971,7 @@ window.__vringon = { state, pipe, runStep, extractHeuristic, verifyExtraction, g
   } catch (e) { $("chips").innerHTML = `<span class="hint">샘플 목록을 불러오지 못했습니다: ${e.message}</span>`; return; }
   $("chips").innerHTML = state.samples.map((s) => `<button class="sample" data-id="${s.id}" title="${s.name}"><img class="thumb" src="./samples/${s.id}/${s.files.thumb || s.files.svg}?v=${BUILD}" alt="" loading="lazy" /><span class="lb">${s.name_ko}</span></button>`).join("");
   initI18n();   /* 언어 토글: 화면에 그려진 한국어를 사전으로 바꾸고, 이후 생기는 내용도 따라간다 */
+  panes = initPanes({ leftKo: "도면", rightKo: "결과" });
   renderStepper();
   $("partType").innerHTML = `<option value="">모름 (판독 뒤 추정)</option>` + PART_TYPES.map((t) => `<option value="${t.id}">${t.ko}</option>`).join("");
   $("partType").onchange = () => { state.partType = $("partType").value; $("partType").dataset.userSet = state.partType ? "1" : ""; renderTypeHint(); if (state.simOn) { teardownAssembly(); spawnAssembly(); renderMatePanel(); } };

@@ -17,10 +17,14 @@ import { join } from "node:path";
 const RAW = process.argv.includes("--raw");
 const SRC = fileURLToPath(new URL("../", import.meta.url));
 const DST = join(SRC, "..", "docs", "revolve") + "/";
-/* 빌드 해시: 원본 js/·index.html·samples/index.json 에서 */
+/* 빌드 해시: 원본 js/ · 페이지 HTML · CSS · samples/index.json 에서.
+   CSS 와 페이지를 넣지 않으면 그것만 바뀐 배포가 같은 버전으로 나가 캐시에 갇힌다(반응형 작업에서 실측).
+   Build hash from js/, the page HTML, the CSS and samples/index.json. Leaving CSS and pages out meant a
+   CSS-only deploy shipped under the same version and stayed cached (seen during the responsive work). */
 const h = createHash("sha256");
 for (const f of readdirSync(join(SRC, "js")).sort()) h.update(f).update(readFileSync(join(SRC, "js", f)));
-h.update(readFileSync(join(SRC, "index.html"))).update(readFileSync(join(SRC, "samples", "index.json")));
+for (const f of ["index.html", "revolve.html", "assembly.html", "guide.html"]) h.update(readFileSync(join(SRC, f)));
+h.update(readFileSync(join(SRC, "css", "vringon.css"))).update(readFileSync(join(SRC, "samples", "index.json")));
 const V = h.digest("hex").slice(0, 8);
 
 rmSync(DST, { recursive: true, force: true });
@@ -84,6 +88,11 @@ if (RAW) {
     html = html.replace(/<script type="importmap">[\s\S]*?<\/script>\s*/, "");
     html = await squeezeHtml(html, esbuild);
     html = html.replace(/(src=")(\.\/js\/(?:app|part2)\.js)(")/, `$1$2?v=${V}$3`);
+    /* 스타일시트에도 버전을 붙인다. 안 붙이면 Pages 의 캐시(max-age=600) 때문에 반응형처럼 CSS 만
+       바뀐 배포가 10분간 옛 모습으로 보인다(실측: 새 빌드인데 세 칸이 그대로 쌓여 나왔다).
+       Stamp the stylesheet too. Without it a CSS-only deploy (like the responsive work) shows the old
+       look for ten minutes under the Pages cache; seen in practice as three stacked columns on a new build. */
+    html = html.replace(/(href=")(css\/vringon\.css)(")/, `$1$2?v=${V}$3`);
     writeFileSync(join(DST, f), html);
   }
   /* 라이선스 고지: 번들에 포함된 오픈소스 (MIT 는 고지 유지가 조건이다) */

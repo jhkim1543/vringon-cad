@@ -34,13 +34,24 @@
   .note { border: 1px solid rgba(143,161,255,.35); background: rgba(143,161,255,.08); border-radius: 10px; padding: 12px 14px; font-size: 13.5px; color: var(--accent-hi); margin-top: 14px; line-height: 1.6; }
   code { background: #0F0F13; border: 1px solid var(--line); border-radius: 4px; padding: 1px 5px; font-size: 12.5px; }
   @media (max-width: 760px) { .ex { grid-template-columns: 1fr; } .legend { grid-template-columns: 1fr; } .g-wrap { padding: 24px 18px 60px; } }
+  /* 좁은 화면의 위 막대: 작업 화면과 같은 규칙. 줄바꿈 대신 가로로 밀고 빵부스러기는 감춘다.
+     Narrow-screen nav: same rule as the workspace, scroll sideways instead of wrapping and hide the breadcrumb. */
+  @media (max-width: 1023px) {
+    .nav { gap: 10px; padding: 10px 14px; overflow-x: auto; scrollbar-width: none; flex-wrap: nowrap; }
+    .nav::-webkit-scrollbar { display: none; }
+    .nav > * { flex-shrink: 0; }
+    .nav > .sp { flex-shrink: 1; min-width: 6px; }
+    .nav .hide-narrow { display: none; }
+    .g-wrap table { display: block; overflow-x: auto; }
+    .g-wrap img { max-width: 100%; height: auto; }
+  }
 </style>
 </head>
 <body>
 <div class="nav">
   <a class="brand" href="./"><svg width="24" height="16" viewBox="0 0 46 30" fill="none"><path d="M2 3 12 27 21 3" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="33" cy="15" r="11.5" stroke="currentColor" stroke-width="5"/></svg> VRINGON CAD</a>
-  <span style="color:var(--line-2)">/</span>
-  <span style="font-size:13.5px;color:var(--text-2)">회전체 · 도면 올리기 안내</span>
+  <span class="hide-narrow" style="color:var(--line-2)">/</span>
+  <span class="hide-narrow" style="font-size:13.5px;color:var(--text-2)">회전체 · 도면 올리기 안내</span>
   <span class="sp"></span>
   <a class="btn btn-ghost btn-sm" href="./revolve.html">Part 1</a>
   <a class="btn btn-ghost btn-sm" href="./assembly.html">Part 2</a>

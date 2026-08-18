@@ -11,6 +11,8 @@
   /* 회전체 데모 전용 — 본체 디자인 시스템(vringon.css) 위에 얹는 최소 추가 */
   .lib { flex: 1; min-height: 0; overflow-y: auto; }
   .lib-main { padding: 22px 30px 60px; }
+  @media (max-width: 1023px) { .lib-main { padding: 16px 14px 44px; } .grid { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 11px; } }
+  @media (max-width: 620px) { .grid { grid-template-columns: 1fr; } }
   .lib-head { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
   .lib-head h1 { font-size: 19px; }
   .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 14px; }
@@ -113,9 +115,9 @@
       <svg width="24" height="16" viewBox="0 0 46 30" fill="none"><path d="M2 3 12 27 21 3" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="33" cy="15" r="11.5" stroke="currentColor" stroke-width="5"/></svg>
       VRINGON CAD
     </a>
-    <span style="color:var(--line-2)">/</span>
-    <span style="font-size:13.5px;color:var(--text-2)">Part 1 · 단일 도면 회전체</span>
-    <span style="color:var(--line-2)">/</span>
+    <span class="hide-narrow" style="color:var(--line-2)">/</span>
+    <span class="hide-narrow" style="font-size:13.5px;color:var(--text-2)">Part 1 · 단일 도면 회전체</span>
+    <span class="hide-narrow" style="color:var(--line-2)">/</span>
     <span style="font-size:13.5px;color:var(--text-2)" id="projName">새 프로젝트</span>
     <span class="sp"></span>
     <span class="mode-tag" id="modeTag">확인 중…</span>

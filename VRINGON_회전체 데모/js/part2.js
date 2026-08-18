@@ -15,6 +15,11 @@ import { makePartMaterials, buildRevolvePart, buildExtrudePart } from "./part2-c
 import { exportSTEP, exportSTL, exportGLB, exportOBJ, exportPLY, exportFBX, exportUSDA, exportUSDZ, downloadBlob } from "./shaft-export.js";
 import { initTour } from "./tour.js";
 import { initI18n, t } from "./i18n.js";
+import { initPanes } from "./panes.js";
+/* 좁은 화면의 칸 전환. Part 2 는 오른쪽이 방향·치수·만들기라서 흐름이 도면 → 설정 → 3D 다.
+   Pane switching on narrow screens. In Part 2 the right pane holds direction, dimensions and build,
+   so the flow is drawing → setup → 3D. Wide screens: no-op. */
+let panes = null;
 const roleName = (id) => t(ROLE_KO[id] || id || "");
 
 const BUILD = "dev";
@@ -108,6 +113,8 @@ async function loadSheet(src) {
   showSheet(true);
   await detectViews();
   await readDims();
+  /* 좁은 화면: 다음 할 일(방향·치수·만들기)이 오른쪽에 있다 / narrow: the next step lives on the right */
+  panes?.ready("right", true);
 }
 
 /* ================================================================ ① 뷰 분할 + 방향 추천 */
@@ -290,6 +297,7 @@ $("btnMake").onclick = async () => {
   mesh.castShadow = mesh.receiveShadow = true;
   const bb0 = new THREE.Box3().setFromObject(mesh); mesh.position.y -= bb0.min.y;
   root.add(mesh); state.part = { mesh, result };
+  panes?.show("stage");
   steps.forEach((s) => (s.state = "done")); showGen(true, "부품 만들기", "", steps); await sleep(120); showGen(false);
   showSheet(false); fitView(); renderResult(); renderExport();
   toast("부품을 만들었습니다", true);
@@ -393,10 +401,13 @@ function renderLibrary2() {
 $("libGrid").onclick = (e) => { const b = e.target.closest(".item"); if (!b) return; closeLib(); openSample(b.dataset.id); };
 function openLib() { $("lib").style.display = ""; $("wsBody").style.display = "none"; renderLibrary2(); }
 function closeLib() { $("lib").style.display = "none"; $("wsBody").style.display = ""; resize(); }
+/* 라이브러리는 작업 화면 전체를 덮으므로 좁은 화면에서도 그대로 쓴다. 닫으면 칸은 그대로 남는다.
+   The library covers the whole workspace, so it works as is on narrow screens; the pane stays where it was. */
 $("btnLib").onclick = () => ($("lib").style.display === "none" ? openLib() : closeLib());
 $("btnLibClose").onclick = closeLib;
 renderCube();
 initI18n();
+panes = initPanes({ leftKo: "도면", rightKo: "설정" });
 initTour("part2");
 ensureOcr().catch(() => {});   /* 미리 불러 둔다 (첫 판독을 기다리지 않게) */
 
