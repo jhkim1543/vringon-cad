@@ -43,15 +43,35 @@ rev("prompts");
 
 /* EB 가 실행할 것. PORT 는 EB 가 준다(8080) — 여기서 정하지 않는다 / what EB runs; PORT comes from EB, never set here */
 writeFileSync(join(STAGE, "Procfile"), "web: node server.mjs\n");
+/* EB 의 nginx 는 본문 한도가 1 MB 라 도면 이미지(수 MB)와 드론 GLB(최대 80 MB)가 413 으로 막힌다(실측: 3 MB → 413).
+   .platform/nginx/conf.d/*.conf 는 http 블록에 그대로 들어간다. 판독은 길어서 읽기 타임아웃도 늘린다.
+   EB's nginx caps the body at 1 MB, so drawing images (several MB) and drone GLBs (up to 80 MB) fail with 413
+   (seen: 3 MB → 413). Files under .platform/nginx/conf.d/ are included in the http block. Reads can take
+   minutes, so the read timeout is raised too. */
+mkdirSync(join(STAGE, ".platform", "nginx", "conf.d"), { recursive: true });
+writeFileSync(join(STAGE, ".platform", "nginx", "conf.d", "vringon.conf"),
+  ["client_max_body_size 80M;", "proxy_read_timeout 300s;", "proxy_send_timeout 300s;", "proxy_request_buffering off;", ""].join(String.fromCharCode(10)));
 /* 비밀이 섞이지 않았는지 마지막 확인 / last check that no secret slipped in */
 for (const bad of ["config.local.json", "contacts.jsonl", "deploy", "data", ".git", "node_modules"]) if (existsSync(join(STAGE, bad))) throw new Error(`번들에 ${bad} 가 들어갔습니다`);
 
-/* zip — Windows 에서는 PowerShell, 그 밖에서는 zip / PowerShell on Windows, zip elsewhere */
+/* zip — 경로 구분자는 반드시 "/" 여야 한다. Windows 의 Compress-Archive 는 역슬래시로 써서
+   EB(리눅스)의 unzip 이 실패했다(실측: "appears to use backslashes as path separators", 배포 중단).
+   그래서 어디서든 Python zipfile 로 만든다 — arcname 을 "/" 로 강제한다.
+   Path separators inside the zip must be "/". Windows Compress-Archive writes backslashes and EB's
+   unzip on Linux fails (seen: deployment aborted). So the zip is always written with Python zipfile,
+   forcing "/" in every arcname. */
 rmSync(ZIP, { force: true });
-if (process.platform === "win32") {
-  execFileSync("powershell", ["-NoProfile", "-Command", `Compress-Archive -Path '${STAGE}\\*' -DestinationPath '${ZIP}' -CompressionLevel Optimal`], { stdio: "inherit" });
-} else {
-  execFileSync("zip", ["-qr", ZIP, "."], { cwd: STAGE, stdio: "inherit" });
-}
+const py = process.platform === "win32" ? "py" : "python3";
+const PYZIP = [
+  "import os, zipfile, sys",
+  "stage, out = sys.argv[1], sys.argv[2]",
+  "z = zipfile.ZipFile(out, 'w', zipfile.ZIP_DEFLATED)",
+  "for root, dirs, files in os.walk(stage):",
+  "    for f in files:",
+  "        full = os.path.join(root, f)",
+  "        z.write(full, os.path.relpath(full, stage).replace(os.sep, '/'))",
+  "z.close()",
+].join(String.fromCharCode(10));
+execFileSync(py, ["-c", PYZIP, STAGE, ZIP], { stdio: "inherit" });
 const size = (p) => { let n = 0; const walk = (d) => { for (const f of readdirSync(d)) { const q = join(d, f); statSync(q).isDirectory() ? walk(q) : (n += statSync(q).size); } }; walk(p); return n; };
 console.log(`deploy/eb-bundle.zip ← ${(statSync(ZIP).size / 1e6).toFixed(1)} MB (펼치면 ${(size(STAGE) / 1e6).toFixed(1)} MB)`);

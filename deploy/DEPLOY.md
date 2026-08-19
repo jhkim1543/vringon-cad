@@ -27,6 +27,14 @@ node deploy/eb-deploy.mjs                    # S3 업로드 → 버전 등록 �
 
 번들에 들어가는 것은 `deploy/eb-bundle.mjs` 가 정한다: 서버가 부르는 파일 · 페이지 · css/js/assets/vendor · `docs/revolve` · `revolve-server/`(회전체 서버 실행 파일만) · `Procfile`. `.md`·도구·데이터·키 파일은 들어가지 않는다.
 
+### 2026-08-19 실제 배포 기록
+
+`v20260819133939` 가 떠 있다(Ready · Green). 들어간 환경변수 15개: `VRINGON_PUBLIC` · `VRINGON_RATE_PER_HOUR` · `VRINGON_SESSION_SECRET` · `PRIMARY_LLM_*` 5 · `FALLBACK_LLM_*` 5 · `MESH_CLOUD_*` 2. 데모 비밀번호는 넣지 않았다 — 기존 데모 비밀번호가 그대로 통한다(바꾸려면 `VRINGON_DEMO_PASSWORD`).
+
+바깥에서 확인한 것: `/server.mjs`·`/asset-store.mjs`·`/guard.mjs`·`/README.md` 404 · `/api/status` `{"ai":true,"provider":"primary","fallback":true}` · 로그인 없이 `/api/design` `/api/assets` 401 · `/revolve/` → `/login.html?next=…` 302 · 틀린 로그인 401 · 보안 헤더 적용 · 3 MB·20 MB 본문이 nginx 를 통과. 서버 로그: 회전체 서버 자식 기동 "라이브 판독", 드론 두뇌 1차+폴백.
+
+겪은 것 둘: (1) Windows `Compress-Archive` 가 zip 경로를 역슬래시로 써서 EB 의 unzip 이 실패했다 → Python zipfile 로 `/` 강제. (2) EB nginx 본문 한도 1 MB 로 3 MB 가 413 → `.platform/nginx/conf.d/vringon.conf` (80 MB · 300 s).
+
 ## 사내 VM 대안: Docker
 
 ```bash

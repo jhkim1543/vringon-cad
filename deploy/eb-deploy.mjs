@@ -7,7 +7,7 @@
    환경변수(--set)는 여기서만 넘기고 어디에도 적지 않는다. 값은 출력에 찍지 않는다.
    --set values are passed straight through and never logged or written anywhere. */
 import { execFileSync } from "node:child_process";
-import { statSync, writeFileSync, unlinkSync } from "node:fs";
+import { statSync, writeFileSync, unlinkSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
@@ -16,7 +16,10 @@ const ROOT = fileURLToPath(new URL("../", import.meta.url));
 const args = process.argv.slice(2);
 const opt = (k, d) => { const i = args.indexOf(k); return i >= 0 ? args[i + 1] : d; };
 const APP = opt("--app", "Vringon-CAD"), ENV = opt("--env", "vringon-cad-prod"), REGION = opt("--region", "ap-northeast-2");
+/* --set KEY=VAL 또는 --set-file <json 객체>. 파일 쪽은 셸 이력·프로세스 목록에 값이 남지 않는다
+   --set KEY=VAL, or --set-file <json object> so values never appear in shell history or the process list */
 const SETS = args.flatMap((a, i) => (a === "--set" ? [args[i + 1]] : []));
+if (opt("--set-file")) for (const [k, v] of Object.entries(JSON.parse(readFileSync(opt("--set-file"), "utf8")))) SETS.push(`${k}=${v}`);
 const ZIP = join(ROOT, "deploy", "eb-bundle.zip");
 
 const aws = (...a) => execFileSync("aws", [...a, "--region", REGION, "--output", "json"], { encoding: "utf8", stdio: ["ignore", "pipe", "inherit"] });
