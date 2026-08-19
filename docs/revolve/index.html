@@ -6,7 +6,7 @@
 <title>VRINGON CAD | 도면에서 3D</title>
 <meta name="description" content="2D 도면을 읽어 3D CAD 로 만듭니다. 단일 도면 회전체와 다시점 도면 부품 두 갈래로 나뉩니다." />
 <link rel="icon" href="assets/favicon.svg" />
-<link rel="stylesheet" href="css/vringon.css?v=c444ca16" />
+<link rel="stylesheet" href="css/vringon.css?v=a6f74217" />
 <style>.home{min-height:100vh;display:flex;flex-direction:column}.home-main{flex:1;display:grid;place-items:center;padding:40px 24px 70px}.home-inner{width:100%;max-width:980px}.home h1{font-size:34px;letter-spacing:-.4px;margin:10px 0}.home .lead{font-size:15.5px;color:var(--text-2);max-width:640px;line-height:1.75}.picks{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:34px}@media(max-width:1380px){.picks{grid-template-columns:1fr 1fr}}@media(max-width:760px){.picks{grid-template-columns:1fr}}.pick{position:relative;display:block;text-align:left;padding:22px 22px 20px;border-radius:16px;border:1px solid var(--line);background:var(--panel);color:inherit;text-decoration:none;transition:border-color .16s,transform .16s,background .16s}.pick:hover{border-color:#3a3a45;transform:translateY(-3px)}.pick.rec{border-color:#5b6bf080;background:linear-gradient(180deg,rgba(91,107,240,.07),var(--panel) 62%)}.pick .no{font-size:11.5px;font-weight:800;letter-spacing:.1em;color:var(--text-3)}.pick.rec .no{color:var(--accent-hi)}.pick h2{font-size:19px;margin:7px 0 8px}.pick p{font-size:13.5px;color:var(--text-2);line-height:1.7;min-height:68px}.pick ul{margin:12px 0 0;padding-left:17px}.pick li{font-size:12.5px;color:var(--text-2);margin:3px 0}.pick .go{margin-top:16px;display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:650;color:var(--accent-hi)}.badge{position:absolute;top:16px;right:16px;font-size:10.5px;font-weight:800;letter-spacing:.06em;padding:4px 9px;border-radius:999px;background:var(--accent);color:#fff}.badge.soft{background:#22222a;color:var(--text-3)}.art{height:96px;margin:4px 0 12px;display:block;color:var(--text-2)}.foot{font-size:12.5px;color:var(--text-3);margin-top:30px;line-height:1.8}.foot a{color:var(--text-2)}@media(max-width:820px){.picks{grid-template-columns:1fr}.home h1{font-size:27px}}
 </style>
 </head>
@@ -31,7 +31,6 @@
 
       <div class="picks">
         <a class="pick" href="./revolve.html">
-          <span class="badge soft">완성</span>
           <svg class="art" viewBox="0 0 240 96" fill="none" stroke="currentColor" stroke-width="2" opacity=".55">
             <path d="M28 44h44V30h52v-9h56v46h-56v-9H72V44H28z"/>
             <path d="M20 48h200" stroke-dasharray="12 5 3 5" stroke-width="1"/>
@@ -49,8 +48,7 @@
           <span class="go">Part 1 열기 ›</span>
         </a>
 
-        <a class="pick rec" href="./assembly.html">
-          <span class="badge">추천</span>
+        <a class="pick" href="./assembly.html">
           <svg class="art" viewBox="0 0 240 96" fill="none" stroke="currentColor" stroke-width="2" opacity=".6">
             <rect x="18" y="18" width="70" height="60" rx="3"/>
             <circle cx="53" cy="48" r="20"/><circle cx="53" cy="48" r="7"/>
@@ -72,7 +70,6 @@
         </a>
 
         <a class="pick" href="./sculpt.html">
-          <span class="badge soft">새로 나옴</span>
           <svg class="art" viewBox="0 0 240 96" fill="none" stroke="currentColor" stroke-width="2" opacity=".55">
             <path d="M30 66V38l26-14 26 14v28L56 80z"/><path d="M30 38l26 14 26-14M56 52v28" stroke-width="1"/>
             <path d="M112 30h34M112 44h52M112 58h30" stroke-width="2.4" stroke-linecap="round"/>
@@ -92,20 +89,19 @@
         </a>
 
         <a class="pick" href="../app.html" id="pickPart4">
-          <span class="badge soft">완성</span>
           <svg class="art" viewBox="0 0 240 96" fill="none" stroke="currentColor" stroke-width="2" opacity=".55">
             <path d="M60 52h120"/><path d="M120 52V30"/><circle cx="60" cy="52" r="13"/><circle cx="180" cy="52" r="13"/>
             <path d="M40 52h-14M80 52h14M160 52h-14M200 52h14" stroke-width="1.4"/>
             <rect x="104" y="22" width="32" height="18" rx="4"/><path d="M110 78h20" stroke-width="1.4"/>
           </svg>
           <div class="no">PART 4</div>
-          <h2>드론 설계 사양서에서 CAD</h2>
-          <p>설계 사양서 한 장에서 드론 전체를 만들고, 파트를 바꾸고 분해하고 비행을 시뮬레이션합니다.</p>
+          <h2>분야 특화 인식 모델로 만드는 CAD</h2>
+          <p>한 분야의 부품 체계를 익힌 인식 모델이 설계 사양서를 읽어 제품 전체를 만듭니다. 지금은 드론이 예시입니다.</p>
           <ul>
-            <li>사양서 읽기와 드론 분류</li>
-            <li>파트 라이브러리와 편집</li>
-            <li>분해와 6자유도 비행</li>
-            <li>자산 저장과 검색</li>
+            <li>분야별 부품 체계와 규격을 아는 모델</li>
+            <li>사양서에서 제품 전체를 생성</li>
+            <li>파트 교체 · 분해 · 거동 시뮬레이션</li>
+            <li>예시: 드론 (분류 · 라이브러리 · 6자유도 비행)</li>
           </ul>
           <span class="go">Part 4 열기 ›</span>
         </a>

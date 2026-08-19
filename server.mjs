@@ -13,10 +13,13 @@ import { PROGRAM_SPEC, PROGRAM_EXAMPLE } from "./js/program-spec.js";
 import { BASE_RECIPES, FEATURE_RECIPES, recipeContract } from "./js/recipes.js";
 import { sanitizeMeshBytes, scrubResponse, findVendorTokens } from "./glb-sanitize.mjs";
 /* 공개 배포 문지기: 세션 · 호출 제한 · 정적 허용 목록 · 보안 헤더 / public-deploy gatekeeper */
+import { spawn } from "node:child_process";
+import { existsSync } from "node:fs";
 import { PUBLIC, issueSession, readSession, cookieFor, clearCookie, checkLogin, rateOk, needsSession, isCostly, staticAllowed, SEC_HEADERS, guardSummary, ipOf } from "./guard.mjs";
 
 const rootDir = fileURLToPath(new URL(".", import.meta.url));
-const port = Number(process.argv[2] || 8347);
+/* 포트: 인자 → 환경변수(PORT, Elastic Beanstalk 이 8080 을 준다) → 8347 / port: argv, then PORT env (EB injects 8080), then 8347 */
+const port = Number(process.argv[2] || process.env.PORT || 8347);
 const DEV_CAPTURE = process.env.VRINGON_DEV_CAPTURE === "1";
 
 let cfg = { fallback: {} };
@@ -4180,6 +4183,29 @@ ${body.blueprint ? `설계 사양서(파트명은 여기 이름을 우선 사용
 server.requestTimeout = 15 * 60 * 1000;
 server.headersTimeout = 15 * 60 * 1000 + 1000;
 server.keepAliveTimeout = 75 * 1000;
+
+/* 회전체 서버(Part 1~3 의 AI)를 같은 인스턴스에서 자식으로 띄운다.
+   VRINGON_REVOLVE_URL 이 이미 있으면(도커 구성처럼 따로 돌 때) 띄우지 않는다.
+   번들에 revolve-server/ 가 있을 때만 — 없으면 Part 1~3 은 스스로 "예시만" 모드로 내려간다.
+   키는 드론 쪽 이름(PRIMARY_LLM_*)을 회전체 쪽 이름(VRINGON_PRIMARY_*)으로 옮겨 준다. 둘 다 같은 규약의 API 라 한 벌로 충분하다.
+   Spawns the turned-part server (AI for Parts 1-3) as a child on the same instance. Skipped when
+   VRINGON_REVOLVE_URL is already set (the docker layout runs it separately). Only when revolve-server/
+   is in the bundle; without it Parts 1-3 drop to examples-only on their own. Keys are mapped from the
+   drone names (PRIMARY_LLM_*) to the turned-part names (VRINGON_PRIMARY_*): same API convention, one set. */
+const REVOLVE_DIR = ["revolve-server", "VRINGON_회전체 데모"].map((d) => join(rootDir, d)).find((d) => existsSync(join(d, "server.mjs")));
+if (!process.env.VRINGON_REVOLVE_URL && REVOLVE_DIR && process.env.VRINGON_REVOLVE_EMBED !== "0") {
+  const e = process.env, m = (to, from) => { if (!e[to] && e[from]) e[to] = e[from]; };
+  m("VRINGON_PRIMARY_URL", "PRIMARY_LLM_URL"); m("VRINGON_PRIMARY_KEY", "PRIMARY_LLM_API_KEY");
+  m("VRINGON_PRIMARY_TEXT_MODEL", "PRIMARY_TEXT_MODEL"); m("VRINGON_PRIMARY_PLAN_MODEL", "PRIMARY_PLAN_MODEL");
+  m("VRINGON_FALLBACK_URL", "FALLBACK_LLM_URL"); m("VRINGON_FALLBACK_KEY", "FALLBACK_LLM_API_KEY"); m("VRINGON_FALLBACK_TEXT_MODEL", "FALLBACK_TEXT_MODEL");
+  const child = spawn(process.execPath, ["server.mjs", "8349"], {
+    cwd: REVOLVE_DIR, stdio: ["ignore", "inherit", "inherit"],
+    env: { ...e, PORT: "8349", VRINGON_ACCESS_CODE: "", VRINGON_PUBLIC: "1", VRINGON_STATIC: "" },
+  });
+  child.on("exit", (code) => console.warn(`[revolve] 자식 서버 종료 (code ${code}) — Part 1~3 AI 가 꺼집니다`));
+  process.env.VRINGON_REVOLVE_URL = "http://127.0.0.1:8349";
+  console.log(`[revolve] 내장 기동: ${REVOLVE_DIR} → 127.0.0.1:8349`);
+}
 
 server.listen(port, () => {
 console.log(`[guard] ${guardSummary()}`);

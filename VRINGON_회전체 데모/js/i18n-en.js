@@ -779,4 +779,12 @@ export const EN = {
   "부품이 트리로 나뉘어 나옵니다": "The result is a tree of parts",
   "파트 분리와 하나씩 보기": "Separate parts and view them one by one",
   "도면이 없을 때 쓰는 갈래입니다": "The path to take when there is no drawing",
+  /* Part 4 카드 (분야 특화) / Part 4 card */
+  "분야 특화 인식 모델로 만드는 CAD": "CAD from a domain-specialised recognition model",
+  "한 분야의 부품 체계를 익힌 인식 모델이 설계 사양서를 읽어 제품 전체를 만듭니다. 지금은 드론이 예시입니다.":
+    "A recognition model trained on one field's part system reads a design spec and builds the whole product. Drones are the example for now.",
+  "분야별 부품 체계와 규격을 아는 모델": "A model that knows the field's parts and standards",
+  "사양서에서 제품 전체를 생성": "Generates the whole product from the spec",
+  "파트 교체 · 분해 · 거동 시뮬레이션": "Part swaps, exploded view, motion simulation",
+  "예시: 드론 (분류 · 라이브러리 · 6자유도 비행)": "Example: drones (classification, library, 6-DOF flight)",
 };

@@ -12,7 +12,22 @@
 | `/api/*` | 드론 서버 API (세션 필요) | `server.mjs` |
 | `/revolve/api/*` | Part 1~3 API — 회전체 서버로 넘긴다 (세션 필요) | `server.mjs` → `revolve:8349` |
 
-## 올리기
+## 실제 운영: Elastic Beanstalk (3dcad.rebuilder.ai)
+
+라이브는 **AWS Elastic Beanstalk** 에 있다 — 애플리케이션 `Vringon-CAD`, 환경 `vringon-cad-prod`, `ap-northeast-2`, Node.js 24, t4g.medium 한 대, ALB + ACM 인증서. (도커 구성은 사내 VM 용 대안이다.)
+
+```bash
+aws login                                   # 콘솔 계정으로 (브라우저가 뜬다)
+node "VRINGON_회전체 데모/tools/deploy-docs.mjs"   # 보호 빌드 갱신
+node deploy/eb-bundle.mjs                    # deploy/eb-bundle.zip
+node deploy/eb-deploy.mjs                    # S3 업로드 → 버전 등록 → 환경 갱신 → 상태 확인
+```
+
+환경변수는 EB 환경 속성에 둔다(콘솔 Configuration → Environment properties, 또는 `aws elasticbeanstalk update-environment --option-settings`). **`PORT` 는 넣지 않는다**(EB 가 8080 을 준다). 한 프로세스 안에서 회전체 서버가 자식으로 돌고, 드론 쪽 키 이름(`PRIMARY_LLM_*`)이 회전체 쪽(`VRINGON_PRIMARY_*`)으로 자동으로 옮겨지므로 **키는 한 벌만** 넣으면 된다. 합계 4 KB 제한, 콘솔에 평문으로 보인다.
+
+번들에 들어가는 것은 `deploy/eb-bundle.mjs` 가 정한다: 서버가 부르는 파일 · 페이지 · css/js/assets/vendor · `docs/revolve` · `revolve-server/`(회전체 서버 실행 파일만) · `Procfile`. `.md`·도구·데이터·키 파일은 들어가지 않는다.
+
+## 사내 VM 대안: Docker
 
 ```bash
 git clone https://github.com/jhkim1543/vringon-cad.git && cd vringon-cad

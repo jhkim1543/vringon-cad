@@ -8,3 +8,5 @@ server.log
 assets/uploads/
 
 deploy/.env
+deploy/eb-stage/
+deploy/eb-bundle.zip
