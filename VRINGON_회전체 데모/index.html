@@ -121,7 +121,7 @@
           <span class="go">Part 3 열기 ›</span>
         </a>
 
-        <a class="pick" href="../app.html">
+        <a class="pick" href="../app.html" id="pickPart4">
           <span class="badge soft">완성</span>
           <svg class="art" viewBox="0 0 240 96" fill="none" stroke="currentColor" stroke-width="2" opacity=".55">
             <path d="M60 52h120"/><path d="M120 52V30"/><circle cx="60" cy="52" r="13"/><circle cx="180" cy="52" r="13"/>
@@ -148,6 +148,15 @@
 <script type="module">
   import { initI18n } from "./js/i18n.js";
   initI18n();
+  /* Part 4 가 갈 곳은 호스트에 따라 다르다. 서버가 있으면(3dcad.rebuilder.ai) 로그인 뒤 드론 작업 화면(app.html),
+     서버가 없으면(GitHub Pages) 서버 없이 도는 드론 쇼케이스(index.html). ../api/status 가 JSON 으로 답하는지로 가른다.
+     실측: Pages 에서 app.html 은 404 였다.
+     Where Part 4 goes depends on the host: with a server (3dcad.rebuilder.ai) the drone workspace app.html behind
+     login; without one (GitHub Pages) the serverless drone showcase index.html. Decided by whether ../api/status
+     answers JSON. Seen: on Pages, app.html was a 404. */
+  fetch("../api/status", { cache: "no-store" }).then((r) => r.ok && (r.headers.get("content-type") || "").includes("json") ? r.json() : null)
+    .catch(() => null)
+    .then((s) => { if (!s) document.getElementById("pickPart4").href = "../index.html"; });
 </script>
 </body>
 </html>
