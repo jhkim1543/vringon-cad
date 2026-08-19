@@ -758,4 +758,25 @@ export const EN = {
   "설정": "Setup",
   "결과": "Result",
   "입력": "Input",
+  /* 진입 화면 네 갈래 / four-way picker */
+  "도면, 설명, 사양서에서 3D를 만듭니다": "3D from a drawing, a description, or a spec sheet",
+  "네 갈래입니다. 회전체는 도면 한 장, 그 밖의 부품은 여러 뷰, 도면이 없으면 설명이나 사진, 드론은 설계 사양서로.":
+    "Four ways in. Turned parts from one drawing, other parts from several views, a description or photo when there is no drawing, and drones from a design spec sheet.",
+  "드론 설계 사양서에서 CAD": "Drone CAD from a design spec",
+  "설계 사양서 한 장에서 드론 전체를 만들고, 파트를 바꾸고 분해하고 비행을 시뮬레이션합니다.":
+    "Builds a whole drone from one design spec sheet, then swaps parts, explodes it and simulates flight.",
+  "사양서 읽기와 드론 분류": "Reads the spec and classifies the drone",
+  "파트 라이브러리와 편집": "Part library and editing",
+  "분해와 6자유도 비행": "Exploded view and 6-DOF flight",
+  "자산 저장과 검색": "Asset storage and search",
+  "Part 4 열기 ›": "Open Part 4 ›",
+  "Part 3 열기 ›": "Open Part 3 ›",
+  "새로 나옴": "New",
+  "프롬프트와 이미지에서 3D": "3D from a prompt or an image",
+  "한 줄 설명이나 사진 한 장에서 부품 트리를 세웁니다. 만든 3D 는 파트별로 분리해 볼 수 있습니다.":
+    "Builds a part tree from one line of text or one photo. The result comes apart part by part.",
+  "글로 적거나 사진을 올리거나": "Type it or drop a photo",
+  "부품이 트리로 나뉘어 나옵니다": "The result is a tree of parts",
+  "파트 분리와 하나씩 보기": "Separate parts and view them one by one",
+  "도면이 없을 때 쓰는 갈래입니다": "The path to take when there is no drawing",
 };

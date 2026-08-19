@@ -70,7 +70,8 @@ if (RAW) {
   };
   mkdirSync(join(DST, "js"), { recursive: true });
   /* i18n.js 는 진입 화면(index.html)이 직접 부르므로 따로 묶는다 */
-  for (const entry of ["app.js", "part2.js", "sculpt.js", "i18n.js", "guide-boot.js"]) {
+  /* partnav.js 는 드론 화면(저장소 루트)도 가져다 쓰므로 따로 내보낸다 / partnav.js is also imported by the drone screen at the root */
+  for (const entry of ["app.js", "part2.js", "sculpt.js", "i18n.js", "guide-boot.js", "partnav.js"]) {
     const out = await esbuild.build({
       entryPoints: [join(SRC, "js", entry)],
       bundle: true, format: "esm", minify: true, legalComments: "none", target: ["es2022"],

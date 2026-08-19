@@ -16,6 +16,7 @@ import { exportSTEP, exportSTL, exportGLB, exportOBJ, exportPLY, exportFBX, expo
 import { initTour } from "./tour.js";
 import { initI18n, t } from "./i18n.js";
 import { initPanes } from "./panes.js";
+import { mountPartNav } from "./partnav.js";
 /* 좁은 화면의 칸 전환. Part 2 는 오른쪽이 방향·치수·만들기라서 흐름이 도면 → 설정 → 3D 다.
    Pane switching on narrow screens. In Part 2 the right pane holds direction, dimensions and build,
    so the flow is drawing → setup → 3D. Wide screens: no-op. */
@@ -406,6 +407,7 @@ function closeLib() { $("lib").style.display = "none"; $("wsBody").style.display
 $("btnLib").onclick = () => ($("lib").style.display === "none" ? openLib() : closeLib());
 $("btnLibClose").onclick = closeLib;
 renderCube();
+mountPartNav({ current: 2 });
 initI18n();
 panes = initPanes({ leftKo: "도면", rightKo: "설정" });
 initTour("part2");

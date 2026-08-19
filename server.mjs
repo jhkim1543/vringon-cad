@@ -12,6 +12,8 @@ import { REPRESENTATION, BUILDER_VALUES, validateSpec, builderFitErrors } from "
 import { PROGRAM_SPEC, PROGRAM_EXAMPLE } from "./js/program-spec.js";
 import { BASE_RECIPES, FEATURE_RECIPES, recipeContract } from "./js/recipes.js";
 import { sanitizeMeshBytes, scrubResponse, findVendorTokens } from "./glb-sanitize.mjs";
+/* 공개 배포 문지기: 세션 · 호출 제한 · 정적 허용 목록 · 보안 헤더 / public-deploy gatekeeper */
+import { PUBLIC, issueSession, readSession, cookieFor, clearCookie, checkLogin, rateOk, needsSession, isCostly, staticAllowed, SEC_HEADERS, guardSummary, ipOf } from "./guard.mjs";
 
 const rootDir = fileURLToPath(new URL(".", import.meta.url));
 const port = Number(process.argv[2] || 8347);
@@ -32,6 +34,10 @@ const MIME = {
   ".json": "application/json", ".svg": "image/svg+xml", ".png": "image/png",
   ".jpg": "image/jpeg", ".webp": "image/webp", ".woff2": "font/woff2",
   ".glb": "model/gltf-binary", ".wasm": "application/wasm", ".ico": "image/x-icon",
+  /* /revolve/ 의 보호 빌드가 내보내는 것들 / what the protected build under /revolve/ serves */
+  ".step": "application/step", ".stp": "application/step", ".stl": "model/stl", ".dxf": "application/dxf",
+  ".usda": "text/plain; charset=utf-8", ".usdc": "model/vnd.usd", ".usdz": "model/vnd.usdz+zip",
+  ".txt": "text/plain; charset=utf-8", ".md": "text/markdown; charset=utf-8",
 };
 
 /* ============================================================
@@ -1222,6 +1228,15 @@ async function logEvent(type, payload) {
 /* ============================================================ */
 /* Default is 16MB, not 1MB: nearly every endpoint here carries a base64 image
    and a design render alone can pass a megabyte. */
+/* 본문을 해석하지 않고 그대로 넘길 때 / pass a body through untouched */
+function readRaw(req, limit = 16e6) {
+  return new Promise((resolve, reject) => {
+    const chunks = []; let n = 0;
+    req.on("data", (c) => { n += c.length; if (n > limit) { reject(new Error("body too large")); req.destroy(); } else chunks.push(c); });
+    req.on("end", () => resolve(Buffer.concat(chunks)));
+    req.on("error", reject);
+  });
+}
 async function readBody(req, limit = 16e6) {
   let raw = "", over = false;
   for await (const c of req) { raw += c; if (raw.length > limit) { over = true; break; } }
@@ -1251,7 +1266,7 @@ const json = (res, code, obj) => {
     const left = findVendorTokens(body);
     console.warn(`[api-scrub] 응답에서 공급사명을 제거했습니다${left.length ? ` (인코딩 구간 ${left.length}건 잔존)` : ""}`);
   }
-  res.writeHead(code, { "Content-Type": "application/json; charset=utf-8" });
+  res.writeHead(code, { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store", ...SEC_HEADERS });
   res.end(body);
 };
 
@@ -3766,6 +3781,46 @@ JSON만 출력.` },
 const server = createServer(async (req, res) => {
   const url = new URL(req.url, "http://x");
   try {
+    /* ---------------- 문지기 / gatekeeper ----------------
+       순서가 중요하다: 로그인 → 세션 검사 → 호출 제한 → 그다음에야 실제 API.
+       Order matters: login, then the session check, then the rate limit, only then the real API. */
+    if (url.pathname === "/api/login" && req.method === "POST") {
+      const body = await readBody(req, 1e5);
+      const user = await checkLogin(body.id, body.pw);
+      if (!user) return json(res, 401, { ok: false, reason: "계정이나 비밀번호가 맞지 않습니다." });
+      res.writeHead(200, { "Content-Type": "application/json; charset=utf-8", "Set-Cookie": cookieFor(issueSession(user)), "Cache-Control": "no-store", ...SEC_HEADERS });
+      return res.end(JSON.stringify({ ok: true, user }));
+    }
+    if (url.pathname === "/api/logout") {
+      res.writeHead(200, { "Content-Type": "application/json; charset=utf-8", "Set-Cookie": clearCookie(), "Cache-Control": "no-store", ...SEC_HEADERS });
+      return res.end(JSON.stringify({ ok: true }));
+    }
+    if (url.pathname === "/api/me") return json(res, 200, { ok: true, user: readSession(req) });
+    if (needsSession(url.pathname) && !readSession(req)) return json(res, 401, { ok: false, error: "로그인이 필요합니다" });
+    if (isCostly(req, url.pathname) && !rateOk(req)) return json(res, 429, { ok: false, error: "요청이 시간당 한도를 넘었습니다. 잠시 후 다시 시도해 주세요." });
+
+    /* ---------------- Part 1~3 의 API 를 회전체 서버로 넘긴다 / hand Part 1-3 APIs to the turned-part server ----------------
+       한 주소에서 네 파트를 다 쓰기 위해서다. 회전체 서버는 따로 돌고(VRINGON_REVOLVE_URL, 기본 없음),
+       없으면 404 가 돌아가 회전체 화면은 스스로 "예시만" 모드로 내려간다. 세션·제한은 위에서 이미 걸렸다.
+       So all four parts live on one host. The turned-part server runs separately (VRINGON_REVOLVE_URL,
+       unset by default); without it a 404 comes back and those screens drop to examples-only on their own.
+       Session and rate limit were already applied above. */
+    if (url.pathname.startsWith("/revolve/api/")) {
+      if (!readSession(req)) return json(res, 401, { ok: false, error: "로그인이 필요합니다" });
+      if (req.method !== "GET" && !rateOk(req)) return json(res, 429, { ok: false, error: "요청이 시간당 한도를 넘었습니다." });
+      const up = process.env.VRINGON_REVOLVE_URL || "";
+      if (!up) return json(res, 404, { ok: false, error: "회전체 서버가 연결되어 있지 않습니다" });
+      const body = req.method === "GET" ? undefined : await readRaw(req, 32e6);
+      const r = await fetch(up.replace(/\/$/, "") + url.pathname.slice("/revolve".length) + url.search, {
+        method: req.method, headers: { "Content-Type": req.headers["content-type"] || "application/json", "X-Forwarded-For": ipOf(req) },
+        body, signal: AbortSignal.timeout(300e3),
+      });
+      const buf = Buffer.from(await r.arrayBuffer());
+      res.writeHead(r.status, { "Content-Type": r.headers.get("content-type") || "application/octet-stream", "Cache-Control": "no-store", ...SEC_HEADERS,
+        ...(r.headers.get("content-disposition") ? { "Content-Disposition": r.headers.get("content-disposition") } : {}) });
+      return res.end(buf);
+    }
+
     /* ---------------- asset catalog ---------------- */
     if (url.pathname === "/api/assets" && req.method === "GET") {
       return json(res, 200, { ok: true, assets: await assetStore.list() });
@@ -4081,13 +4136,32 @@ ${body.blueprint ? `설계 사양서(파트명은 여기 이름을 우선 사용
       res.end(buf);
       return;
     }
-    if (path === "/config.local.json" || path === "/contacts.jsonl" || path.startsWith("/data/")) { res.writeHead(403).end(); return; }
-    const file = normalize(join(rootDir, path));
+    /* 정적 파일은 허용 목록에 있는 것만. 그 밖의 것(*.mjs · 도구 · 데이터 · 점 파일)은 없는 것으로 답한다.
+       실측: 이 목록이 없을 때 /server.mjs 가 그대로 내려받아졌다.
+       Static files only from the allowlist; everything else answers as not found.
+       Seen: without this list, /server.mjs was downloadable as is. */
+    if (!staticAllowed(path)) { res.writeHead(404, { "Content-Type": "text/plain", ...SEC_HEADERS }).end("404"); return; }
+    /* /revolve/ 는 회전체 데모의 보호 빌드(docs/revolve)를 내보낸다. 한 주소에서 Part 1~4 를 다 쓰기 위해서다.
+       /revolve/ serves the turned-part demo's protected build (docs/revolve), so Parts 1 to 4 live on one host. */
+    let rel = path === "/" ? "/index.html" : path;
+    /* 회전체 화면(Part 1~3)도 같은 로그인 뒤에 둔다. 화면(html)만 막고 그림·스크립트는 열어 둔다 —
+       로그인 화면으로 보낼 때 쓰던 자리로 돌아올 수 있게 next 를 붙인다.
+       Part 1-3 screens sit behind the same login. Only the pages are gated, assets stay open;
+       the redirect carries next so the visitor lands back where they were. */
+    if (rel.startsWith("/revolve/") && (rel.endsWith("/") || rel.endsWith(".html")) && !readSession(req)) {
+      res.writeHead(302, { Location: "/login.html?next=" + encodeURIComponent(rel), "Cache-Control": "no-store", ...SEC_HEADERS });
+      return res.end();
+    }
+    if (rel.startsWith("/revolve/")) rel = "/docs" + (rel.endsWith("/") ? rel + "index.html" : rel);
+    const file = normalize(join(rootDir, rel));
     if (!file.startsWith(normalize(rootDir))) { res.writeHead(403).end(); return; }
     const data = await readFile(file);
+    const ext = extname(file).toLowerCase();
     res.writeHead(200, {
-      "Content-Type": MIME[extname(file).toLowerCase()] || "application/octet-stream",
-      "Cache-Control": "no-cache",
+      "Content-Type": MIME[ext] || "application/octet-stream",
+      /* 보호 빌드는 파일명에 버전이 박혀 있어 오래 캐시해도 된다 / the protected build is version-stamped, safe to cache */
+      "Cache-Control": rel.startsWith("/docs/revolve/") && ext !== ".html" ? "public, max-age=3600" : "no-cache",
+      ...SEC_HEADERS,
     });
     res.end(data);
   } catch (e) {
@@ -4108,6 +4182,7 @@ server.headersTimeout = 15 * 60 * 1000 + 1000;
 server.keepAliveTimeout = 75 * 1000;
 
 server.listen(port, () => {
+console.log(`[guard] ${guardSummary()}`);
   console.log(`VRINGON CAD  →  http://localhost:${port}`);
   console.log(`설계 두뇌: ${USE_PRIMARY ? `1차 ${PRIMARY_PLAN_MODEL}` : (FB_KEY ? `폴백 ${PLAN_MODEL}` : "비활성 (로컬 폴백 사용)")}`
     + (USE_PRIMARY && FB_KEY ? ` · 폴백 ${PLAN_MODEL}` : ""));

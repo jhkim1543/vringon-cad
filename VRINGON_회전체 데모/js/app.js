@@ -21,6 +21,7 @@ import { buildAssembly, createAssemblySim, assemblyChecks, makeMateMaterials, ma
 import { initTour } from "./tour.js";
 import { initI18n, t, lang } from "./i18n.js";
 import { initPanes } from "./panes.js";
+import { mountPartNav } from "./partnav.js";
 /* 좁은 화면의 칸 전환. 넓은 화면에서는 아무 일도 하지 않는다 / pane switching on narrow screens; a no-op when wide */
 let panes = null;
 import { exportSTEP, exportSTL, exportGLB, exportOBJ, exportUSDA, exportUSDZ, exportFBX, exportPLY, exportDrawingDXF, exportDrawingSVG, exportJSON, downloadBlob } from "./shaft-export.js";
@@ -970,6 +971,7 @@ window.__vringon = { state, pipe, runStep, extractHeuristic, verifyExtraction, g
     state.samples = idx.samples || [];
   } catch (e) { $("chips").innerHTML = `<span class="hint">샘플 목록을 불러오지 못했습니다: ${e.message}</span>`; return; }
   $("chips").innerHTML = state.samples.map((s) => `<button class="sample" data-id="${s.id}" title="${s.name}"><img class="thumb" src="./samples/${s.id}/${s.files.thumb || s.files.svg}?v=${BUILD}" alt="" loading="lazy" /><span class="lb">${s.name_ko}</span></button>`).join("");
+  mountPartNav({ current: 1 });
   initI18n();   /* 언어 토글: 화면에 그려진 한국어를 사전으로 바꾸고, 이후 생기는 내용도 따라간다 */
   panes = initPanes({ leftKo: "도면", rightKo: "결과" });
   renderStepper();

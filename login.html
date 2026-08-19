@@ -39,7 +39,10 @@
 
 <script type="module">
   import { login, currentUser } from "./js/auth.js";
-  if (currentUser()) location.replace("app.html");
+  /* 로그인 뒤 갈 곳: next 가 있으면 거기(같은 사이트 안만), 없으면 네 파트를 고르는 화면
+     Where to go after login: next if given (same site only), otherwise the four-part picker */
+  const nextOf = () => { const n = new URLSearchParams(location.search).get("next") || ""; return /^\/[A-Za-z0-9_\-./]*$/.test(n) && !n.startsWith("//") ? n : "revolve/index.html"; };
+  if (currentUser()) location.replace(nextOf());
   const form = document.getElementById("loginForm");
   const err = document.getElementById("err");
   const btn = document.getElementById("btnLogin");
@@ -53,7 +56,7 @@
     } catch (e) {
       res = { ok: false, reason: "로그인 처리 중 오류가 발생했습니다: " + (e.message || e) };
     }
-    if (res.ok) location.href = "app.html";
+    if (res.ok) location.href = nextOf();
     else {
       err.textContent = res.reason;
       err.classList.add("on");

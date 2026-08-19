@@ -21,6 +21,7 @@ import { initTour } from "./tour.js";
 import { initI18n, addDict, t } from "./i18n.js";
 import { SCULPT_EN } from "./i18n-en-sculpt.js";
 import { initPanes } from "./panes.js";
+import { mountPartNav } from "./partnav.js";
 
 /* 사전은 t() 를 처음 쓰기 전에 더해야 한다. 나중에 더하면 그 전에 그려진 글자가 한국어로 남는다
    (실측: 예시 칩과 프롬프트 버튼 7개가 안 바뀌었다).
@@ -242,7 +243,7 @@ async function fromInput({ text, imageDataUrl }) {
   showGen(true, t("3D 만들기"), text ? text.slice(0, 40) : t("사진에서"), steps);
   const t0 = performance.now();
   try {
-    const r = await fetch("/api/sculpt", {
+    const r = await fetch("./api/sculpt", {
       method: "POST", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ prompt: text || "", image: imageDataUrl || null, lang: document.documentElement.lang || "ko" }),
     });
@@ -283,9 +284,12 @@ $("seeds").innerHTML = SEEDS.map((s) => `<button data-seed="${s}">${t(s)}</butto
 $("seeds").onclick = (e) => { const b = e.target.closest("[data-seed]"); if (b) $("prompt").value = b.dataset.seed; };
 
 (async () => {
-  /* 서버가 있으면 라이브, 없으면 예시만 / live when a server answers, examples only otherwise */
+  /* 서버가 있으면 라이브, 없으면 예시만. 경로는 상대("./api/")로 둔다 — 한 호스트에서 /revolve/ 아래로 합쳐질 때
+     드론 서버가 아니라 회전체 서버(프록시)로 가야 한다.
+     Live when a server answers, examples only otherwise. The path is relative ("./api/") so that, once the
+     demo is mounted under /revolve/ on a shared host, it reaches the turned-part server (via proxy), not the drone one. */
   try {
-    const s = await fetch("/api/status").then((r) => r.json());
+    const s = await fetch("./api/status", { cache: "no-store" }).then((r) => r.json());
     state.live = !!s.sculpt;
   } catch { state.live = false; }
   $("modeTag").textContent = state.live ? t("직접 만들기 가능") : t("예시 보기");
@@ -305,6 +309,7 @@ $("seeds").onclick = (e) => { const b = e.target.closest("[data-seed]"); if (b) 
     };
   } catch (e) { $("chips").innerHTML = `<span class="hint">${t("예시를 불러오지 못했습니다")}</span>`; }
 
+  mountPartNav({ current: 3 });
   initI18n();
   panes = initPanes({ leftKo: "입력", rightKo: "파트" });
   initTour("sculpt");

@@ -1,0 +1,36 @@
+# 3dcad.rebuilder.ai 한 벌: 드론 서버(네 파트 입구) + 회전체 서버(Part 1~3 의 AI 판독)
+# One stack for 3dcad.rebuilder.ai: the drone server (entry for all four parts) and the turned-part server (AI reading for Parts 1-3).
+#
+# 저장소 루트에서 / from the repository root:
+#   cp deploy/.env.example deploy/.env     # 키·비밀번호·세션키 채우기 / fill in keys, password, session secret
+#   node "VRINGON_회전체 데모/tools/deploy-docs.mjs"   # 보호 빌드 갱신 / refresh the protected build
+#   docker compose -f deploy/docker-compose.yml up -d --build
+#
+# 바깥에서 들어오는 길은 app:8347 하나다. 회전체 서버는 네트워크 안에만 있고 app 이 /revolve/api/* 를 넘겨 준다.
+# 인증서·HTTPS 는 사내 프록시(nginx 프록시 매니저) 몫이다.
+# The only way in from outside is app:8347. The turned-part server stays inside the network and app
+# forwards /revolve/api/* to it. TLS is the job of the in-house proxy.
+services:
+  app:
+    build: { context: .., dockerfile: deploy/Dockerfile }
+    restart: unless-stopped
+    env_file: [.env]
+    environment:
+      VRINGON_REVOLVE_URL: http://revolve:8349       # Part 1~3 API 를 여기로 넘긴다 / where Part 1-3 APIs go
+    ports: ["8347:8347"]
+    volumes:
+      - app_data:/app/data
+      - app_generated:/app/generated
+
+  revolve:
+    build: { context: .., dockerfile: "VRINGON_회전체 데모/deploy/Dockerfile" }
+    restart: unless-stopped
+    env_file: [.env]
+    environment:
+      VRINGON_ACCESS_CODE: ""      # 문지기는 app 이 맡는다. 여기서 또 막으면 프록시가 통과 못 한다 / app is the gate; a second one here would block the proxy
+      VRINGON_PUBLIC: "1"
+    expose: ["8349"]               # 네트워크 안에서만 / internal only
+
+volumes:
+  app_data:
+  app_generated:
