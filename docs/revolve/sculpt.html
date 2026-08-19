@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>VRINGON CAD | Part 3 · 프롬프트와 이미지에서 3D</title>
+<meta name="description" content="한 줄 설명이나 사진 한 장에서 부품 트리를 세우고, 파트를 분리해 볼 수 있는 3D 를 만듭니다." />
+<link rel="icon" href="assets/favicon.svg" />
+<link rel="stylesheet" href="css/vringon.css?v=5ba68b77" />
+<style>.prompt-box{width:100%;min-height:76px;resize:vertical;background:#0f0f13;border:1px solid var(--line-2);border-radius:9px;color:var(--text);font:inherit;font-size:13px;line-height:1.6;padding:10px 11px}.prompt-box:focus{border-color:var(--accent);outline:none}.seed{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}.seed button{font-size:11.5px;padding:4px 9px;border-radius:999px;border:1px solid var(--line-2);background:transparent;color:var(--text-3)}.seed button:hover{border-color:#3a3a45;color:var(--text)}.plist{display:flex;flex-direction:column;gap:3px}.prow{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:8px;border:1px solid transparent;cursor:pointer;font-size:12.5px;color:var(--text-2)}.prow:hover{background:#1a1a20}.prow.on{border-color:var(--accent);background:#5b6bf01f;color:var(--text)}.prow.dim{opacity:.38}.prow .sw{width:11px;height:11px;border-radius:3px;flex:none}.prow .nm{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.prow .lv{font-size:10px;color:var(--text-3);flex:none}.prow .eye{width:22px;height:22px;border-radius:5px;color:var(--text-3);font-size:12px;flex:none}.prow .eye:hover{background:#26262e;color:var(--text)}.exp-row{display:flex;align-items:center;gap:9px;margin-top:10px}.exp-row input[type=range]{flex:1;accent-color:var(--accent)}.limits{font-size:11.5px;color:var(--text-3);line-height:1.6}.limits li{margin:2px 0}.samples.sculpt{grid-template-columns:repeat(3,1fr)}.samples.sculpt .thumb{aspect-ratio:1.4;background:#fff;object-fit:cover}.samples.sculpt .lb{font-size:11.5px;padding:6px 8px 8px}.tour{position:fixed;inset:0;z-index:60}.tour-hole{position:fixed;border-radius:12px;border:1.5px solid var(--accent-hi);box-shadow:0 0 0 9999px #06060aa8,0 0 22px #5b6bf080;pointer-events:none;transition:left .22s cubic-bezier(.4,0,.2,1),top .22s cubic-bezier(.4,0,.2,1),width .22s,height .22s}.tour.center .tour-card{left:50%!important;top:50%!important;transform:translate(-50%,-50%)}.tour.center:before{content:"";position:fixed;inset:0;background:#06060aa8}.tour-card{position:fixed;width:320px;background:var(--panel);border:1px solid var(--line-2);border-radius:12px;padding:14px 15px 12px;box-shadow:0 18px 50px #0009;z-index:2;transition:left .22s cubic-bezier(.4,0,.2,1),top .22s cubic-bezier(.4,0,.2,1)}.tour-n{font-size:11px;font-weight:700;color:var(--accent-hi);letter-spacing:.04em}.tour-t{display:block;font-size:14.5px;margin:5px 0 6px}.tour-b{font-size:12.5px;line-height:1.65;color:var(--text-2)}.tour-link{display:inline-block;margin-top:7px;font-size:12px;color:var(--accent-hi)}.tour-row{display:flex;align-items:center;gap:7px;margin-top:12px}.tour-row button{font-size:12px;padding:6px 12px;border-radius:7px;border:1px solid var(--line-2);background:transparent;color:var(--text-2)}.tour-row button:hover{border-color:#3a3a45;color:var(--text)}.tour-row .tour-next{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:650}.tour-row .tour-skip{border:none;color:var(--text-3);padding-left:0}@media(max-width:760px){.tour-card{width:calc(100vw - 32px)}}
+</style>
+</head>
+<body>
+<div class="ws">
+  <div class="ws-top">
+    <a class="brand" href="./">
+      <svg width="24" height="16" viewBox="0 0 46 30" fill="none"><path d="M2 3 12 27 21 3" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="33" cy="15" r="11.5" stroke="currentColor" stroke-width="5"/></svg>
+      VRINGON CAD
+    </a>
+    <span class="hide-narrow" style="color:var(--line-2)">/</span>
+    <span class="hide-narrow" style="font-size:13.5px;color:var(--text-2)">Part 3 · 프롬프트와 이미지에서 3D</span>
+    <span class="hide-narrow" style="color:var(--line-2)">/</span>
+    <span style="font-size:13.5px;color:var(--text-2)" id="projName">새 작업</span>
+    <span class="sp"></span>
+    <span class="mode-tag" id="modeTag">확인 중…</span>
+    <button class="btn btn-ghost btn-sm" id="btnTour" title="사용법 다시 보기">사용법</button>
+    <a class="btn btn-ghost btn-sm" href="./revolve.html">Part 1</a>
+  </div>
+
+  <div class="ws-body" id="wsBody">
+    
+    <aside class="side left">
+      <div class="side-head">입력
+        <span class="sp"></span>
+        <button class="icon-btn" id="btnNew" title="처음으로"><svg><use href="#i-new"/></svg></button>
+      </div>
+      <div class="side-scroll">
+        <div class="block">
+          <h3>한 줄로 설명하기</h3>
+          <textarea class="prompt-box" id="prompt" placeholder="예: 접이식 팔이 달린 금속 책상 스탠드, 원형 받침"></textarea>
+          <div class="seed" id="seeds"></div>
+          <button class="btn btn-primary" id="btnMake" style="width:100%;margin-top:10px">3D 만들기</button>
+        </div>
+
+        <div class="block">
+          <h3>사진으로 만들기</h3>
+          <div class="drop compact" id="drop">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M6 10l6-6 6 6M4 20h16"/></svg>
+            <b>물체 사진 올리기</b>
+            물체 하나가 온전히 보이는 사진 한 장
+            <input type="file" id="file" accept="image/png,image/jpeg,image/webp" style="display:none" />
+          </div>
+          <div class="mini" style="margin-top:6px">가려진 뒷면은 앞면에서 유추합니다.</div>
+        </div>
+
+        <div class="block">
+          <h3>예시</h3>
+          <div class="samples sculpt" id="chips"></div>
+        </div>
+
+        <div class="block">
+          <h3>진행</h3>
+          <div id="runSteps"></div>
+        </div>
+      </div>
+    </aside>
+
+    
+    <div class="stage" id="stage">
+      <div class="stage-empty" id="stageEmpty">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" opacity=".5"><path d="M12 2 3 7v10l9 5 9-5V7z"/><path d="M3 7l9 5 9-5M12 12v10"/></svg>
+        한 줄로 설명하거나 사진을 올리면<br/>부품 트리를 세워 3D 로 만듭니다
+      </div>
+
+      <div class="gen" id="gen">
+        <div class="gen-box">
+          <div class="gen-title" id="genTitle"></div>
+          <div class="gen-sub" id="genSub"></div>
+          <div class="gen-bar"><i id="genBar"></i></div>
+          <div id="genSteps"></div>
+        </div>
+      </div>
+
+      <div class="stage-actions" id="stageActions">
+        <button class="stage-btn" id="btnExplode">파트 분리</button>
+        <button class="stage-btn" id="btnFit">화면 맞춤</button>
+      </div>
+
+      <div class="simdock show" id="expDock" style="display:none">
+        <span style="display:flex;align-items:center;gap:8px;font-size:11.5px;color:var(--text-3);padding:0 4px">
+          <span style="white-space:nowrap">분리</span>
+          <input type="range" id="expRange" min="0" max="100" value="0" step="1" style="width:130px" />
+          <b id="expVal" style="color:var(--text-2);font-variant-numeric:tabular-nums;min-width:30px">0%</b>
+        </span>
+      </div>
+    </div>
+
+    
+    <aside class="side right" id="sideRight">
+      <div class="side-head">파트</div>
+      <div class="side-scroll">
+        <div class="block">
+          <h3>모델</h3>
+          <div class="kv"><span>이름</span><b id="mName">—</b></div>
+          <div class="kv"><span>파트</span><b id="mParts">—</b></div>
+          <div class="kv"><span>크기(어림)</span><b id="mSize">—</b></div>
+          <div class="kv"><span>삼각형</span><b id="mTris">—</b></div>
+        </div>
+
+        <div class="block" id="partBlock" style="display:none">
+          <h3>부품 트리 <span class="tag" id="partCount"></span></h3>
+          <div class="plist" id="parts"></div>
+          <div class="exp-row">
+            <button class="btn btn-ghost btn-sm" id="btnShowAll">모두 보기</button>
+            <span class="sp" style="flex:1"></span>
+            <button class="btn btn-ghost btn-sm" id="btnDownload" title="사양 JSON 을 내려받습니다">사양 받기</button>
+          </div>
+        </div>
+
+        <div class="block" id="limitBlock" style="display:none">
+          <h3>이 결과가 담지 않는 것</h3>
+          <ul class="limits" id="limits" style="padding-left:16px"></ul>
+        </div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<svg style="display:none">
+  <symbol id="i-new" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></symbol>
+</svg>
+
+<div class="toasts" id="toasts"></div>
+<script type="module" src="./js/sculpt.js?v=5ba68b77"></script>
+</body>
+</html>

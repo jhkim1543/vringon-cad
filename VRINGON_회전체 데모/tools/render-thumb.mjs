@@ -150,7 +150,11 @@ export async function renderGroups(groups, file, { width = 480, height = 320 } =
 }
 
 /* ------------------------------------------------------------------ 실행 / entry point */
-if (import.meta.url === `file://${process.argv[1].replace(/\\/g, "/")}` || process.argv[1]?.endsWith("render-thumb.mjs")) {
+/* 직접 실행할 때만 돈다. 다른 모듈이 renderGroups 만 가져다 쓸 때는 건너뛴다
+   (argv[1] 이 없을 수 있어 방어적으로 읽는다).
+   Runs only when executed directly; skipped when another module imports renderGroups
+   (argv[1] can be absent, so it is read defensively). */
+if ((process.argv[1] || "").endsWith("render-thumb.mjs")) {
   const args = process.argv.slice(2);
   const only = args.includes("--only") ? args[args.indexOf("--only") + 1] : null;
   const doPart2 = args.includes("--part2");

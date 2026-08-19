@@ -13,7 +13,10 @@
   .home-inner { width: 100%; max-width: 980px; }
   .home h1 { font-size: 34px; letter-spacing: -0.4px; margin: 10px 0 10px; }
   .home .lead { font-size: 15.5px; color: var(--text-2); max-width: 640px; line-height: 1.75; }
-  .picks { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 34px; }
+  /* 카드 셋. 1180 아래에서는 한 줄에 다 넣으면 글이 눌려서 1열로 접는다
+     Three cards; below 1180 they would be squeezed, so they stack. */
+  .picks { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 34px; }
+  @media (max-width: 1180px) { .picks { grid-template-columns: 1fr; } }
   .pick { position: relative; display: block; text-align: left; padding: 22px 22px 20px; border-radius: 16px;
     border: 1px solid var(--line); background: var(--panel); color: inherit; text-decoration: none;
     transition: border-color .16s, transform .16s, background .16s; }
@@ -94,6 +97,26 @@
             <li>만든 3D를 도면과 다시 대조</li>
           </ul>
           <span class="go">Part 2 열기 ›</span>
+        </a>
+
+        <a class="pick" href="./sculpt.html">
+          <span class="badge soft">새로 나옴</span>
+          <svg class="art" viewBox="0 0 240 96" fill="none" stroke="currentColor" stroke-width="2" opacity=".55">
+            <path d="M30 66V38l26-14 26 14v28L56 80z"/><path d="M30 38l26 14 26-14M56 52v28" stroke-width="1"/>
+            <path d="M112 30h34M112 44h52M112 58h30" stroke-width="2.4" stroke-linecap="round"/>
+            <path d="M186 34l14 8v18l-14 8-14-8V42z"/><path d="M186 74v14" stroke-width="1"/>
+            <path d="M172 42l14 8 14-8" stroke-width="1"/>
+          </svg>
+          <div class="no">PART 3</div>
+          <h2>프롬프트와 이미지에서 3D</h2>
+          <p>한 줄 설명이나 사진 한 장에서 부품 트리를 세웁니다. 만든 3D 는 파트별로 분리해 볼 수 있습니다.</p>
+          <ul>
+            <li>글로 적거나 사진을 올리거나</li>
+            <li>부품이 트리로 나뉘어 나옵니다</li>
+            <li>파트 분리와 하나씩 보기</li>
+            <li>도면이 없을 때 쓰는 갈래입니다</li>
+          </ul>
+          <span class="go">Part 3 열기 ›</span>
         </a>
       </div>
 

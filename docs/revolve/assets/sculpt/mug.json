@@ -1,0 +1,115 @@
+{
+ "spec": "img2threejs/ObjectSculptSpec",
+ "specVersion": "1.5-beta-subset",
+ "id": "mug",
+ "name": "머그컵",
+ "source": {
+  "kind": "prompt",
+  "text": "손잡이가 달린 원통형 세라믹 머그컵"
+ },
+ "objectClass": {
+  "primaryType": "mug",
+  "primaryDomain": "object",
+  "formLanguage": [
+   "cylindrical"
+  ]
+ },
+ "scaleHint": {
+  "longestSide_mm": 120,
+  "confidence": 0.6
+ },
+ "materials": [
+  {
+   "id": "body",
+   "color": "#93A3C4",
+   "roughness": 0.5,
+   "metalness": 0.05
+  },
+  {
+   "id": "accent",
+   "color": "#5A6885",
+   "roughness": 0.5,
+   "metalness": 0.05
+  }
+ ],
+ "componentTree": [
+  {
+   "id": "cup",
+   "name": "컵",
+   "primitive": "cylinder",
+   "level": "macro",
+   "role": "housing",
+   "parent": null,
+   "dimensions": {
+    "width": 0.34,
+    "height": 0.4,
+    "depth": 0.34,
+    "units": "relative",
+    "confidence": 0.8
+   },
+   "transform": {
+    "position": [
+     0,
+     0,
+     0
+    ],
+    "rotation": [
+     0,
+     0,
+     0
+    ]
+   },
+   "material": "body",
+   "sockets": [
+    {
+     "id": "side",
+     "position": [
+      0.17,
+      0.06,
+      0
+     ],
+     "normal": [
+      1,
+      0,
+      0
+     ]
+    }
+   ]
+  },
+  {
+   "id": "handle",
+   "name": "손잡이",
+   "primitive": "torus",
+   "level": "macro",
+   "role": "grip",
+   "parent": "cup",
+   "dimensions": {
+    "width": 0.24,
+    "height": 0.24,
+    "depth": 0.05,
+    "units": "relative",
+    "confidence": 0.8
+   },
+   "transform": {
+    "position": [
+     0.19,
+     0.04,
+     0
+    ],
+    "rotation": [
+     0,
+     90,
+     0
+    ]
+   },
+   "material": "accent",
+   "attachment": {
+    "parentSocket": "side",
+    "contactType": "seated",
+    "embedDepth": 0.01,
+    "gapTolerance": 0.002
+   },
+   "tubeRadius": 0.024
+  }
+ ]
+}

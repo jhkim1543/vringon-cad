@@ -9,7 +9,6 @@ export const EN = {
   "사용법": "How to use",
   "새 프로젝트": "New project",
   "새 도면": "New drawing",
-  "입력": "Input",
   "도면": "Drawing",
   "속성": "Properties",
   "부품": "Part",
@@ -758,4 +757,5 @@ export const EN = {
   /* 좁은 화면 칸 탭 / narrow-screen pane tabs */
   "설정": "Setup",
   "결과": "Result",
+  "입력": "Input",
 };

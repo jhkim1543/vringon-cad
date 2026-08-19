@@ -79,6 +79,7 @@ node tools/deploy-docs.mjs                  # ../docs/revolve/ 보호 빌드 갱
 node tools/test-assembly.mjs && node tools/test-exports.mjs      # 조립·시뮬 / 내보내기 회귀
 node tools/test-input-guard.mjs             # 회전체가 아닌 도면을 판독 전에 막는지 (정상 60건 오거부 0)
 node tools/test-multiview.mjs               # Part 2: 뷰 분할·방향·OCR 축척·교집합·정합 (예시 6종)
+node tools/test-sculpt.mjs                  # Part 3: 사양 검사·부품 접합·파트 분리 (예시 3종)
 node tools/test-pairs.mjs                   # 라이브러리 쌍 데이터: 도면과 결과 그림이 모두 있는가
 cd pipeline && PYTHONIOENCODING=utf-8 .venv/Scripts/python.exe tests/test_golden.py
 ```

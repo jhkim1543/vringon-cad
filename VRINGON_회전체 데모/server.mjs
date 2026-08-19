@@ -18,6 +18,7 @@ import { SHAFT_SCHEMA, validateShaft, normalizeShaft } from "./js/shaft-schema.j
 import { silhouetteIoU2, dimensionConsistency, confidenceScore, dslSilhouette, silhouetteIoU } from "./js/shaft-verify.js";
 import { EXTRACT_SYSTEM, buildExtractMessages, EXTRACT_RESPONSE_SCHEMA, loadFewShot, postprocessExtracted } from "./tools/extract-prompt.mjs";
 import { DESCRIBE_RESPONSE_SCHEMA, buildDescribeMessages } from "./tools/describe-prompt.mjs";
+import { SCULPT_SCHEMA, buildSculptMessages } from "./tools/sculpt-prompt.mjs";
 
 const rootDir = fileURLToPath(new URL("./", import.meta.url));
 const port = Number(process.argv[2] || process.env.PORT || 8349);
@@ -80,7 +81,13 @@ function toPrimarySchema(s) {
   if (s.description) out.description = s.description;
   if (s.enum) out.enum = s.enum;
   if (t === "OBJECT") { if (!s.properties) return { type: "STRING" }; out.properties = Object.fromEntries(Object.entries(s.properties).map(([k, v]) => [k, toPrimarySchema(v)])); if (s.required) out.required = s.required; }
-  else if (t === "ARRAY") out.items = toPrimarySchema(s.items || { type: "string" });
+  else if (t === "ARRAY") {
+    out.items = toPrimarySchema(s.items || { type: "string" });
+    /* 개수 제한을 빠뜨리면 "최소 2개" 같은 약속이 조용히 사라진다 (실측: 부품 트리가 1개짜리로 왔다).
+       Dropping the count limits silently discards promises like "at least two" (seen: a one-part tree). */
+    if (s.minItems !== undefined) out.minItems = s.minItems;
+    if (s.maxItems !== undefined) out.maxItems = s.maxItems;
+  }
   return out;
 }
 function toPrimaryContents(messages) {
@@ -282,7 +289,7 @@ const server = createServer(async (req, res) => {
         return res.end(GATE_HTML);
       }
     }
-    if (path === "/api/status") return json(res, 200, { ok: true, mode: "live", extract: HAS_PRIMARY || HAS_FALLBACK, extract_provider: HAS_PRIMARY ? "primary" : HAS_FALLBACK ? "fallback" : null, step: HAS_STEP, fewshot: fewShot.length, version: "1.0" });
+    if (path === "/api/status") return json(res, 200, { ok: true, mode: "live", sculpt: HAS_PRIMARY || HAS_FALLBACK, extract: HAS_PRIMARY || HAS_FALLBACK, extract_provider: HAS_PRIMARY ? "primary" : HAS_FALLBACK ? "fallback" : null, step: HAS_STEP, fewshot: fewShot.length, version: "1.0" });
     if (path === "/api/schema") return json(res, 200, SHAFT_SCHEMA);
     /* 부품 해석: 이미지 + 사양 + OCR 토큰 → 근거 달린 해석 */
     if (req.method === "POST" && path === "/api/describe") {
@@ -295,6 +302,60 @@ const server = createServer(async (req, res) => {
       const out = await callVision(msgs, DESCRIBE_RESPONSE_SCHEMA, "text");
       const j = out.json || out;
       return json(res, 200, { ...j, provider: out.provider, elapsed_ms: Date.now() - t0 });
+    }
+    /* Part 3: 설명 한 줄이나 사진 한 장 → 부품 트리 사양.
+       키는 여기(서버)에만 있다. 브라우저는 결과 사양만 받는다.
+       Part 3: one sentence or one photo → a part-tree spec. The key lives here; the browser only
+       ever receives the resulting spec. */
+    if (req.method === "POST" && path === "/api/sculpt") {
+      const ip = req.headers["x-forwarded-for"]?.split(",")[0].trim() || req.socket.remoteAddress || "?";
+      if (!rateOk(ip)) return json(res, 429, { error: `요청이 시간당 ${RATE}회를 넘었습니다.` });
+      const body = await readBody(req);
+      const prompt = String(body.prompt || "").slice(0, 400);
+      if (!prompt && !body.image) return json(res, 400, { error: "prompt 나 image 가 필요합니다" });
+      const t0 = Date.now();
+      const msgs = buildSculptMessages({ prompt, image: body.image || null, lang: body.lang === "en" ? "en" : "ko" });
+      let out = await callVision(msgs, SCULPT_SCHEMA, "text");
+      let spec = out.json || out;
+      /* 한 번 되짚는다. 판독 쪽과 같은 수리 루프다. 실제로 겪은 세 가지를 본다:
+         부품이 하나뿐(보여 줄 파트가 없다) · 없는 소켓을 가리킴(자식이 제자리에 안 붙는다) ·
+         크기 힌트 없음(의자가 100mm 로 나온다).
+         One repair pass, the same loop the reader uses, checking the three things actually seen:
+         a single-part tree, attachments pointing at sockets the parent never defined, and a missing
+         scale hint (which made a chair come out 100 mm tall). */
+      const problems = (sp) => {
+        const p = [];
+        const tree = sp?.componentTree || [];
+        if (tree.length < 2) p.push("부품이 하나뿐이다. 손잡이·다리·뚜껑·받침처럼 이름 붙일 수 있는 것은 따로 둔다. 최소 2개.");
+        const byId = new Map(tree.map((c) => [c.id, c]));
+        for (const c of tree) {
+          const ps = c.attachment?.parentSocket;
+          if (!ps) continue;
+          const parent = byId.get(c.parent);
+          if (!parent) p.push(`${c.id}: parent "${c.parent}" 가 componentTree 에 없다.`);
+          else if (!(parent.sockets || []).some((k) => k.id === ps))
+            p.push(`${c.id}: attachment.parentSocket "${ps}" 를 가리키는데 부모 "${parent.id}" 에 그 소켓이 없다. 부모의 sockets 에 그 자리를 점으로 넣어라.`);
+        }
+        if (!(sp?.scaleHint?.longestSide_mm > 0)) p.push("scaleHint.longestSide_mm 이 없다. 실제 크기를 mm 로 어림해서 넣어라.");
+        return p;
+      };
+      const bad = problems(spec);
+      if (bad.length) {
+        const again = [...msgs, { role: "user", content: [{ type: "text",
+          text: "방금 쓴 사양에 다음 문제가 있다. 고쳐서 전체를 다시 써라.\n- " + bad.join("\n- ") }] }];
+        try {
+          const retry = await callVision(again, SCULPT_SCHEMA, "text");
+          const s2 = retry.json || retry;
+          if (problems(s2).length < bad.length) { out = retry; spec = s2; }
+        } catch (e) { console.error("[sculpt] 수리 실패:", e.message); }
+      }
+      spec.repaired = bad.length ? bad.length - problems(spec).length : 0;
+      /* 서버가 형식을 한 번 맞춰 둔다. 조립기가 보는 표식이라 여기서 채운다.
+         The server stamps the format markers the assembler looks for. */
+      spec.spec = "img2threejs/ObjectSculptSpec";
+      spec.specVersion = "1.5-beta-subset";
+      spec.source = { kind: body.image ? "image" : "prompt", text: prompt };
+      return json(res, 200, { spec, provider: out.provider, elapsed_ms: Date.now() - t0 });
     }
     if (req.method === "POST" && path === "/api/extract") {
       const ip = req.headers["x-forwarded-for"]?.split(",")[0].trim() || req.socket.remoteAddress || "?";

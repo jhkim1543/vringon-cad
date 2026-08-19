@@ -2,7 +2,7 @@
    처음 열었을 때 한 번 자동으로 뜨고(기억은 localStorage), 위쪽 "사용법" 버튼으로 다시 볼 수 있다.
    구멍(스포트라이트)은 대상의 화면 좌표에 맞춰 그리며, 아직 나타나지 않은 버튼은 대체 영역을 짚는다. */
 
-const KEYS = { part1: "vringon.revolve.tour.v1", part2: "vringon.part2.tour.v1" };
+const KEYS = { part1: "vringon.revolve.tour.v1", part2: "vringon.part2.tour.v1", sculpt: "vringon.sculpt.tour.v1" };
 const $ = (id) => document.getElementById(id);
 
 const STEPS_P1 = [
@@ -146,8 +146,20 @@ export function startTour() {
   render();
 }
 
+/* Part 3 — 화면이 단순해서 네 걸음이면 끝난다 / Part 3: the screen is simple, four steps cover it */
+const STEPS_P3 = [
+  { el: "prompt", place: "right", title: "한 줄로 설명하기",
+    body: "만들 물체를 한 줄로 적습니다. 아래 예시를 눌러 채울 수도 있습니다." },
+  { el: "drop", place: "right", title: "사진으로도 됩니다",
+    body: "물체 하나가 온전히 보이는 사진 한 장을 올립니다. 가려진 뒷면은 앞면에서 유추합니다." },
+  { el: "chips", place: "right", title: "예시로 먼저 보기",
+    body: "미리 만들어 둔 예시입니다. 서버 없이도 눌러서 바로 볼 수 있습니다." },
+  { el: "parts", fallback: "sideRight", fallbackBox: { left: 12, top: 90, w: 240, h: 160 }, place: "left", title: "파트 분리",
+    body: "부품이 트리로 나뉘어 나옵니다. 목록에서 고르면 그 부품만 남고, 분리 막대로 벌려 볼 수 있습니다." },
+];
+
 export function initTour(which = "part1") {
-  STEPS = which === "part2" ? STEPS_P2 : STEPS_P1;
+  STEPS = which === "part2" ? STEPS_P2 : which === "sculpt" ? STEPS_P3 : STEPS_P1;
   KEY = KEYS[which] || KEYS.part1;
   const btn = $("btnTour");
   if (btn) btn.onclick = () => { root ? close() : startTour(); };

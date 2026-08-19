@@ -1,0 +1,306 @@
+{
+ "spec": "img2threejs/ObjectSculptSpec",
+ "specVersion": "1.5-beta-subset",
+ "id": "desk-lamp",
+ "name": "책상 스탠드",
+ "source": {
+  "kind": "prompt",
+  "text": "접이식 팔이 달린 금속 책상 스탠드, 원형 받침, 원뿔 갓"
+ },
+ "objectClass": {
+  "primaryType": "desk lamp",
+  "primaryDomain": "object",
+  "formLanguage": [
+   "cylindrical",
+   "tapered"
+  ]
+ },
+ "scaleHint": {
+  "longestSide_mm": 420,
+  "confidence": 0.5
+ },
+ "materials": [
+  {
+   "id": "body",
+   "color": "#6E7A93",
+   "roughness": 0.42,
+   "metalness": 0.75
+  },
+  {
+   "id": "shade",
+   "color": "#8FA1C8",
+   "roughness": 0.35,
+   "metalness": 0.55
+  },
+  {
+   "id": "accent",
+   "color": "#2C3346",
+   "roughness": 0.6,
+   "metalness": 0.3
+  }
+ ],
+ "componentTree": [
+  {
+   "id": "base",
+   "name": "받침",
+   "primitive": "cylinder",
+   "level": "macro",
+   "role": "support",
+   "parent": null,
+   "dimensions": {
+    "width": 0.34,
+    "height": 0.035,
+    "depth": 0.34,
+    "units": "relative",
+    "confidence": 0.8
+   },
+   "transform": {
+    "position": [
+     0,
+     0,
+     0
+    ],
+    "rotation": [
+     0,
+     0,
+     0
+    ]
+   },
+   "material": "body",
+   "sockets": [
+    {
+     "id": "base-top",
+     "position": [
+      0,
+      0.018,
+      0
+     ],
+     "normal": [
+      0,
+      1,
+      0
+     ]
+    }
+   ]
+  },
+  {
+   "id": "post",
+   "name": "기둥",
+   "primitive": "cylinder",
+   "level": "macro",
+   "role": "structure",
+   "parent": "base",
+   "dimensions": {
+    "width": 0.045,
+    "height": 0.42,
+    "depth": 0.045,
+    "units": "relative",
+    "confidence": 0.8
+   },
+   "transform": {
+    "position": [
+     0,
+     0.228,
+     0
+    ],
+    "rotation": [
+     0,
+     0,
+     0
+    ]
+   },
+   "material": "body",
+   "attachment": {
+    "parentSocket": "base-top",
+    "contactType": "seated",
+    "embedDepth": 0.01,
+    "gapTolerance": 0.002
+   },
+   "sockets": [
+    {
+     "id": "post-top",
+     "position": [
+      0,
+      0.21,
+      0
+     ],
+     "normal": [
+      0,
+      1,
+      0
+     ]
+    }
+   ]
+  },
+  {
+   "id": "joint",
+   "name": "관절",
+   "primitive": "sphere",
+   "level": "macro",
+   "role": "joint",
+   "parent": "post",
+   "dimensions": {
+    "width": 0.07,
+    "height": 0.07,
+    "depth": 0.07,
+    "units": "relative",
+    "confidence": 0.8
+   },
+   "transform": {
+    "position": [
+     0,
+     0,
+     0
+    ],
+    "rotation": [
+     0,
+     0,
+     0
+    ]
+   },
+   "material": "accent",
+   "attachment": {
+    "parentSocket": "post-top",
+    "contactType": "seated",
+    "embedDepth": 0.01,
+    "gapTolerance": 0.002
+   },
+   "sockets": [
+    {
+     "id": "joint-out",
+     "position": [
+      0,
+      0.01,
+      0
+     ],
+     "normal": [
+      0.6,
+      0.8,
+      0
+     ]
+    }
+   ]
+  },
+  {
+   "id": "arm",
+   "name": "팔",
+   "primitive": "tube",
+   "level": "macro",
+   "role": "structure",
+   "parent": "joint",
+   "dimensions": {
+    "width": 0.04,
+    "height": 0.3,
+    "depth": 0.04,
+    "units": "relative",
+    "confidence": 0.8
+   },
+   "transform": {
+    "position": [
+     0,
+     0,
+     0
+    ],
+    "rotation": [
+     0,
+     0,
+     0
+    ]
+   },
+   "material": "body",
+   "attachment": {
+    "parentSocket": "joint-out",
+    "contactType": "seated",
+    "embedDepth": 0.01,
+    "gapTolerance": 0.002
+   },
+   "sockets": [
+    {
+     "id": "arm-end",
+     "position": [
+      0.26,
+      0.16,
+      0
+     ],
+     "normal": [
+      0.6,
+      0.8,
+      0
+     ]
+    }
+   ],
+   "from": [
+    0,
+    0,
+    0
+   ],
+   "to": [
+    0.26,
+    0.16,
+    0
+   ]
+  },
+  {
+   "id": "shade",
+   "name": "갓",
+   "primitive": "cone",
+   "level": "macro",
+   "role": "housing",
+   "parent": "arm",
+   "dimensions": {
+    "width": 0.24,
+    "height": 0.19,
+    "depth": 0.24,
+    "units": "relative",
+    "confidence": 0.8
+   },
+   "transform": {
+    "position": [
+     0.28,
+     0.1,
+     0
+    ],
+    "rotation": [
+     180,
+     0,
+     155
+    ]
+   },
+   "material": "shade",
+   "attachment": {
+    "parentSocket": "arm-end",
+    "contactType": "seated",
+    "embedDepth": 0.01,
+    "gapTolerance": 0.002
+   }
+  },
+  {
+   "id": "bulb",
+   "name": "전구",
+   "primitive": "sphere",
+   "level": "meso",
+   "role": "detail",
+   "parent": "shade",
+   "dimensions": {
+    "width": 0.07,
+    "height": 0.07,
+    "depth": 0.07,
+    "units": "relative",
+    "confidence": 0.8
+   },
+   "transform": {
+    "position": [
+     0,
+     0.06,
+     0
+    ],
+    "rotation": [
+     0,
+     0,
+     0
+    ]
+   },
+   "material": "accent"
+  }
+ ]
+}

@@ -23,7 +23,7 @@ const DST = join(SRC, "..", "docs", "revolve") + "/";
    CSS-only deploy shipped under the same version and stayed cached (seen during the responsive work). */
 const h = createHash("sha256");
 for (const f of readdirSync(join(SRC, "js")).sort()) h.update(f).update(readFileSync(join(SRC, "js", f)));
-for (const f of ["index.html", "revolve.html", "assembly.html", "guide.html"]) h.update(readFileSync(join(SRC, f)));
+for (const f of ["index.html", "revolve.html", "assembly.html", "sculpt.html", "guide.html"]) h.update(readFileSync(join(SRC, f)));
 h.update(readFileSync(join(SRC, "css", "vringon.css"))).update(readFileSync(join(SRC, "samples", "index.json")));
 const V = h.digest("hex").slice(0, 8);
 
@@ -70,7 +70,7 @@ if (RAW) {
   };
   mkdirSync(join(DST, "js"), { recursive: true });
   /* i18n.js 는 진입 화면(index.html)이 직접 부르므로 따로 묶는다 */
-  for (const entry of ["app.js", "part2.js", "i18n.js", "guide-boot.js"]) {
+  for (const entry of ["app.js", "part2.js", "sculpt.js", "i18n.js", "guide-boot.js"]) {
     const out = await esbuild.build({
       entryPoints: [join(SRC, "js", entry)],
       bundle: true, format: "esm", minify: true, legalComments: "none", target: ["es2022"],
@@ -87,7 +87,7 @@ if (RAW) {
     let html = readFileSync(join(DST, f), "utf8");
     html = html.replace(/<script type="importmap">[\s\S]*?<\/script>\s*/, "");
     html = await squeezeHtml(html, esbuild);
-    html = html.replace(/(src=")(\.\/js\/(?:app|part2)\.js)(")/, `$1$2?v=${V}$3`);
+    html = html.replace(/(src=")(\.\/js\/(?:app|part2|sculpt)\.js)(")/, `$1$2?v=${V}$3`);
     /* 스타일시트에도 버전을 붙인다. 안 붙이면 Pages 의 캐시(max-age=600) 때문에 반응형처럼 CSS 만
        바뀐 배포가 10분간 옛 모습으로 보인다(실측: 새 빌드인데 세 칸이 그대로 쌓여 나왔다).
        Stamp the stylesheet too. Without it a CSS-only deploy (like the responsive work) shows the old
@@ -95,8 +95,25 @@ if (RAW) {
     html = html.replace(/(href=")(css\/vringon\.css)(")/, `$1$2?v=${V}$3`);
     writeFileSync(join(DST, f), html);
   }
-  /* 라이선스 고지: 번들에 포함된 오픈소스 (MIT 는 고지 유지가 조건이다) */
-  writeFileSync(join(DST, "LICENSES.txt"), readFileSync(join(threeDir, "LICENSE"), "utf8"));
+  /* 라이선스 고지: 번들에 포함된 오픈소스 (MIT 는 고지 유지가 조건이다).
+     형식만 따른 것도 함께 밝힌다 — 코드를 안 가져왔어도 출처는 적는 편이 맞다.
+     Also credits a format we followed: no code was copied, but the source is still worth naming. */
+  const SCULPT_CREDIT = [
+    "",
+    "".padEnd(72, "-"),
+    "img2threejs - https://github.com/img2threejs/img2threejs",
+    "Apache License 2.0",
+    "",
+    "Part 3(프롬프트·이미지에서 3D)의 사양 형식은 이 프로젝트의 ObjectSculptSpec 을 따릅니다.",
+    "componentTree · attachment(부모 소켓) · materials · sockets 만 쓰는 부분집합이며,",
+    "원본의 여덟 단계 조각 파이프라인 구현은 포함하지 않습니다. 코드는 가져오지 않았고 형식만 참고했습니다.",
+    "",
+    "Part 3 follows this project's ObjectSculptSpec format: a subset (componentTree, attachment",
+    "with parent sockets, materials, sockets) without the original eight-pass sculpting pipeline.",
+    "No code was copied; only the format was followed.",
+    "",
+  ].join("\n");
+  writeFileSync(join(DST, "LICENSES.txt"), readFileSync(join(threeDir, "LICENSE"), "utf8") + SCULPT_CREDIT);
 }
 
 async function squeezeHtml(html, esbuild) {

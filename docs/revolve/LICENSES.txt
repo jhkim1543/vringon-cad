@@ -19,3 +19,15 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
+
+------------------------------------------------------------------------
+img2threejs - https://github.com/img2threejs/img2threejs
+Apache License 2.0
+
+Part 3(프롬프트·이미지에서 3D)의 사양 형식은 이 프로젝트의 ObjectSculptSpec 을 따릅니다.
+componentTree · attachment(부모 소켓) · materials · sockets 만 쓰는 부분집합이며,
+원본의 여덟 단계 조각 파이프라인 구현은 포함하지 않습니다. 코드는 가져오지 않았고 형식만 참고했습니다.
+
+Part 3 follows this project's ObjectSculptSpec format: a subset (componentTree, attachment
+with parent sockets, materials, sockets) without the original eight-pass sculpting pipeline.
+No code was copied; only the format was followed.

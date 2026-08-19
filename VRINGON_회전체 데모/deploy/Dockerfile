@@ -12,7 +12,7 @@ ENV NODE_ENV=production
 COPY ["VRINGON_회전체 데모/server.mjs", "/app/demo/"]
 COPY ["VRINGON_회전체 데모/package.json", "/app/demo/"]
 COPY ["VRINGON_회전체 데모/js/shaft-schema.js", "VRINGON_회전체 데모/js/shaft-profile.js", "VRINGON_회전체 데모/js/shaft-standards.js", "VRINGON_회전체 데모/js/shaft-verify.js", "/app/demo/js/"]
-COPY ["VRINGON_회전체 데모/tools/extract-prompt.mjs", "VRINGON_회전체 데모/tools/describe-prompt.mjs", "/app/demo/tools/"]
+COPY ["VRINGON_회전체 데모/tools/extract-prompt.mjs", "VRINGON_회전체 데모/tools/describe-prompt.mjs", "VRINGON_회전체 데모/tools/sculpt-prompt.mjs", "/app/demo/tools/"]
 COPY ["VRINGON_회전체 데모/prompts", "/app/demo/prompts/"]
 # 브라우저로 나가는 것은 보호 빌드뿐
 COPY docs/revolve /app/docs/revolve
